@@ -1,58 +1,61 @@
 import 'package:flutter/material.dart';
-import '../../../core/constants/app_colors.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ReportsScreen extends StatelessWidget {
+import '../data/financial_report_query.dart';
+import 'report_filter_toolbar.dart';
+import 'export_action_buttons.dart';
+
+/// Main Reports Screen with tabular report generation and export capabilities
+class ReportsScreen extends ConsumerWidget {
   const ReportsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      backgroundColor: AppColors.surfaceBase,
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Financial & Recovery Reports', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.inkPrimary)),
-                    SizedBox(height: 4),
-                    Text('Generate tabular financial reports and export to PDF or Excel (.xlsx)', style: TextStyle(fontSize: 13, color: AppColors.inkSecondary)),
-                  ],
-                ),
-                Row(
-                  children: [
-                    OutlinedButton.icon(
-                      onPressed: () {},
-                      icon: const Icon(Icons.picture_as_pdf_outlined, size: 18),
-                      label: const Text('Export PDF'),
-                    ),
-                    const SizedBox(width: 12),
-                    ElevatedButton.icon(
-                      onPressed: () {},
-                      icon: const Icon(Icons.table_view_outlined, size: 18),
-                      label: const Text('Export Excel'),
-                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.accentSuccess, foregroundColor: AppColors.inkWhite),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Expanded(
-              child: Card(
-                color: AppColors.surfaceRaised,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10), side: const BorderSide(color: AppColors.borderSubtle)),
-                child: const Center(
-                  child: Text('Custom report generator (Story 6.1, 6.2 & 6.3)', style: TextStyle(color: AppColors.inkSecondary)),
-                ),
+      appBar: AppBar(
+        title: const Text('Financial Reports'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.filter_list),
+            tooltip: 'Filters',
+            onPressed: () {},
+          ),
+        ],
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Filter toolbar
+              ReportFilterToolbar(
+                initialQuery: FinancialReportQuery(),
+                onQueryChanged: (query) {},
+                selectedOfficer: '',
+                onOfficerChanged: (_) {},
               ),
-            ),
-          ],
+              const SizedBox(height: 24),
+
+              // Report table area
+              const Text('Report table area - Story 6.1'),
+              const SizedBox(height: 24),
+
+              // Summary totals
+              const Text('Summary totals - Story 6.1'),
+              const SizedBox(height: 24),
+
+              // Export buttons
+              ExportActionButtons(
+                onPdfExport: () {
+                  // TODO: Implement PDF export (Story 6.2)
+                },
+                onExcelExport: () {
+                  // TODO: Implement Excel export (Story 6.3)
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

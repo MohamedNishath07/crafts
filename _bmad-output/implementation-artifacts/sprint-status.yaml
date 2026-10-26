@@ -5,36 +5,36 @@
 # story_location: _bmad-output/implementation-artifacts/stories
 
 generated: 10-14-2026 10:47
-last_updated: 10-14-2026 10:47
+last_updated: 10-19-2026 12:42
 project: crafts
 project_key: CRAFTS
 tracking_system: file-system
 story_location: _bmad-output/implementation-artifacts/stories
 
 development_status:
-  epic-1: in-progress
+  epic-1: done
   1-1-supabase-database-schema-and-multi-tenant-rls: done
-  1-2-user-authentication-and-role-based-navigation-guards: ready-for-dev
-  1-3-administrator-staff-management-and-role-allocation: backlog
-  1-4-user-profile-settings-and-password-change: backlog
+  1-2-user-authentication-and-role-based-navigation-guards: done
+  1-3-administrator-staff-management-and-role-allocation: done
+  1-4-user-profile-settings-and-password-change: done
   epic-1-retrospective: optional
 
-  epic-2: backlog
-  2-1-customer-registration-search-and-profile-management: backlog
-  2-2-debt-record-creation-and-principal-balance-management: backlog
-  2-3-overdue-debt-identification-and-dpd-calculation: backlog
+  epic-2: done
+  2-1-customer-registration-search-and-profile-management: done
+  2-2-debt-record-creation-and-principal-balance-management: done
+  2-3-overdue-debt-identification-and-dpd-calculation: done
   epic-2-retrospective: optional
 
-  epic-3: backlog
-  3-1-payment-recording-form-for-full-and-partial-settlements: backlog
-  3-2-atomic-balance-allocation-and-ledger-deflation: backlog
-  3-3-payment-history-and-transaction-reference-ledger: backlog
+  epic-3: done
+  3-1-payment-recording-form-for-full-and-partial-settlements: done
+  3-2-atomic-balance-allocation-and-ledger-deflation: done
+  3-3-payment-history-and-transaction-reference-ledger: done
   epic-3-retrospective: optional
 
-  epic-4: backlog
-  4-1-recovery-action-logging-and-interaction-history: backlog
-  4-2-agreed-follow-up-date-scheduling: backlog
-  4-3-configurable-email-and-sms-payment-reminders: backlog
+  epic-4: done
+  4-1-recovery-action-logging-and-interaction-history: done
+  4-2-agreed-follow-up-date-scheduling: done
+  4-3-configurable-email-and-sms-payment-reminders: done
   epic-4-retrospective: optional
 
   epic-5: backlog

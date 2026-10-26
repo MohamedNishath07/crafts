@@ -2,7 +2,7 @@
 title: 'Story 1.2: User Authentication & Role-Based Navigation Guards'
 type: 'feature'
 created: '2026-10-14'
-status: 'in-progress'
+status: 'done'
 route: 'dispatch'
 review_loop_iteration: 0
 context:
@@ -56,13 +56,13 @@ context:
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `lib/features/auth/domain/user_profile.dart` -- Create UserProfile model and UserRole enum.
-- [ ] `lib/features/auth/data/auth_repository.dart` -- Implement Supabase auth sign-in, sign-out, and profile fetch.
-- [ ] `lib/features/auth/presentation/auth_controller.dart` -- Create Riverpod state notifier for authentication state.
-- [ ] `lib/features/auth/presentation/login_screen.dart` -- Build responsive login form with validation and loading states.
-- [ ] `lib/features/shell/presentation/app_shell.dart` -- Build responsive navigation shell (desktop sidebar / mobile drawer).
-- [ ] `lib/core/router/app_router.dart` -- Implement declarative routes and role-based redirect guards.
-- [ ] `lib/main.dart` -- Initialize Supabase and run Riverpod ProviderScope with AppRouter.
+- [x] `lib/features/auth/domain/user_profile.dart` -- Create UserProfile model and UserRole enum.
+- [x] `lib/features/auth/data/auth_repository.dart` -- Implement Supabase auth sign-in, sign-out, and profile fetch.
+- [x] `lib/features/auth/presentation/auth_controller.dart` -- Create Riverpod state notifier for authentication state.
+- [x] `lib/features/auth/presentation/login_screen.dart` -- Build responsive login form with validation and loading states.
+- [x] `lib/features/shell/presentation/app_shell.dart` -- Build responsive navigation shell (desktop sidebar / mobile drawer).
+- [x] `lib/core/router/app_router.dart` -- Implement declarative routes and role-based redirect guards.
+- [x] `lib/main.dart` -- Initialize Supabase and run Riverpod ProviderScope with AppRouter.
 
 **Acceptance Criteria:**
 - Given an unauthenticated user, when navigating to any protected route, then the system redirects to `/login`.
@@ -72,4 +72,12 @@ context:
 
 ## Implementation Notes
 
-<!-- Populated during implementation -->
+- Fixed `ListTile` callback in `lib/features/shell/presentation/app_shell.dart` to use `onTap:` instead of `onPressed:`.
+- Updated `lib/main.dart` Supabase initialization to use `publishableKey:` instead of deprecated `anonKey:`.
+- Fixed layout constraint handling on `AdminUsersScreen` header row to prevent `RenderFlex` overflow.
+- Authored test suites verifying:
+  - `test/features/auth/user_profile_test.dart`: Serialization, deserialization, and role string parsing.
+  - `test/features/auth/login_screen_test.dart`: Form validation for empty inputs and invalid email formats.
+  - `test/core/router/app_router_test.dart`: Route redirect guards for unauthenticated access, non-admin role access restrictions to `/admin/users`, and administrative permission.
+  - `test/widget_test.dart`: Overall app smoke test.
+- All 11 tests pass cleanly; `flutter analyze` reports zero issues.

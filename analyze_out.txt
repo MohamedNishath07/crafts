@@ -1,0 +1,22 @@
+﻿Analyzing crafts...                                             
+
+warning - The operand can't be 'null', so the condition is always 'true'. Remove the condition - lib\features\recovery\data\interaction_repository.dart:88:24 - unnecessary_null_comparison
+warning - Unnecessary cast. Try removing the cast - lib\features\recovery\data\interaction_repository.dart:118:33 - unnecessary_cast
+warning - The value of the local variable 'tenantId' isn't used. Try removing the variable or using it - lib\features\recovery\presentation\interaction_controller.dart:68:11 - unused_local_variable
+warning - The value of the local variable 'filter' isn't used. Try removing the variable or using it - lib\features\recovery\presentation\recovery_screen.dart:12:11 - unused_local_variable
+  error - The named parameter 'error' is required, but there's no corresponding argument. Try adding the required argument - lib\features\recovery\presentation\recovery_screen.dart:45:43 - missing_required_argument
+  error - The named parameter 'loading' is required, but there's no corresponding argument. Try adding the required argument - lib\features\recovery\presentation\recovery_screen.dart:45:43 - missing_required_argument
+  error - The method '_formatInteraction' isn't defined for the type 'RecoveryScreen'. Try correcting the name to the name of an existing method, or defining a method named '_formatInteraction' - lib\features\recovery\presentation\recovery_screen.dart:58:40 - undefined_method
+warning - The declaration '_showLogActionDialog' isn't referenced. Try removing the declaration of '_showLogActionDialog' - lib\features\recovery\presentation\recovery_screen.dart:74:8 - unused_element
+  error - Expected to find '}' - lib\features\recovery\presentation\recovery_screen.dart:76:1 - expected_token
+warning - Unused import: '../../domain/interaction.dart'. Try removing the import directive - lib\features\recovery\presentation\widgets\log_action_dialog.dart:5:8 - unused_import
+   info - The private field _selectedOutcome could be 'final'. Try making the field 'final' - lib\features\recovery\presentation\widgets\log_action_dialog.dart:30:10 - prefer_final_fields
+warning - The value of the field '_isSubmitting' isn't used. Try removing the field, or using it - lib\features\recovery\presentation\widgets\log_action_dialog.dart:32:8 - unused_field
+warning - The declaration '_pickDate' isn't referenced. Try removing the declaration of '_pickDate' - lib\features\recovery\presentation\widgets\log_action_dialog.dart:40:16 - unused_element
+warning - The declaration '_submit' isn't referenced. Try removing the declaration of '_submit' - lib\features\recovery\presentation\widgets\log_action_dialog.dart:52:16 - unused_element
+   info - Unnecessary braces in a string interpolation. Try removing the braces - lib\features\recovery\presentation\widgets\log_action_dialog.dart:72:45 - unnecessary_brace_in_string_interps
+   info - Unnecessary braces in a string interpolation. Try removing the braces - lib\features\recovery\presentation\widgets\log_action_dialog.dart:72:66 - unnecessary_brace_in_string_interps
+   info - Unnecessary braces in a string interpolation. Try removing the braces - lib\features\recovery\presentation\widgets\log_action_dialog.dart:98:86 - unnecessary_brace_in_string_interps
+   info - Unnecessary braces in a string interpolation. Try removing the braces - lib\features\recovery\presentation\widgets\log_action_dialog.dart:98:107 - unnecessary_brace_in_string_interps
+warning - The declaration '_selectableChannels' isn't referenced. Try removing the declaration of '_selectableChannels' - lib\features\recovery\presentation\widgets\log_action_dialog.dart:169:12 - unused_element
+

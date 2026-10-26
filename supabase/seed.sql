@@ -82,3 +82,100 @@ VALUES
         'active'
     )
 ON CONFLICT (id) DO NOTHING;
+
+-- Insert Sample Interaction Logs (Epic 4 / Story 4.1 & 4.2)
+-- officer_id is nullable so the seed does not depend on auth.users rows.
+INSERT INTO public.interaction_logs (
+    id, tenant_id, debt_id, customer_id, officer_id, action_type,
+    outcome, contact_date, follow_up_date, promised_amount_cents, notes, created_at
+)
+VALUES
+    (
+        'b0000000-0000-0000-0000-000000000001'::uuid,
+        'a0000000-0000-0000-0000-000000000001'::uuid,
+        'd0000000-0000-0000-0000-000000000001'::uuid,
+        'c0000000-0000-0000-0000-000000000001'::uuid,
+        NULL,
+        'call',
+        'No Response',
+        CURRENT_DATE - INTERVAL '12 days',
+        NULL,
+        NULL,
+        'Customer unreachable, will attempt again next week.',
+        now() - INTERVAL '12 days'
+    ),
+    (
+        'b0000000-0000-0000-0000-000000000002'::uuid,
+        'a0000000-0000-0000-0000-000000000001'::uuid,
+        'd0000000-0000-0000-0000-000000000002'::uuid,
+        'c0000000-0000-0000-0000-000000000002'::uuid,
+        NULL,
+        'call',
+        'Promise to Pay',
+        CURRENT_DATE - INTERVAL '5 days',
+        now() + INTERVAL '3 days',
+        22000,
+        'Customer committed to paying the full balance within three days.',
+        now() - INTERVAL '5 days'
+    ),
+    (
+        'b0000000-0000-0000-0000-000000000003'::uuid,
+        'a0000000-0000-0000-0000-000000000001'::uuid,
+        'd0000000-0000-0000-0000-000000000003'::uuid,
+        'c0000000-0000-0000-0000-000000000003'::uuid,
+        NULL,
+        'field_visit',
+        'Escalated',
+        CURRENT_DATE - INTERVAL '2 days',
+        now() + INTERVAL '7 days',
+        NULL,
+        'Case handed to legal for further action.',
+        now() - INTERVAL '2 days'
+    )
+ON CONFLICT (id) DO NOTHING;
+
+-- Insert Reminder Settings (Epic 4 / Story 4.3)
+INSERT INTO public.reminder_settings (
+    id, tenant_id, email_enabled, sms_enabled,
+    email_offset_days, sms_offset_days, message_template
+)
+VALUES (
+    'e0000000-0000-0000-0000-000000000001'::uuid,
+    'a0000000-0000-0000-0000-000000000001'::uuid,
+    true,
+    false,
+    '[3, 1, 0]'::jsonb,
+    '[3, 0]'::jsonb,
+    'Dear {{customer_name}}, a payment of {{amount}} on account {{reference_number}} is due on {{due_date}}. Please make your payment to avoid further collection action.'
+)
+ON CONFLICT (tenant_id) DO NOTHING;
+
+-- Insert Sample Reminder Dispatches (Epic 4 / Story 4.3)
+INSERT INTO public.reminder_dispatches (
+    id, tenant_id, debt_id, customer_id, channel, recipient,
+    message, scheduled_for, status
+)
+VALUES
+    (
+        'f0000000-0000-0000-0000-000000000001'::uuid,
+        'a0000000-0000-0000-0000-000000000001'::uuid,
+        'd0000000-0000-0000-0000-000000000001'::uuid,
+        'c0000000-0000-0000-0000-000000000001'::uuid,
+        'email',
+        'david.kamau@example.com',
+        'Dear David Kamau, a payment of 45000 on account INV-2026-001 is due soon. Please make your payment to avoid further collection action.',
+        CURRENT_DATE,
+        'queued'
+    ),
+    (
+        'f0000000-0000-0000-0000-000000000002'::uuid,
+        'a0000000-0000-0000-0000-000000000001'::uuid,
+        'd0000000-0000-0000-0000-000000000002'::uuid,
+        'c0000000-0000-0000-0000-000000000002'::uuid,
+        'email',
+        'elena.rostova@example.com',
+        'Dear Elena Rostova, a payment of 22000 on account INV-2026-002 is due soon. Please make your payment to avoid further collection action.',
+        CURRENT_DATE,
+        'sent'
+    )
+ON CONFLICT (tenant_id, debt_id, channel, scheduled_for) DO NOTHING;

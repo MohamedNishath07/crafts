@@ -79,9 +79,9 @@ class AppShell extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: _getRoleBadgeColor(user.role).withOpacity(0.12),
+                color: _getRoleBadgeColor(user.role).withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: _getRoleBadgeColor(user.role).withOpacity(0.4)),
+                border: Border.all(color: _getRoleBadgeColor(user.role).withValues(alpha: 0.4)),
               ),
               child: Text(
                 user.role.displayName,
@@ -93,12 +93,25 @@ class AppShell extends ConsumerWidget {
               ),
             ),
             const SizedBox(width: 16),
-            Text(
-              user.fullName,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: AppColors.inkPrimary,
+            InkWell(
+              borderRadius: BorderRadius.circular(6),
+              onTap: () => context.go('/profile'),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                child: Row(
+                  children: [
+                    const Icon(Icons.account_circle_outlined, size: 20, color: AppColors.inkPrimary),
+                    const SizedBox(width: 6),
+                    Text(
+                      user.fullName,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.inkPrimary,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(width: 12),
@@ -123,7 +136,7 @@ class AppShell extends ConsumerWidget {
     String currentPath,
     List<_NavItem> items,
   ) {
-    return Container(
+    return Material(
       color: AppColors.surfaceSidebar,
       child: Column(
         children: [
@@ -138,12 +151,15 @@ class AppShell extends ConsumerWidget {
               children: [
                 Icon(Icons.account_balance_wallet, color: AppColors.accentSuccess, size: 24),
                 SizedBox(width: 10),
-                Text(
-                  'Debit Recovery',
-                  style: TextStyle(
-                    color: AppColors.inkWhite,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                Expanded(
+                  child: Text(
+                    'Debit Recovery',
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: AppColors.inkWhite,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
@@ -176,7 +192,7 @@ class AppShell extends ConsumerWidget {
                         fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                       ),
                     ),
-                    onPressed: () {
+                    onTap: () {
                       if (Navigator.canPop(context)) {
                         Navigator.pop(context);
                       }
@@ -226,6 +242,8 @@ class AppShell extends ConsumerWidget {
       list.add(const _NavItem(route: '/admin/users', label: 'User Staff', icon: Icons.manage_accounts_outlined));
       list.add(const _NavItem(route: '/admin/audit-logs', label: 'Audit Logs', icon: Icons.security_outlined));
     }
+
+    list.add(const _NavItem(route: '/profile', label: 'Settings', icon: Icons.settings_outlined));
 
     return list;
   }

@@ -3,25 +3,33 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../domain/user_profile.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return AuthRepository(Supabase.instance.client);
+  try {
+    return AuthRepository(Supabase.instance.client);
+  } catch (_) {
+    return AuthRepository(null);
+  }
 });
 
 class AuthRepository {
-  final SupabaseClient _client;
+  final SupabaseClient? _client;
 
   AuthRepository(this._client);
 
-  Session? get currentSession => _client.auth.currentSession;
-  User? get currentUser => _client.auth.currentUser;
+  Session? get currentSession => _client?.auth.currentSession;
+  User? get currentUser => _client?.auth.currentUser;
 
-  Stream<AuthState> get authStateChanges => _client.auth.onAuthStateChange;
+  Stream<AuthState> get authStateChanges => _client?.auth.onAuthStateChange ?? const Stream.empty();
 
   /// Sign in with email and password, then fetch the user's role profile
   Future<UserProfile> signIn({
     required String email,
     required String password,
   }) async {
-    final response = await _client.auth.signInWithPassword(
+    final client = _client;
+    if (client == null) {
+      throw const AuthException('Supabase client not initialized');
+    }
+    final response = await client.auth.signInWithPassword(
       email: email.trim(),
       password: password,
     );
@@ -32,7 +40,7 @@ class AuthRepository {
     }
 
     // Fetch user profile from public.profiles table
-    final profileData = await _client
+    final profileData = await client
         .from('profiles')
         .select()
         .eq('id', user.id)
@@ -58,15 +66,16 @@ class AuthRepository {
 
   /// Sign out current session
   Future<void> signOut() async {
-    await _client.auth.signOut();
+    await _client?.auth.signOut();
   }
 
   /// Get current user profile
   Future<UserProfile?> getCurrentProfile() async {
+    final client = _client;
     final user = currentUser;
-    if (user == null) return null;
+    if (client == null || user == null) return null;
 
-    final profileData = await _client
+    final profileData = await client
         .from('profiles')
         .select()
         .eq('id', user.id)
@@ -84,4 +93,42 @@ class AuthRepository {
       role: UserRole.fromString(user.appMetadata['role'] as String? ?? 'recovery_officer'),
     );
   }
+
+  /// Update user profile details (full name)
+  Future<UserProfile> updateProfile({
+    required String userId,
+    required String fullName,
+  }) async {
+    final client = _client;
+    if (client == null) {
+      throw const AuthException('Supabase client not initialized');
+    }
+
+    final response = await client
+        .from('profiles')
+        .update({
+          'full_name': fullName.trim(),
+          'updated_at': DateTime.now().toIso8601String(),
+        })
+        .eq('id', userId)
+        .select()
+        .single();
+
+    return UserProfile.fromJson(response);
+  }
+
+  /// Change password for the current authenticated user
+  Future<void> updatePassword({
+    required String newPassword,
+  }) async {
+    final client = _client;
+    if (client == null) {
+      throw const AuthException('Supabase client not initialized');
+    }
+
+    await client.auth.updateUser(
+      UserAttributes(password: newPassword),
+    );
+  }
 }
+

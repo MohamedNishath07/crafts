@@ -44,4 +44,36 @@ class AuthController extends AsyncNotifier<UserProfile?> {
       ),
     );
   }
+
+  /// Update the current authenticated user's profile display name
+  Future<void> updateProfile({required String fullName}) async {
+    final current = state.value;
+    if (current == null) return;
+
+    try {
+      final updated = await _repository.updateProfile(
+        userId: current.id,
+        fullName: fullName,
+      );
+      state = AsyncValue.data(updated);
+    } catch (_) {
+      // Offline fallback: update local state
+      state = AsyncValue.data(
+        UserProfile(
+          id: current.id,
+          tenantId: current.tenantId,
+          email: current.email,
+          fullName: fullName.trim(),
+          role: current.role,
+          isActive: current.isActive,
+        ),
+      );
+    }
+  }
+
+  /// Change the current user's password
+  Future<void> changePassword({required String newPassword}) async {
+    await _repository.updatePassword(newPassword: newPassword);
+  }
 }
+
