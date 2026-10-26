@@ -2,8 +2,7 @@
 name: Debit Recovery System
 status: final
 sources:
-  - {planning_artifacts}/briefs/brief-crafts-2026-10-14/brief.md
-  - {planning_artifacts}/briefs/brief-crafts-2026-10-14/addendum.md
+  - {planning_artifacts}/prds/prd-crafts-2026-10-14/prd.md
 updated: 2026-10-14
 ---
 
@@ -11,93 +10,81 @@ updated: 2026-10-14
 
 ## Foundation
 
-* **Form Factor & Surfaces:** Mobile-first application (iOS and Android with full feature parity via Flutter) for field recovery officers, complemented by a responsive web portal for back-office administrators and supervisors.
-* **UI Framework:** Flutter Material 3 with custom tokens defined in [`DESIGN.md`](file:///C:/proj/crafts/_bmad-output/planning-artifacts/ux-designs/ux-crafts-2026-10-14/DESIGN.md).
-* **Network Posture:** Offline-tolerant by design. Core queues, debtor contact cards, and logging actions operate seamlessly without network connectivity, syncing automatically via a local SQLite queue when connectivity resumes.
+* **Platform & Surfaces:** Responsive Web Application supporting modern desktop browsers (Chrome, Edge, Firefox, Safari) and adaptive tablet/mobile layouts.
+* **UI Framework:** Flutter Web / responsive Material 3 with tokens defined in [`DESIGN.md`](file:///C:/proj/crafts/_bmad-output/planning-artifacts/ux-designs/ux-crafts-2026-10-14/DESIGN.md).
+* **Role-Based Adaptation:** The interface adapts to the authenticated role:
+  * **Administrator:** Full access to all modules, staff management, audit logs, and system settings.
+  * **Recovery Officer:** Focused on assigned customer queues, logging contact attempts, tracking agreed payment dates, and monitoring recovery status.
+  * **Finance Officer:** Focused on payment recording, transaction reconciliation, balance allocations, and financial report exports.
 
 ## Information Architecture
 
-### Primary Navigation (Mobile Bottom Bar)
+### Main Navigation (Desktop Sidebar / Mobile Drawer)
 
-| Surface | Reached from | Purpose |
+| Module / Screen | Primary Audience | Core Capabilities |
 |---|---|---|
-| **Queue** | App Open (Default tab) | Daily prioritized action list of assigned overdue accounts and today's PTP deadlines. |
-| **Debtors** | Tab Bar | Searchable directory of all assigned debtor accounts, filterable by aging bracket (30/60/90+ DPD). |
-| **Activity** | Tab Bar | Reverse-chronological timeline of logged calls, field visits, PTP notes, and payment receipts. |
-| **Performance** | Tab Bar | Officer's personal progress toward monthly recovery targets, total cash collected, and sync status. |
-
-### Modal & Secondary Surfaces
-
-| Surface | Trigger | Purpose |
-|---|---|---|
-| **Debtor Detail** | Tap on any debtor card | Full balance breakdown, address/location, contact history, and past promise compliance. |
-| **Quick Action Sheet** | Tap "Log Action" or card action | Slide-up bottom sheet to record phone calls, physical visits, or debtor negotiations in < 15 seconds. |
-| **Record Payment Modal** | Tap "Record Payment" | Form to log collected cash or bank transfer with instant digital receipt generation. |
-| **PTP Scheduler** | Action sheet option | Calendar and amount picker to register a debtor's Promise-to-Pay date with reminder alerts. |
+| **Dashboard** | All Staff | Financial summaries (Total Debt, Overdue, Recovered), recovery trends, and quick status charts. |
+| **Customers** | All Staff | Searchable customer directory, customer creation/edit modal, profile details, and debt history. |
+| **Debt Ledger** | All Staff | Centralized debt list, overdue indicators, days past due (DPD), and debt record creation form. |
+| **Payments** | Finance & Admin | Payment entry form (full/partial), transaction reference logging, payment history, and receipt views. |
+| **Recovery Activity** | Officers & Admin | History of contact attempts, call/visit notes, and scheduled follow-up dates (Promise-to-Pay). |
+| **Reports** | Finance & Admin | Tabular financial & recovery reports with date/status filters, PDF export, and Excel (.xlsx) export. |
+| **User Management** | Admin Only | Staff user list, role assignment (Admin, Recovery, Finance), user deactivation, and reset password. |
+| **Audit Logs** | Admin Only | Immutable chronological log of user logins, debt adjustments, payments, and system events. |
 
 ## Voice and Tone
 
-Microcopy in the Debit Recovery System is calm, objective, precise, and legally compliant. It avoids moralizing, debtor-shaming, or alarmist exclamation points.
+Microcopy is clear, objective, professional, and audit-compliant.
 
-| Do | Don't |
-|---|---|
-| "Promise-to-Pay due today ($450.00)" | "Debtor is late! Follow up now!" |
-| "Payment recorded. Receipt #4092 generated." | "Success! Cash bagged!" |
-| "3 actions saved offline. Will sync when connected." | "Network disconnected! Action failed." |
-| "Customer requested follow-up on Friday, Oct 18." | "Debtor gave excuses again." |
-| "Confirm partial payment of $200.00 against $1,200.00 balance?" | "Are you sure? You cannot undo this." |
+| Context | Recommended Copy (Do) | Discouraged Copy (Don't) |
+|---|---|---|
+| **Payment Recorded** | "Payment of $350.00 recorded. Transaction Ref: TXN-8921." | "Payment successful!" |
+| **Overdue Debt** | "Account is 42 days past due. Follow-up scheduled for 2026-10-18." | "Customer is defaulting! Action needed!" |
+| **Validation Error** | "Payment amount cannot exceed outstanding balance of $650.00." | "Invalid input entered." |
+| **Report Generation** | "Generating monthly recovery summary (420 records)..." | "Please wait..." |
+| **Permission Restriction** | "Access restricted to Finance and Administrator roles." | "You are not allowed here." |
 
 ## Component Patterns
 
-### 1. Task Action Card (Queue Tab)
-* **Visual Anchor:** Debtor name, total balance (e.g., `$1,850.00`), aging bracket pill (`60 DPD`).
-* **Behavior:**
-  * One-tap phone icon triggers system dialer; upon returning to app, prompts: *"Log outcome of call with [Name]?"*
-  * Swipe right reveals quick "Record Payment" button.
-  * Swipe left reveals "Reschedule PTP" button.
+### 1. Metric Overview Cards (Dashboard)
+* Clean white card elevation with subtle slate border.
+* Displays primary KPI in bold tabular figures (e.g. `$142,500.00`), secondary delta trend indicator (`+12% this month`), and semantic color accents (Emerald for recovered, Amber for approaching, Crimson for overdue).
 
-### 2. Quick Action Logger (Bottom Sheet)
-* Opens in half-expanded bottom sheet; expands to full screen if typing extensive notes.
-* Pre-selected outcome chips: `[Spoke with Debtor]` `[Left Message]` `[Location Visited / Not Home]` `[Payment Promised]` `[Dispute Raised]`.
-* Submission immediately closes sheet, triggers subtle haptic feedback, and increments the daily completed task counter.
+### 2. Search, Filter & Pagination Bar
+* Unified top toolbar on all table views:
+  * Real-time text search input (matches customer name, phone number, debt ID, or transaction ref).
+  * Dropdown filters for status (`Active`, `Overdue`, `Settled`, `Pending`) and date ranges.
+  * Pagination footer showing *"Showing 1-25 of 148 records"* with previous/next controls and page size selector (`25`, `50`, `100`).
 
-### 3. Payment Entry & Receipt Drawer
-* Prominent currency input with instant balance recalculation preview (`Current: $1,200.00 - Payment: $300.00 = Remaining: $900.00`).
-* Payment method selector: `[Cash In-Hand]` `[Direct Bank Transfer]` `[Mobile Money / Check]`.
-* Confirmation button produces a shareable digital receipt (SMS / WhatsApp / PDF export).
+### 3. Payment Allocation Modal
+* Two-step guided dialog for Finance Officers:
+  1. *Amount & Method:* Enter amount collected, select method (`Cash`, `Bank Transfer`, `Check`), and enter transaction reference.
+  2. *Allocation Preview:* Displays breakdown of how payment is applied against principal and interest, displaying updated remaining balance before submission.
 
-## State Patterns
+### 4. Recovery Action Logging Sheet
+* Slide-over panel accessible from any customer card or debt row:
+  * Contact date and channel (`Phone Call`, `In-Person Visit`, `Email`, `SMS`).
+  * Action outcome selector (`Spoke with Customer`, `Left Message`, `Payment Promised`, `Dispute Raised`).
+  * Promised payment date & amount picker.
+  * Notes area with character counter.
 
-| State | Surface | Treatment |
-|---|---|---|
-| **Cold Open (Online)** | Queue | Instant load of local cache; background delta fetch with subtle spinner indicator in header. |
-| **Cold Open (Offline)** | Queue | Loads cached tasks with persistent banner: *"Working Offline — 0 updates pending sync."* |
-| **All Tasks Done** | Queue | Clean illustration: *"All priority tasks complete for today. Review upcoming PTPs in Debtors tab."* |
-| **Offline Sync in Progress** | Global Header | Non-blocking pill: *"Syncing 4 updates..."* → smoothly turns green: *"All updates synced."* for 2 seconds. |
-| **Conflicting Record** | Debtor Detail | If payment was recorded by back-office while officer was offline, alert displays: *"Balance updated by Admin at 10:15 AM."* |
+## Key Operational Flows
 
-## Interaction Primitives
+### Flow 1: Finance Officer Records and Verifies a Bank Payment
+1. **Selection:** Finance Officer Elena opens the **Payments** module and clicks **+ Record Payment**.
+2. **Search:** She types customer name "Marcus Vance" or invoice ref "INV-1092". The system returns Marcus's active debt showing `$1,200.00` outstanding.
+3. **Entry:** Elena enters payment amount `$500.00`, selects `Bank Transfer`, and enters bank reference code `WIRE-99210`.
+4. **Allocation & Confirmation:** The dialog displays: *"New remaining balance will be $700.00. Confirm allocation?"* Elena clicks **Confirm & Issue Receipt**.
+5. **Outcome:** Balance updates immediately in the ledger, transaction is logged to the payment history with a unique ID, and an entry is written to the system audit log.
 
-* **One-Tap Dialing:** Tapping phone numbers instantly prompts native phone call and pre-arms the interaction logger upon app resume.
-* **Haptic Affirmations:** Medium impact haptic on payment registration; light impact haptic on task completion.
-* **Form Preservation:** If the user dismisses an action bottom sheet accidentally, drafts are retained for 30 minutes in memory.
-* **Banned:** Autoplaying sounds, multi-level nested modals (max 1 modal layer deep), full-screen blocking loaders when offline.
+### Flow 2: Recovery Officer Follows Up on Overdue Accounts
+1. **Review:** Recovery Officer David opens the **Debt Ledger** and clicks the `Overdue` filter.
+2. **Prioritization:** David views accounts sorted by highest days past due.
+3. **Contact & Log:** He clicks **Log Action** on customer "Sarah Jenkins". He records that Sarah agreed to pay $250 on Friday, October 20th.
+4. **Follow-Up Scheduling:** David selects *Follow-Up Date: 2026-10-20* and clicks **Save Action**.
+5. **Outcome:** The follow-up date is registered, and Sarah's account is scheduled for notification reminders.
 
-## Accessibility Floor
-
-* **Touch Target Size:** Minimum 48 x 48 dp on all clickable icons, buttons, and segmented pills.
-* **Contrast Compliance:** All text meets WCAG AA minimum 4.5:1 against surfaces (Ink Primary `#0F172A` on `#FFFFFF` achieves 14.5:1).
-* **Color Blindness Parity:** Every color badge (aging bracket, PTP warning) includes both a text label and an explicit icon (never color alone).
-* **Dynamic Type Scaling:** Critical balance displays and debtor names remain legible up to 200% system font scaling.
-
-## Key Flow: Field Recovery & Cash Collection
-
-**Protagonist:** Marcus, an experienced field recovery officer in a busy municipal district.
-
-1. **Morning Inspection (Queue):** Marcus opens the app in his car. His **Queue** displays 14 prioritized debtors. The top card is *David K.*, carrying a $750.00 balance that is 45 Days Past Due, with a Promise-to-Pay scheduled for today at 10:00 AM.
-2. **On-Site Arrival:** Marcus drives to David's store. He taps the address on the card, opening his maps app. Upon arrival, he taps *David K.* in the queue.
-3. **The Negotiation:** David explains business has been slow, but he can pay $300.00 in cash right now and promises to clear the remaining $450.00 next Tuesday.
-4. **Recording the Payment:** Marcus taps the green **Record Payment** button. He enters `$300.00`, selects `Cash In-Hand`, and hands his phone to David to verify. David taps *Confirm*.
-5. **Instant Receipt:** The app generates digital Receipt #8921. Marcus taps *Share Receipt via WhatsApp*, sending an official PDF confirmation to David's phone.
-6. **Setting the New PTP:** The app immediately asks: *"David still has a remaining balance of $450.00. Set follow-up date?"* Marcus selects *Next Tuesday, 10:00 AM*, logs a brief note (*"Paid $300 cash, promised balance on Tuesday"*), and taps *Done*.
-7. **The Climax & Progress:** The task smoothly animates off Marcus's daily queue with a celebratory progress badge (*"1 of 14 completed • $300.00 collected"*). His daily total updates on the **Performance** tab, and David K.'s new balance of $450.00 is stored locally, ready to sync back to head office.
+### Flow 3: Administrator Generates Financial Export
+1. **Report Selection:** Administrator Arthur navigates to the **Reports** module.
+2. **Configuration:** Arthur selects report type *Monthly Recovery Summary*, selects date range *2026-10-01 to 2026-10-31*, and filters by *All Officers*.
+3. **Preview & Export:** The system renders the summary table in under 2 seconds. Arthur clicks **Export Excel (.xlsx)** to download the report for the executive board.

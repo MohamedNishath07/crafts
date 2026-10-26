@@ -1,0 +1,56 @@
+# generated: 10-14-2026 10:47
+# project: crafts
+# project_key: CRAFTS
+# tracking_system: file-system
+# story_location: _bmad-output/implementation-artifacts/stories
+
+generated: 10-14-2026 10:47
+last_updated: 10-14-2026 10:47
+project: crafts
+project_key: CRAFTS
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts/stories
+
+development_status:
+  epic-1: in-progress
+  1-1-supabase-database-schema-and-multi-tenant-rls: done
+  1-2-user-authentication-and-role-based-navigation-guards: ready-for-dev
+  1-3-administrator-staff-management-and-role-allocation: backlog
+  1-4-user-profile-settings-and-password-change: backlog
+  epic-1-retrospective: optional
+
+  epic-2: backlog
+  2-1-customer-registration-search-and-profile-management: backlog
+  2-2-debt-record-creation-and-principal-balance-management: backlog
+  2-3-overdue-debt-identification-and-dpd-calculation: backlog
+  epic-2-retrospective: optional
+
+  epic-3: backlog
+  3-1-payment-recording-form-for-full-and-partial-settlements: backlog
+  3-2-atomic-balance-allocation-and-ledger-deflation: backlog
+  3-3-payment-history-and-transaction-reference-ledger: backlog
+  epic-3-retrospective: optional
+
+  epic-4: backlog
+  4-1-recovery-action-logging-and-interaction-history: backlog
+  4-2-agreed-follow-up-date-scheduling: backlog
+  4-3-configurable-email-and-sms-payment-reminders: backlog
+  epic-4-retrospective: optional
+
+  epic-5: backlog
+  5-1-real-time-summary-metric-cards: backlog
+  5-2-recovery-trends-and-payment-status-breakdown-charts: backlog
+  epic-5-retrospective: optional
+
+  epic-6: backlog
+  6-1-tabular-report-generator-with-date-and-status-filters: backlog
+  6-2-pdf-report-generation-and-download: backlog
+  6-3-excel-spreadsheet-export-engine: backlog
+  epic-6-retrospective: optional
+
+  epic-7: backlog
+  7-1-immutable-system-audit-logging-engine: backlog
+  7-2-audit-log-viewer-and-security-activity-filter: backlog
+  epic-7-retrospective: optional
+
+action_items: []

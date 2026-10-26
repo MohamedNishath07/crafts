@@ -2,10 +2,11 @@
 name: Debit Recovery System
 status: final
 updated: 2026-10-14
-description: Mobile-first, trustworthy fintech design system for field debt recovery officers and credit managers.
+description: Trustworthy fintech design system for responsive desktop, tablet, and mobile web browsers.
 colors:
   surface-base: '#F8FAFC'
   surface-raised: '#FFFFFF'
+  surface-sidebar: '#0F172A'
   ink-primary: '#0F172A'
   ink-secondary: '#475569'
   ink-disabled: '#94A3B8'
@@ -14,28 +15,22 @@ colors:
   accent-success: '#10B981'
   accent-warning: '#F59E0B'
   accent-danger: '#EF4444'
-  accent-urgent: '#991B1B'
+  accent-info: '#0284C7'
   border-subtle: '#E2E8F0'
   border-strong: '#CBD5E1'
-  surface-base-dark: '#0B0F19'
-  surface-raised-dark: '#151D2A'
-  ink-primary-dark: '#F8FAFC'
-  ink-secondary-dark: '#94A3B8'
-  ink-disabled-dark: '#475569'
-  border-subtle-dark: '#1E293B'
 typography:
   display:
-    note: 'Mobile Headline / Balance Display — 28sp / Bold / Tabular Numbers'
+    note: 'Dashboard Metrics & Totals — 28sp / Bold / Tabular Numbers'
   title:
-    note: 'Card Header / Section Title — 18sp / SemiBold'
+    note: 'Page Headers & Table Columns — 18sp / SemiBold'
   body:
-    note: 'Primary Text / Input Fields — 15sp / Regular'
+    note: 'Data Rows & Form Fields — 14sp / Regular'
   meta:
-    note: 'Timestamp / Caption / Badges — 12sp / Medium'
+    note: 'Timestamps & Status Badges — 12sp / Medium'
 rounded:
   sm: 4px
   md: 8px
-  lg: 16px
+  lg: 12px
   pill: 9999px
 spacing:
   '1': 4px
@@ -50,83 +45,32 @@ spacing:
 
 ## Brand & Style
 
-The Debit Recovery System pairs the authority and rigor of institutional banking with the speed and ergonomics required for field operations. Recovery officers work on mobile devices under varying outdoor lighting, during brief customer interactions, and often with single-hand thumb reach. 
+The Debit Recovery System pairs institutional financial authority with clear data visualization and operational speed. As a **Responsive Web Application**, it adapts seamlessly across desktop workstations, tablet screens, and mobile browser viewports.
 
-The aesthetic is **Trustworthy Fintech**:
-* **Deep Navy & Slate (`#0F172A`, `#1E293B`)** form the visual anchor, conveying operational seriousness and regulatory trust rather than gamified consumer tech.
-* **Functional Color Signaling:** Color is never used for mere decoration. Every chromatic tint communicates a precise financial condition: **Emerald Green (`#10B981`)** for successful cash recovery, **Amber (`#F59E0B`)** for urgent Promise-to-Pay (PTP) commitments due today, and **Crimson (`#EF4444`)** for delinquent aging brackets (60–90+ DPD).
-* **High Legibility in the Field:** Generous contrast ratios, large touch-friendly targets, and tabular numbers for financial figures ensure error-free data entry even in direct sunlight.
+* **Visual Identity:** **Trustworthy Fintech** — anchored by Deep Slate and Navy (`#0F172A`, `#1E293B`) for navigation sidebars and headers, paired with crisp white card surfaces (`#FFFFFF`) on a subtle neutral canvas (`#F8FAFC`).
+* **Semantic Signaling:**
+  * **Emerald Green (`#10B981`):** Cleared accounts, verified payments, and positive recovery targets.
+  * **Amber (`#F59E0B`):** Approaching due dates, scheduled follow-ups, and pending verifications.
+  * **Crimson / Rose (`#EF4444`):** Past-due debts, broken promises, and critical delinquency alerts.
+* **Information Density:** High-density, scannable data tables on desktop viewports; collapsible card lists on mobile viewports. All financial columns use tabular figures (`tabular-nums`) to ensure vertical alignment of digits.
 
-## Colors
+## Layout & Responsive Breakpoints
 
-### Light Mode (Default)
-* **Surface Base (`#F8FAFC` - Slate 50):** Neutral, soft background reducing eye strain during extended outdoor usage.
-* **Surface Raised (`#FFFFFF`):** High-contrast background for customer cards, bottom sheets, and detail modals.
-* **Ink Primary (`#0F172A` - Slate 900):** Deep navy for primary headings, debt balances, and debtor names.
-* **Ink Secondary (`#475569` - Slate 600):** Supporting labels, phone numbers, and past visit timestamps.
-* **Border Subtle (`#E2E8F0`):** Hairline divider for list items and card borders.
+* **Desktop Viewport (>= 1024px):** Fixed left navigation sidebar (240px wide), top application bar with search and user profile menu, multi-column dashboard grid, paginated data tables with sticky headers.
+* **Tablet Viewport (768px – 1023px):** Collapsible navigation rail (icon-only or drawer), 2-column metric cards, responsive tables with horizontal scroll.
+* **Mobile Viewport (< 768px):** Off-canvas hamburger drawer navigation, single-column card feeds, slide-up modal bottom sheets for payment and interaction logging.
 
-### Semantic Status Colors
-* **Recovered / Paid (`#10B981`):** Applied to cleared balances, payment confirmations, and daily collection totals.
-* **Promise-to-Pay / Approaching (`#F59E0B`):** Applied to pending commitments, follow-ups scheduled for today, and 30-day aging.
-* **Severe Overdue (`#EF4444` / `#991B1B`):** Applied to broken promises, accounts 60–90+ days past due, and escalation alerts.
+## Core UI Components
 
-## Typography
-
-Typography prioritizes fast scanning and numerical accuracy. Monospace or tabular figure alignment is mandatory for all monetary sums.
-
-* **Primary Font:** Native platform sans-serif (San Francisco on iOS, Roboto on Android, Inter on Flutter Web).
-* **Monetary Figures:** `font-variant-numeric: tabular-nums` to ensure currency columns and balances align cleanly without jittering during updates.
-* **Dynamic Type Support:** Text labels must expand gracefully up to 200% system accessibility scaling without clipping or breaking layout boundaries.
-
-## Layout & Spacing
-
-* **8-Point Spatial Grid:** All margins, paddings, and component heights adhere to multiples of 4px/8px (e.g., 4px, 8px, 12px, 16px, 24px, 32px).
-* **Screen Edge Margins:** Standard 16px lateral padding on mobile viewports; 24px on tablet / desktop web views.
-* **Thumb Zone Hierarchy:** High-frequency actions (Call Debtor, Log Visit, Record Payment) are pinned within the bottom 40% of the screen.
-
-## Elevation & Depth
-
-* **Level 0 (Flat):** Primary screen background (`#F8FAFC`).
-* **Level 1 (Card Elevation):** 1px border (`#E2E8F0`) with subtle shadow `0 1px 3px rgba(15, 23, 42, 0.05)`. Used for task cards and debtor rows.
-* **Level 2 (Modals & Bottom Sheets):** Shadow `0 10px 25px -5px rgba(15, 23, 42, 0.15)`. Used for quick-log sheets and receipt confirmations.
-
-## Shapes
-
-* **Cards & Containers:** `rounded-md` (8px) for clean, professional contours.
-* **Bottom Sheets & Dialogs:** `rounded-lg` (16px) top radius for ergonomic slide-up sheets.
-* **Status Chips & Aging Badges:** `rounded-pill` (fully rounded) for instant categorical recognition.
-
-## Components
-
-### 1. Daily Action Card
-* Displays debtor name, total outstanding balance in bold tabular numbers, days past due (DPD) badge, and last contact note.
-* Direct action buttons: one-tap phone call icon and one-tap log visit icon.
-
-### 2. Aging Status Badge
-* Compact pill with high contrast:
-  * `0-30 DPD`: Slate fill with subtle border.
-  * `31-60 DPD`: Amber tint with warning icon.
-  * `61-90+ DPD`: Crimson tint with alert icon.
-
-### 3. Quick Action Bottom Sheet
-* Slide-up modal triggered during or immediately after a debtor encounter.
-* Segmented control: `[Call] | [Field Visit] | [Payment] | [New PTP]`.
-* Form inputs: Outcome selector (Reached, Refused, Paid, Left Message), Next Action Date picker, and brief note field.
-
-### 4. Offline Sync Banner
-* Persistent, non-blocking notification bar affixed beneath the app header:
-  * *Syncing...* (animated spinner with count of queued logs).
-  * *Offline — 3 logs queued locally* (amber pill, non-intrusive).
+1. **Dashboard Metric Cards:** Display total customers, total outstanding debt, overdue balances, and recovered amounts with status trend pills.
+2. **Paginated Data Table:** Sortable column headers, status badges, customer name search, date range pickers, and direct action icons (View, Log Action, Record Payment).
+3. **Action Dialog / Slide-Over Drawer:** Ergonomic forms for recording customer contact attempts, scheduling follow-ups, and capturing payment allocations.
+4. **Audit Log Timeline:** Chronological list showing timestamp, staff user, action description, and affected record link.
+5. **Report Export Toolbar:** Quick action buttons for **Export PDF** and **Export Excel (.xlsx)**.
 
 ## Do's and Don'ts
 
-### Do
-* Display explicit currency symbols and localized delimiters (e.g., `$1,450.00`).
-* Provide instant visual haptic feedback when a payment is logged or a task is swiped complete.
-* Auto-save draft notes in bottom sheets so field officers never lose data if an incoming phone call interrupts them.
-
-### Don't
-* Don't use aggressive, punitive, or alarmist styling (e.g. flashing red sirens); maintain institutional decorum.
-* Don't block user interaction when offline; all logging must happen locally with background sync.
-* Don't bury phone numbers or physical addresses behind multiple navigation levels.
+* **Do:** Provide immediate client-side field validation on forms with clear error messages.
+* **Do:** Maintain explicit currency formatting (e.g., `$1,250.00`) and standard ISO date displays (`YYYY-MM-DD`).
+* **Don't:** Overwhelm the interface with flashing alarm banners; keep notifications informative and professional.
+* **Don't:** Permit accidental form submission; require explicit confirmation on financial payment recording.
