@@ -5,7 +5,7 @@ import 'package:crafts/core/auth/current_user_provider.dart';
 /// Notifier for audit log state management
 class AuditNotifier extends StateNotifier<List<AuditLogEntry>> {
   final Ref _ref;
-  AuditNotifier(this._ref) : super(const []);
+  AuditNotifier(this._ref, [List<AuditLogEntry> initialState = const []]) : super(initialState);
 
   /// Log an action to the audit trail
   Future<void> logAction({
@@ -31,30 +31,30 @@ class AuditNotifier extends StateNotifier<List<AuditLogEntry>> {
     );
 
     // Add to the beginning of the list (most recent first)
-    state = [entry, ...state];
+    this.state = [entry, ...this.state];
 
     // TODO: Persist to Supabase or other backend
     // For now, we keep in memory with a maximum of 1000 entries
-    if (state.length > 1000) {
-      state = state.sublist(0, 1000);
+    if (this.state.length > 1000) {
+      this.state = this.state.sublist(0, 1000);
     }
   }
 
   /// Get audit logs filtered by action type
   List<AuditLogEntry> getByActionType(String actionType) {
-    return state.where((entry) => entry.actionType == actionType).toList();
+    return this.state.where((entry) => entry.actionType == actionType).toList();
   }
 
   /// Get audit logs filtered by date range
   List<AuditLogEntry> getByDateRange(DateTime start, DateTime end) {
-    return state.where((entry) {
+    return this.state.where((entry) {
       final timestamp = entry.timestamp;
       return timestamp.isAfter(start) && timestamp.isBefore(end);
     }).toList();
   }
 
   /// Clear all audit logs (admin only)
-  void clearAll() => state = [];
+  void clearAll() => this.state = [];
 }
 
 /// Provider for audit log state

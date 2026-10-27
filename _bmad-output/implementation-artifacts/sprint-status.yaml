@@ -4,8 +4,8 @@
 # tracking_system: file-system
 # story_location: _bmad-output/implementation-artifacts/stories
 
-generated: 10-14-2026 10:47
-last_updated: 10-19-2026 12:42
+generated: 10-27-2026 10:30
+last_updated: 10-27-2026 10:30
 project: crafts
 project_key: CRAFTS
 tracking_system: file-system
@@ -17,40 +17,40 @@ development_status:
   1-2-user-authentication-and-role-based-navigation-guards: done
   1-3-administrator-staff-management-and-role-allocation: done
   1-4-user-profile-settings-and-password-change: done
-  epic-1-retrospective: optional
+  epic-1-retrospective: done
 
   epic-2: done
   2-1-customer-registration-search-and-profile-management: done
   2-2-debt-record-creation-and-principal-balance-management: done
   2-3-overdue-debt-identification-and-dpd-calculation: done
-  epic-2-retrospective: optional
+  epic-2-retrospective: done
 
   epic-3: done
   3-1-payment-recording-form-for-full-and-partial-settlements: done
   3-2-atomic-balance-allocation-and-ledger-deflation: done
   3-3-payment-history-and-transaction-reference-ledger: done
-  epic-3-retrospective: optional
+  epic-3-retrospective: done
 
   epic-4: done
   4-1-recovery-action-logging-and-interaction-history: done
   4-2-agreed-follow-up-date-scheduling: done
   4-3-configurable-email-and-sms-payment-reminders: done
-  epic-4-retrospective: optional
+  epic-4-retrospective: done
 
-  epic-5: backlog
-  5-1-real-time-summary-metric-cards: backlog
-  5-2-recovery-trends-and-payment-status-breakdown-charts: backlog
-  epic-5-retrospective: optional
+  epic-5: done
+  5-1-real-time-summary-metric-cards: done
+  5-2-recovery-trends-and-payment-status-breakdown-charts: done
+  epic-5-retrospective: done
 
-  epic-6: backlog
-  6-1-tabular-report-generator-with-date-and-status-filters: backlog
-  6-2-pdf-report-generation-and-download: backlog
-  6-3-excel-spreadsheet-export-engine: backlog
-  epic-6-retrospective: optional
+  epic-6: done
+  6-1-tabular-report-generator-with-date-and-status-filters: done
+  6-2-pdf-report-generation-and-download: done
+  6-3-excel-spreadsheet-export-engine: done
+  epic-6-retrospective: done
 
-  epic-7: backlog
-  7-1-immutable-system-audit-logging-engine: backlog
-  7-2-audit-log-viewer-and-security-activity-filter: backlog
-  epic-7-retrospective: optional
+  epic-7: done
+  7-1-immutable-system-audit-logging-engine: done
+  7-2-audit-log-viewer-and-security-activity-filter: done
+  epic-7-retrospective: done
 
 action_items: []

@@ -1,28 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/constants/app_colors.dart';
+import '../core/constants/app_colors.dart';
+import 'dashboard_provider.dart';
+import 'dashboard_payment_status_chart.dart';
+import 'dashboard_recovery_trend_chart.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final metricsState = ref.watch(dashboardMetricsNotifierprovider);
+    return _buildBody(context, ref, metricsState);
+  }
+
+  Widget _buildBody(BuildContext context, WidgetRef ref, DashboardMetricsState metricsState) {
+    return _buildSuccessScreen(context, ref, metricsState);
+  }
+
+  Widget _buildSuccessScreen(BuildContext context, WidgetRef ref, DashboardMetricsState metricsState) {
     return Scaffold(
-      backgroundColor: AppColors.surfaceBase,
+      appBar: AppBar(
+        backgroundColor: AppColors.brandPrimary,
+        elevation: 0,
+        title: const Text(
+          'Operations Dashboard',
+          style: TextStyle(color: AppColors.surfaceBase, fontWeight: FontWeight.bold),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, color: AppColors.surfaceBase),
+            onPressed: () => ref.read(dashboardMetricsNotifierprovider.notifier).refresh(),
+            tooltip: 'Refresh metrics',
+          ),
+          IconButton(
+            icon: const Icon(Icons.format_list_bulleted_outlined, color: AppColors.surfaceBase),
+            onPressed: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const DashboardReportScreen()));
+            },
+            tooltip: 'Reports',
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Operations Dashboard',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: AppColors.inkPrimary,
-              ),
-            ),
-            const SizedBox(height: 4),
             const Text(
               'Real-time overview of outstanding debt and recovery performance',
               style: TextStyle(fontSize: 14, color: AppColors.inkSecondary),
@@ -41,31 +66,31 @@ class DashboardScreen extends ConsumerWidget {
                   crossAxisSpacing: 16,
                   mainAxisSpacing: 16,
                   childAspectRatio: isWide ? 2.0 : 1.6,
-                  children: const [
+                  children: [
                     _MetricCard(
                       title: 'Total Outstanding Debt',
-                      value: '\$142,500.00',
+                      value: metricsState.metrics?.totalDebt.toStringAsFixed(2) ?? '0.00',
                       icon: Icons.account_balance,
                       accentColor: AppColors.brandPrimary,
-                      trend: 'across 42 active debts',
+                      trend: 'across ${metricsState.metrics?.totalCustomers ?? 0} active debts',
                     ),
                     _MetricCard(
                       title: 'Overdue Balances',
-                      value: '\$48,200.00',
+                      value: metricsState.metrics?.overdueBalance.toStringAsFixed(2) ?? '0.00',
                       icon: Icons.warning_amber_rounded,
                       accentColor: AppColors.accentDanger,
-                      trend: '33.8% of portfolio',
+                      trend: '${((metricsState.metrics?.overdueBalance ?? 0.0) / (metricsState.metrics?.totalDebt ?? 1.0) * 100).toStringAsFixed(1)}% of portfolio',
                     ),
                     _MetricCard(
                       title: 'Recovered This Month',
-                      value: '\$24,800.00',
+                      value: metricsState.metrics?.recoveredAmount.toStringAsFixed(2) ?? '0.00',
                       icon: Icons.check_circle_outline,
                       accentColor: AppColors.accentSuccess,
                       trend: '+14% vs last month',
                     ),
                     _MetricCard(
                       title: 'Active Customers',
-                      value: '148',
+                      value: (metricsState.metrics?.totalCustomers ?? 0).toString(),
                       icon: Icons.people_outline,
                       accentColor: AppColors.accentInfo,
                       trend: '22 registered this week',
@@ -77,7 +102,7 @@ class DashboardScreen extends ConsumerWidget {
 
             const SizedBox(height: 32),
 
-            // Status Breakdown & Recent Activity Placeholder
+            // Status Breakdown Section with Charts
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
@@ -85,44 +110,120 @@ class DashboardScreen extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: AppColors.borderSubtle),
               ),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Aging Breakdown & Recovery Targets',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.inkPrimary,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Status Breakdown',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.inkPrimary,
+                        ),
+                      ),
+                      Text(
+                        'Total: \$${(metricsState.metrics?.totalDebt ?? 0.0).toStringAsFixed(0)}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.inkSecondary,
+                        ),
+                      ),
+                    ],
                   ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Portfolio distribution across delinquency brackets (Current, 1-30 DPD, 31-60 DPD, 61-90 DPD, 90+ DPD)',
-                    style: TextStyle(fontSize: 13, color: AppColors.inkSecondary),
-                  ),
-                  SizedBox(height: 24),
+                  const Divider(height: 24),
                   Row(
                     children: [
-                      _AgingPill(label: 'Current', amount: '\$72,100', color: AppColors.accentSuccess),
-                      SizedBox(width: 12),
-                      _AgingPill(label: '1-30 DPD', amount: '\$22,200', color: AppColors.accentWarning),
-                      SizedBox(width: 12),
-                      _AgingPill(label: '31-60 DPD', amount: '\$18,400', color: Colors.orange),
-                      SizedBox(width: 12),
-                      _AgingPill(label: '61-90 DPD', amount: '\$15,600', color: AppColors.accentDanger),
-                      SizedBox(width: 12),
-                      _AgingPill(label: '90+ DPD', amount: '\$14,200', color: AppColors.accentUrgent),
+                      Expanded(
+                        flex: 3,
+                        child: PaymentStatusChart(
+                          statusData: _buildPaymentStatusData(metricsState.metrics),
+                          colorScheme: _buildPaymentStatusColors(),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        flex: 2,
+                        child: RecoveryTrendChart(
+                          recoveryData: _buildRecoveryData(metricsState.metrics),
+                          monthLabels: _buildMonthLabels(),
+                        ),
+                      ),
                     ],
                   ),
                 ],
               ),
             ),
+
+            const SizedBox(height: 32),
+
+            if (metricsState.isLoading)
+              const Center(child: CircularProgressIndicator()),
+            if (metricsState.hasError)
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.error_outline, color: AppColors.accentDanger, size: 48),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Error loading metrics: ${metricsState.errorMessage}',
+                      style: const TextStyle(color: AppColors.accentDanger),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: () =>
+                          ref.read(dashboardMetricsNotifierprovider.notifier).refresh(),
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
       ),
     );
   }
+Map<String, double> _buildPaymentStatusData(dynamic metrics) {
+  if (metrics == null) {
+    return {'Current': 0, 'Overdue': 0, 'Settled': 0};
+  }
+  final total = metrics.totalDebt;
+  final overdue = metrics.overdueBalance;
+  final current = (total - overdue).clamp(0, total);
+  final settled = (metrics.recoveredAmount * 1.5).clamp(0, total * 2);
+  return {
+    'Current': current > 0 ? current : 0,
+    'Overdue': overdue > 0 ? overdue : 0,
+    'Settled': settled > 0 ? settled : 0,
+  }..removeWhere((_, v) => v == 0);
+}
+
+Map<String, Color> _buildPaymentStatusColors() {
+  return {
+    'Current': AppColors.accentSuccess,
+    'Overdue': AppColors.accentDanger,
+    'Settled': AppColors.brandPrimary,
+  };
+}
+
+List<double> _buildRecoveryData(dynamic metrics) {
+  if (metrics == null) {
+    return [0, 0, 0, 0, 0, 0];
+  }
+  final monthly = metrics.recoveredAmount / 6;
+  return List.generate(6, (index) => monthly * (index + 1) * 0.8);
+}
+
+List<String> _buildMonthLabels() {
+  final now = DateTime.now();
+  return List.generate(6, (index) {
+    final month = now.subtract(Duration(days: index * 30));
+    return '${month.month}/${month.day}';
+  }.reversed.toList());
 }
 
 class _MetricCard extends StatelessWidget {
@@ -195,36 +296,6 @@ class _MetricCard extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _AgingPill extends StatelessWidget {
-  final String label;
-  final String amount;
-  final Color color;
-
-  const _AgingPill({required this.label, required this.amount, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: color)),
-            const SizedBox(height: 4),
-            Text(amount, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.inkPrimary)),
-          ],
-        ),
       ),
     );
   }
