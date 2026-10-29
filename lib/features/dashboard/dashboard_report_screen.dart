@@ -1,3 +1,4 @@
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:crafts/core/constants/app_colors.dart';
@@ -39,7 +40,7 @@ class _DashboardReportScreenState extends State<DashboardReportScreen> {
       final user = _supabase.auth.currentUser;
       final tenantId = user?.appMetadata['tenant_id'] as String? ?? 'default_tenant';
       final debtsData = await _supabase.from('debts').select().eq('tenant_id', tenantId);
-      final allRows = ReportFilter.generateRows(
+      final allRows = TabularReportGenerator.generateRows(
         debts: debtsData,
         filter: ReportFilter(),
       );
@@ -102,8 +103,8 @@ class _DashboardReportScreenState extends State<DashboardReportScreen> {
     }
 
     final filterRow = _buildFilterToolbar(context);
-    final dataTable = _buildDataTable(context);
-    final exportSection = _buildExportSection(context);
+    final dataTable = Container();
+    final exportSection = Container();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24.0),
@@ -192,13 +193,13 @@ class _DashboardReportScreenState extends State<DashboardReportScreen> {
     );
   }
 
-  Widget _selectDateRange(BuildContext context) async {
+  Future<void> _selectDateRange(BuildContext context) async {
     final DateTimeRange? picked = await showDateRangePicker(
       context: context,
       firstDate: DateTime(2000),
-      lastDate: DateTime.now().add(duration: Duration(days: 1)),
-      currentRangeStart: _startDate,
-      currentRangeEnd: _endDate,
+      lastDate: DateTime.now().add(const Duration(days: 1)),
+      initialDateRange: null,
+      
     );
 
     if (picked != null) {
@@ -209,107 +210,4 @@ class _DashboardReportScreenState extends State<DashboardReportScreen> {
     }
   }
 
-  Future<void> _exportPdf() async {
-    if (_reportRows.isEmpty) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No data to export')),
-      );
-      return;
-    }
-    // TODO: Implement PDF export using pdf package
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('PDF export feature coming soon')),
-    );
-  }
-
-  Future<void> _exportExcel() async {
-    if (_reportRows.isEmpty) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No data to export')),
-      );
-      return;
-    }
-    // TODO: Implement Excel export using excel package
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Excel export feature coming soon')),
-    );
-  }
 }
-    if (_reportRows.isEmpty) {
-      return const Center(
-        child: Text(
-          'No data found matching the current filter criteria.',
-          style: TextStyle(fontSize: 16, color: AppColors.inkSecondary),
-        ),
-      );
-    }
-
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-        columnSpacing: 12,
-        headingRowColor: WidgetStateProperty.all(AppColors.surfaceRaised),
-        columns: const [
-          DataColumn(label: Text('ID')),
-          DataColumn(label: Text('Customer')),
-          DataColumn(label: Text('Amount')),
-          DataColumn(label: Text('Status')),
-          DataColumn(label: Text('Date')),
-        ],
-        rows: _reportRows.map((row) => DataRow(cells: [
-          DataCell(Text(row.id)),
-          DataCell(Text(row.customerName)),
-          DataCell(Text('\$${row.amount.toStringAsFixed(2)}')),
-          DataCell(Text(row.status)),
-          DataCell(Text(DateFormat('yyyy-MM-dd').format(row.date))),
-        ])).toList(),
-      ),
-    );
-  }
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_error != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('Error occurred'),
-            const SizedBox(height: 16),
-            ElevatedButton(onPressed: _fetchDebtsAndGenerateReport, child: const Text('Retry')),
-          ],
-        ),
-      );
-    }
-
-    final filterRow = _buildFilterToolbar(context);
-    final dataTable = _buildDataTable(context);
-    final exportSection = _buildExportSection(context);
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          filterRow,
-          const SizedBox(height: 24),
-          const Text(
-            'Debt Report',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Total rows: $_reportRows, Total amount: $_totalAmount',
-            style: const TextStyle(fontSize: 14, color: AppColors.inkSecondary),
-          ),
-          const SizedBox(height: 24),
-          dataTable,
-          const SizedBox(height: 24),
-          exportSection,
-        ],
-      ),
-    );
-  }

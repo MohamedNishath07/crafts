@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:crafts/core/constants/app_colors.dart';
@@ -17,9 +18,8 @@ class RecoveryTrendChart extends StatelessWidget {
   /// Pre-configured for past 6 months with sample data
   const RecoveryTrendChart.past6Months({
     super.key,
-  })  : recoveryData = [4500.00, 5200.00, 3800.00, 6100.00, 7000.00, 8500.00],
-        monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-        super.namedConstructorParameters: false;
+  })  : recoveryData = const [4500.00, 5200.00, 3800.00, 6100.00, 7000.00, 8500.00],
+        monthLabels = const ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
 
   @override
   Widget build(BuildContext context) {
@@ -78,22 +78,10 @@ class RecoveryTrendChart extends StatelessWidget {
             isCurved: true,
             color: AppColors.accentSuccess,
             barWidth: 3,
-            belowBarData: BarShowing(
-              show: false,
-            ),
-            dotData: FlDotData(
-              show: true,
-              getDotColor: (index) => AppColors.accentSuccess,
-              getDotRadius: (index) => 4,
-            ),
-            belowBarData: const BarArea(
-              show: false,
-            ),
-            dataPoints: List.generate(recoveryData.length, (index) {
-              return FlDataPoint(
-                x: index.toDouble(),
-                y: recoveryData[index],
-              );
+            dotData: const FlDotData(show: true),
+            belowBarData: BarAreaData(show: false),
+            spots: List.generate(recoveryData.length, (index) {
+              return FlSpot(index.toDouble(), recoveryData[index]);
             }),
           ),
         ],
@@ -102,7 +90,6 @@ class RecoveryTrendChart extends StatelessWidget {
             : 10000,
         minY: 0,
       ),
-      swapAnimationDuration: const Duration(milliseconds: 250),
     );
   }
 }

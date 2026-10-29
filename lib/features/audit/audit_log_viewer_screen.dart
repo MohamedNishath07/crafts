@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:crafts/core/constants/app_colors.dart';
 import 'package:crafts/features/audit/audit_log_notifier.dart';
-import 'package:crafts/features/audit/audit_log_model.dart';
+import 'package:crafts/features/audit/audit_log_provider.dart';
 
 /// Screen for viewing and filtering audit logs (Admin only)
 class AuditLogViewerScreen extends ConsumerWidget {
@@ -10,14 +10,14 @@ class AuditLogViewerScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final notifier = ref.watch(auditLogNotifierProvider);
+    final notifier = ref.read(auditLogNotifierProvider.notifier);
     return Scaffold(
-      appBar: _buildAppBar(context),
+      appBar: _buildAppBar(context, ref),
       body: _buildBody(context, ref, notifier),
     );
   }
 
-  AppBar _buildAppBar(BuildContext context) {
+  AppBar _buildAppBar(BuildContext context, WidgetRef ref) {
     return AppBar(
       backgroundColor: AppColors.brandPrimary,
       elevation: 0,
@@ -46,7 +46,7 @@ class AuditLogViewerScreen extends ConsumerWidget {
           _buildFilterRow(
             context,
             label: 'Action',
-            value: notifier.action ?? 'All',
+            value: notifier.filterState.action ?? 'All',
             onChanged: (value) => notifier.setActionFilter(value),
             hint: 'Select action type',
           ),
@@ -56,7 +56,7 @@ class AuditLogViewerScreen extends ConsumerWidget {
           _buildFilterRow(
             context,
             label: 'Entity Type',
-            value: notifier.entityType ?? 'All',
+            value: notifier.filterState.entityType ?? 'All',
             onChanged: (value) => notifier.setEntityTypeFilter(value),
             hint: 'Select entity type',
           ),
@@ -82,7 +82,7 @@ class AuditLogViewerScreen extends ConsumerWidget {
         hintText: hint,
         border: const OutlineInputBorder(),
       ),
-      value: value.isNotEmpty ? value : null,
+      initialValue: value.isNotEmpty ? value : null,
       onChanged: onChanged,
       items: _buildFilterItems(value),
     );
@@ -131,14 +131,13 @@ class AuditLogViewerScreen extends ConsumerWidget {
               labelText: 'Start Date',
               border: OutlineInputBorder(),
             ),
-            value: notifier.startDate,
+            initialValue: notifier.filterState.startDate,
             onChanged: (DateTime? newDate) {
               if (newDate != null) {
-                notifier.setDateRange(newDate, notifier.endDate);
+                notifier.setDateRange(newDate, notifier.filterState.endDate);
               }
             },
-            items: _buildDateItems(notifier.startDate),
-            hintText: 'Select start date',
+            items: _buildDateItems(notifier.filterState.startDate),
           ),
         ),
         const SizedBox(width: 12),
@@ -148,14 +147,13 @@ class AuditLogViewerScreen extends ConsumerWidget {
               labelText: 'End Date',
               border: OutlineInputBorder(),
             ),
-            value: notifier.endDate,
+            initialValue: notifier.filterState.endDate,
             onChanged: (DateTime? newDate) {
               if (newDate != null) {
-                notifier.setDateRange(notifier.startDate, newDate);
+                notifier.setDateRange(notifier.filterState.startDate, newDate);
               }
             },
-            items: _buildDateItems(notifier.endDate),
-            hintText: 'Select end date',
+            items: _buildDateItems(notifier.filterState.endDate),
           ),
         ),
       ],
@@ -193,7 +191,22 @@ class AuditLogViewerScreen extends ConsumerWidget {
     return '${diff.inDays}d';
   }
 
+  Widget _buildBody(BuildContext context, WidgetRef ref, AuditLogNotifier notifier) {
+    return Column(
+      children: [
+        _buildFilterToolbar(context, notifier),
+        Expanded(child: _buildLogsList(context, ref, notifier)),
+      ],
+    );
+  }
+
+  void _showFilterDialog(BuildContext context, WidgetRef ref) {
+    // no-op placeholder
+  }
+
   Widget _buildLogsList(
+
+
       BuildContext context, WidgetRef ref, AuditLogNotifier notifier) {
     return const Center(
       child: Text('Logs list will be implemented'),

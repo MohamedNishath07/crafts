@@ -1,0 +1,4 @@
+Running Gradle task 'assembleDebug'...                          
+Package ndk not found.
+Package 28.2.13676358 not found.
+Running Gradle task 'assembleDebug'...                             20.7s

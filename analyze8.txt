@@ -1,0 +1,53 @@
+﻿Analyzing crafts...                                             
+
+warning - Unused import: 'package:flutter_riverpod/flutter_riverpod.dart'. Try removing the import directive - lib\features\audit\audit_log_notifier.dart:1:8 - unused_import
+warning - The value of the local variable 'entry' isn't used. Try removing the variable or using it - lib\features\audit\audit_log_repository.dart:23:11 - unused_local_variable
+  error - The method 'eq' isn't defined for the type 'PostgrestTransformBuilder'. Try correcting the name to the name of an existing method, or defining a method named 'eq' - lib\features\audit\audit_log_repository.dart:90:21 - undefined_method
+  error - The method 'eq' isn't defined for the type 'PostgrestTransformBuilder'. Try correcting the name to the name of an existing method, or defining a method named 'eq' - lib\features\audit\audit_log_repository.dart:93:21 - undefined_method
+warning - Unused import: 'package:crafts/features/audit/audit_log_model.dart'. Try removing the import directive - lib\features\audit\audit_log_viewer_screen.dart:7:8 - unused_import
+warning - The declaration '_buildFilterToolbar' isn't referenced. Try removing the declaration of '_buildFilterToolbar' - lib\features\audit\audit_log_viewer_screen.dart:40:10 - unused_element
+   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre. Try replacing the use of the deprecated member with the replacement - lib\features\audit\audit_log_viewer_screen.dart:87:7 - deprecated_member_use
+   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre. Try replacing the use of the deprecated member with the replacement - lib\features\audit\audit_log_viewer_screen.dart:136:13 - deprecated_member_use
+   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre. Try replacing the use of the deprecated member with the replacement - lib\features\audit\audit_log_viewer_screen.dart:152:13 - deprecated_member_use
+   info - Unnecessary 'this.' qualifier. Try removing 'this.' - lib\features\audit\audit_provider.dart:35:5 - unnecessary_this
+   info - Unnecessary 'this.' qualifier. Try removing 'this.' - lib\features\audit\audit_provider.dart:35:29 - unnecessary_this
+   info - Unnecessary 'this.' qualifier. Try removing 'this.' - lib\features\audit\audit_provider.dart:39:9 - unnecessary_this
+   info - Unnecessary 'this.' qualifier. Try removing 'this.' - lib\features\audit\audit_provider.dart:40:7 - unnecessary_this
+   info - Unnecessary 'this.' qualifier. Try removing 'this.' - lib\features\audit\audit_provider.dart:40:20 - unnecessary_this
+   info - Unnecessary 'this.' qualifier. Try removing 'this.' - lib\features\audit\audit_provider.dart:46:12 - unnecessary_this
+   info - Unnecessary 'this.' qualifier. Try removing 'this.' - lib\features\audit\audit_provider.dart:51:12 - unnecessary_this
+   info - Unnecessary 'this.' qualifier. Try removing 'this.' - lib\features\audit\audit_provider.dart:58:22 - unnecessary_this
+warning - Unused import: 'package:flutter/material.dart'. Try removing the import directive - lib\features\dashboard\dashboard_metrics_screen.dart:1:8 - unused_import
+warning - Unused import: 'package:flutter_riverpod/flutter_riverpod.dart'. Try removing the import directive - lib\features\dashboard\dashboard_metrics_screen.dart:2:8 - unused_import
+warning - Unused import: 'package:crafts/core/constants/app_colors.dart'. Try removing the import directive - lib\features\dashboard\dashboard_metrics_screen.dart:3:8 - unused_import
+warning - Unused import: 'package:flutter_riverpod/legacy.dart'. Try removing the import directive - lib\features\dashboard\dashboard_provider.dart:2:8 - unused_import
+warning - Unused import: 'package:crafts/features/dashboard/dashboard_model.dart'. Try removing the import directive - lib\features\dashboard\dashboard_provider.dart:4:8 - unused_import
+  error - Undefined name 'Supabase'. Try correcting the name to one that is defined, or defining the name - lib\features\dashboard\dashboard_report_screen.dart:25:21 - undefined_identifier
+  error - The method 'generateRows' isn't defined for the type 'ReportFilter'. Try correcting the name to the name of an existing method, or defining a method named 'generateRows' - lib\features\dashboard\dashboard_report_screen.dart:42:36 - undefined_method
+  error - The method '_buildDataTable' isn't defined for the type '_DashboardReportScreenState'. Try correcting the name to the name of an existing method, or defining a method named '_buildDataTable' - lib\features\dashboard\dashboard_report_screen.dart:105:23 - undefined_method
+  error - The method '_buildExportSection' isn't defined for the type '_DashboardReportScreenState'. Try correcting the name to the name of an existing method, or defining a method named '_buildExportSection' - lib\features\dashboard\dashboard_report_screen.dart:106:27 - undefined_method
+  error - Functions marked 'async' must have a return type which is a supertype of 'Future'. Try fixing the return type of the function, or removing the modifier 'async' from the function body - lib\features\dashboard\dashboard_report_screen.dart:195:3 - illegal_async_return_type
+  error - 1 positional argument expected by 'add', but 0 found. Try adding the missing argument - lib\features\dashboard\dashboard_report_screen.dart:199:36 - not_enough_positional_arguments
+  error - The named parameter 'duration' isn't defined. Try correcting the name to an existing named parameter's name, or defining a named parameter with the name 'duration' - lib\features\dashboard\dashboard_report_screen.dart:199:36 - undefined_named_parameter
+  error - The named parameter 'currentRangeStart' isn't defined. Try correcting the name to an existing named parameter's name, or defining a named parameter with the name 'currentRangeStart' - lib\features\dashboard\dashboard_report_screen.dart:200:7 - undefined_named_parameter
+  error - The named parameter 'currentRangeEnd' isn't defined. Try correcting the name to an existing named parameter's name, or defining a named parameter with the name 'currentRangeEnd' - lib\features\dashboard\dashboard_report_screen.dart:201:7 - undefined_named_parameter
+warning - The declaration '_exportPdf' isn't referenced. Try removing the declaration of '_exportPdf' - lib\features\dashboard\dashboard_report_screen.dart:212:16 - unused_element
+warning - The declaration '_exportExcel' isn't referenced. Try removing the declaration of '_exportExcel' - lib\features\dashboard\dashboard_report_screen.dart:226:16 - unused_element
+warning - The library 'package:crafts/features/dashboard/dashboard_report_screen.dart' doesn't export a member with the hidden name 'SingleChildScrollView'. Try removing the name from the list of hidden members - lib\features\dashboard\presentation\dashboard_screen.dart:7:47 - undefined_hidden_name
+warning - A value for optional parameter 'hasError' isn't ever given. Try removing the unused parameter - lib\features\reports\reports_model.dart:17:10 - unused_element_parameter
+warning - A value for optional parameter 'errorMessage' isn't ever given. Try removing the unused parameter - lib\features\reports\reports_model.dart:18:10 - unused_element_parameter
+warning - A value for optional parameter 'reports' isn't ever given. Try removing the unused parameter - lib\features\reports\reports_model.dart:19:10 - unused_element_parameter
+warning - A value for optional parameter 'totalBilled' isn't ever given. Try removing the unused parameter - lib\features\reports\reports_model.dart:20:10 - unused_element_parameter
+warning - A value for optional parameter 'totalCollected' isn't ever given. Try removing the unused parameter - lib\features\reports\reports_model.dart:21:10 - unused_element_parameter
+warning - A value for optional parameter 'totalOutstanding' isn't ever given. Try removing the unused parameter - lib\features\reports\reports_model.dart:22:10 - unused_element_parameter
+warning - A value for optional parameter 'dateRange' isn't ever given. Try removing the unused parameter - lib\features\reports\reports_model.dart:23:10 - unused_element_parameter
+warning - A value for optional parameter 'selectedStatus' isn't ever given. Try removing the unused parameter - lib\features\reports\reports_model.dart:24:10 - unused_element_parameter
+warning - A value for optional parameter 'selectedOfficer' isn't ever given. Try removing the unused parameter - lib\features\reports\reports_model.dart:25:10 - unused_element_parameter
+warning - The value of the field '_ref' isn't used. Try removing the field, or using it - lib\features\reports\reports_provider.dart:14:13 - unused_field
+   info - Missing type annotation. Try adding a type annotation - lib\features\reports\reports_provider.dart:15:19 - strict_top_level_inference
+   info - The local variable '_ref' starts with an underscore. Try renaming the variable to not start with an underscore - lib\features\reports\reports_provider.dart:15:19 - no_leading_underscores_for_local_identifiers
+warning - The value of the local variable 'pdfBytes' isn't used. Try removing the variable or using it - lib\features\reports\reports_screen.dart:48:21 - unused_local_variable
+   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre. Try replacing the use of the deprecated member with the replacement - lib\features\reports\reports_screen.dart:135:7 - deprecated_member_use
+  error - The name 'MaterialApp' isn't a class. Try correcting the name to match an existing class - test\features\dashboard\dashboard_metrics_screen_test.dart:7:37 - creation_with_non_type
+  error - The name 'MaterialApp' isn't a class. Try correcting the name to match an existing class - test\features\dashboard\dashboard_metrics_screen_test.dart:16:37 - creation_with_non_type
+

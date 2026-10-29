@@ -22,11 +22,11 @@ class AuditLogEntry {
 
   factory AuditLogEntry.fromMap(Map<String, dynamic> map) {
     return AuditLogEntry(
-      id: map['id'] as String?,
-      userId: map['userId'] as String?,
-      actionType: map['actionType'] as String?,
-      description: map['description'] as String?,
-      timestamp: DateTime.tryParse(map['timestamp'] as String?) ?? DateTime.now(),
+      id: (map['id'] as String?) ?? '',
+      userId: (map['userId'] as String?) ?? '',
+      actionType: (map['actionType'] as String?) ?? '',
+      description: (map['description'] as String?) ?? '',
+      timestamp: DateTime.tryParse(map['timestamp'] as String? ?? '') ?? DateTime.now(),
       metadata: map['metadata'] as Map<String, dynamic>?,
       success: map['success'] as bool? ?? true,
       errorMessage: map['errorMessage'] as String?,

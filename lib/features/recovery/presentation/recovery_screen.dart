@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:crafts/core/constants/app_colors.dart';
 import 'package:crafts/features/auth/presentation/auth_controller.dart';
 import 'package:crafts/features/customers/presentation/customer_controller.dart';
+import 'package:crafts/features/customers/domain/customer.dart';
 import 'package:crafts/features/customers/presentation/widgets/add_customer_dialog.dart';
 import 'package:crafts/features/debts/presentation/debt_controller.dart';
 import 'package:crafts/features/debts/presentation/widgets/add_debt_dialog.dart';
@@ -73,7 +74,13 @@ class RecoveryScreen extends ConsumerWidget {
     final debtController = ref.read(debtControllerProvider);
     final selectedDebt = debtController.value?.firstOrNull;
     final customerId = selectedDebt?.customerId ?? '';
-    final customerName = selectedDebt?.customerId ?? '';
+    // Look up customer name from the filtered customers provider
+    final customers = ref.watch(filteredCustomersProvider);
+    final selectedCustomer = customers.firstWhere(
+      (c) => c.id == customerId,
+      orElse: () => Customer(id: customerId, fullName: 'Unknown Customer', tenantId: '', createdAt: DateTime.now(), updatedAt: DateTime.now(), phoneNumber: '', secondaryPhone: null, email: null, nationalId: null, address: null),
+    );
+    final customerName = selectedCustomer.fullName;
 
     final result = await showDialog<Map<String, dynamic>>(
       context: context,

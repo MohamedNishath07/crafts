@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 /// Report filter options for date range and status
@@ -95,8 +94,8 @@ abstract class TabularReportGenerator {
     for (final debt in debts) {
       final balance = (debt['balance'] ?? 0.0) as double;
       final isOverdue = debt['overdue'] == true;
-      final isCurrent = !isOverdue; // simplified: if not overdue, it's current
-      final isSettled = false; // will be determined separately
+      final isSettled = debt['status']?.toString().toLowerCase() == 'settled' || balance == 0;
+      final isCurrent = !isOverdue && !isSettled; // simplified: if not overdue and not settled, it's current
 
       // Apply status filter
       if (!filter.matchesStatus(isCurrent, isOverdue, isSettled)) {

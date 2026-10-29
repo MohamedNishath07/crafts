@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:crafts/features/dashboard/dashboard_model.dart';
 
 /// Async value state for dashboard metrics
 class DashboardMetricsState {
@@ -33,6 +32,9 @@ class DashboardMetricsState {
         isLoading: false,
         error: message,
       );
+
+  bool get hasError => error != null;
+  String? get errorMessage => error;
 }
 
 /// Model class for dashboard metrics
@@ -51,10 +53,9 @@ class DashboardMetrics {
 }
 
 /// Notifier for dashboard metrics using StateNotifier
-class DashboardMetricsNotifier extends StateNotifier<DashboardMetricsState> {
-  DashboardMetricsNotifier(super.state, Ref ref) : _ref = ref;
-
-  final Ref _ref;
+class DashboardMetricsNotifier extends Notifier<DashboardMetricsState> {
+  @override
+  DashboardMetricsState build() => DashboardMetricsState.loading();
 
   /// Fetch dashboard metrics from Supabase backend
   Future<void> fetchDashboardMetrics() async {
@@ -64,10 +65,11 @@ class DashboardMetricsNotifier extends StateNotifier<DashboardMetricsState> {
       final user = supabase.auth.currentUser;
       final tenantId = user?.appMetadata['tenant_id'] as String? ?? 'default_tenant';
 
-      final customerCount = await supabase
+      final customerData = await supabase
           .from('customers')
-          .select('.count', count: Exact.count)
+          .select()
           .eq('tenant_id', tenantId);
+      final totalCustomers = customerData.length;
 
       final debtData = await supabase.from('debts').select('balance, overdue');
       final totalDebt = debtData.fold(0.0, (sum, d) => sum + (d['balance'] ?? 0.0));
@@ -79,8 +81,7 @@ class DashboardMetricsNotifier extends StateNotifier<DashboardMetricsState> {
       final recoveredAmount = paymentData.fold(0.0,
           (sum, p) => sum + (p['amount'] ?? 0.0));
 
-      final totalCustomers = customerCount?.toInt() ?? 0;
-
+      // totalCustomers already computed above
       state = DashboardMetricsState.success(
         totalCustomers: totalCustomers,
         totalDebt: totalDebt,
@@ -100,6 +101,6 @@ class DashboardMetricsNotifier extends StateNotifier<DashboardMetricsState> {
 
 /// Provider for dashboard metrics notifier
 final dashboardMetricsNotifierprovider =
-    StateNotifierProvider<DashboardMetricsNotifier, DashboardMetricsState>((ref) {
-  return DashboardMetricsNotifier(DashboardMetricsState.loading(), ref);
-});
+    NotifierProvider<DashboardMetricsNotifier, DashboardMetricsState>(
+  DashboardMetricsNotifier.new,
+);

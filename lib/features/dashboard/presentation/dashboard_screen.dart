@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../core/constants/app_colors.dart';
-import 'dashboard_provider.dart';
-import 'dashboard_payment_status_chart.dart';
-import 'dashboard_recovery_trend_chart.dart';
+import '../../../core/constants/app_colors.dart';
+import '../dashboard_provider.dart';
+import '../dashboard_payment_status_chart.dart';
+import '../dashboard_recovery_trend_chart.dart';
+import '../dashboard_report_screen.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -187,6 +188,9 @@ class DashboardScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+
 Map<String, double> _buildPaymentStatusData(dynamic metrics) {
   if (metrics == null) {
     return {'Current': 0, 'Overdue': 0, 'Settled': 0};
@@ -223,7 +227,7 @@ List<String> _buildMonthLabels() {
   return List.generate(6, (index) {
     final month = now.subtract(Duration(days: index * 30));
     return '${month.month}/${month.day}';
-  }.reversed.toList());
+    }).reversed.toList();
 }
 
 class _MetricCard extends StatelessWidget {

@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:crafts/features/audit/audit_log_model.dart';
 import 'package:crafts/features/audit/audit_log_repository.dart';
 
@@ -7,6 +7,8 @@ class AuditLogNotifier extends StateNotifier<AuditLogFilterState> {
   final AuditLogRepository _repository;
 
   AuditLogNotifier(this._repository) : super(const AuditLogFilterState());
+
+  AuditLogFilterState get filterState => state;
 
   /// Fetch audit logs with current filter
   Future<List<AuditLogEntry>> fetchLogs({int limit = 100}) async {
@@ -44,22 +46,5 @@ class AuditLogNotifier extends StateNotifier<AuditLogFilterState> {
   /// Clear all filters
   void clearFilters() {
     state = const AuditLogFilterState();
-  }
-}
-
-/// Extension for [AuditLogFilterState] copyWith
-extension AuditLogFilterStateExtension on AuditLogFilterState {
-  AuditLogFilterState copyWith({
-    String? action,
-    String? entityType,
-    DateTime? startDate,
-    DateTime? endDate,
-  }) {
-    return AuditLogFilterState(
-      action: action ?? this.action,
-      entityType: entityType ?? this.entityType,
-      startDate: startDate ?? this.startDate,
-      endDate: endDate ?? this.endDate,
-    );
   }
 }

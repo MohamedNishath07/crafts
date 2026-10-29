@@ -1,18 +1,17 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:crafts/features/dashboard/dashboard_provider.dart';
-import 'package:crafts/features/dashboard/dashboard_model.dart';
 
 void main() {
   group('DashboardMetricsNotifier', () {
-    // Integration-style test verifying the provider structure and methods
-    test('fetchDashboardMetrics method exists', () {
-      // Verify the notifier class has the required method
-      expect(dashboardMetricsNotifierprovider, isNotEmpty);
+    test('provider is defined', () {
+      expect(dashboardMetricsNotifierprovider, isNotNull);
     });
 
     test('provider returns initial loading state', () {
-      // Test that the provider initializes with loading state
-      final state = dashboardMetricsNotifierprovider.select((state) => state);
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final state = container.read(dashboardMetricsNotifierprovider);
       expect(state.isLoading, isTrue);
     });
   });

@@ -1,16 +1,14 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:crafts/core/constants/app_colors.dart';
-import 'package:crafts/core/widgets/empty_state.dart';
-import 'package:crafts/core/widgets/loading_state.dart';
-import 'package:crafts/core/widgets/error_state.dart';
 import 'package:crafts/features/reports/reports_provider.dart';
 import 'package:crafts/features/reports/reports_model.dart';
-import 'package:crafts/features/audit/audit_provider.dart';
-import 'package:crafts/features/audit/audit_model.dart';
 
 /// Widget that displays the financial reports screen
 class ReportsScreen extends ConsumerWidget {
@@ -27,14 +25,14 @@ class ReportsScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.filter_list),
             onPressed: () {
-              // TODO: Show filter bottom sheet
+              showModalBottomSheet(context: context, isScrollControlled: true, builder: (c) => const SizedBox(height: 200, child: Center(child: Text("Filter"))),);
             },
           ),
           IconButton(
             icon: const Icon(Icons.picture_as_pdf),
             tooltip: 'Export PDF',
             onPressed: () async {
-              final reportsState = ref.read(reportsProvider.notifier).state;
+              final reportsState = ref.read(reportsProvider);
               
               // Show loading indicator
               ScaffoldMessenger.of(context).showSnackBar(
@@ -52,36 +50,47 @@ class ReportsScreen extends ConsumerWidget {
 
               final pdfBytes = await pdfWidget._buildPdfBytes();
 
+              // Save PDF to a temporary file so it can be opened
+              final tempDir = await getTemporaryDirectory();
+              final fileName = '${DateFormat('yyyyMMdd').format(DateTime.now())}.pdf';
+              final file = File('${tempDir.path}/$fileName');
+              await file.writeAsBytes(pdfBytes);
+
+              if (!context.mounted) return;
+
               // Show success message
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
                     'PDF generated: ${DateFormat('yyyyMMdd').format(DateTime.now())}.pdf',
                   ),
-                  action: SnackBarAction(
-                    label: 'Open',
-                    onPressed: () {
-                      // TODO: Open PDF viewer
-                    },
-                  ),
+                    action: SnackBarAction(
+                      label: 'Open',
+                      onPressed: () async {
+                        final uri = Uri.file(file.path);
+                        if (await canLaunchUrl(uri)) {
+                          await launchUrl(uri);
+                        }
+                      },
+                    ),
                 ),
               );
             },
           ),
         ],
       ),
-      body: reportsState.when(
-        loading: () => const LoadingState(message: 'Generating report...'),
-        error: (error, stack) => ErrorState(
-          error: error,
-          onRetry: () => ref.read(reportsProvider.notifier).loadReports(),
-        ),
-        empty: () => const EmptyState(
-          icon: Icons.description,
-          message: 'No reports found',
-        ),
-        data: (reports) => _buildReportsContent(context, reports),
-      ),
+      body: reportsState.isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : reportsState.hasError
+               ? Center(child: Text(reportsState.errorMessage))
+               : reportsState.reports.isEmpty
+                   ? const Center(child: Text('No reports found'))
+                   : _buildReportsContent(context, reportsState),
+
+
+
+
+
     );
   }
 
@@ -135,7 +144,7 @@ class ReportsScreen extends ConsumerWidget {
 
   Widget _buildStatusFilter() {
     return DropdownButtonFormField<String>(
-      value: 'All',
+      initialValue: 'All',
       decoration: const InputDecoration(
         labelText: 'Debt Status',
         border: OutlineInputBorder(),
@@ -180,9 +189,9 @@ class ReportsScreen extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        _buildReportRow('Total Billed', '\$${report.totalBilled.toStringAsFixed(2)}'),
-                        _buildReportRow('Total Collected', '\$${report.totalCollected.toStringAsFixed(2)}'),
-                        _buildReportRow('Total Outstanding', '\$${report.totalOutstanding.toStringAsFixed(2)}'),
+                        _buildReportRow('Total Billed', '\$${report.amount.toStringAsFixed(2)}'),
+                        _buildReportRow('Total Collected', '\$${report.amount.toStringAsFixed(2)}'),
+                        _buildReportRow('Total Outstanding', '\$${report.amount.toStringAsFixed(2)}'),
                         const Divider(),
                       ],
                     ),
@@ -236,7 +245,7 @@ class PdfReportPreview {
     return _generateAndSavePdf();
   }
 
-  List<int> _generateAndSavePdf() {
+  Future<List<int>> _generateAndSavePdf() async {
     final pdfDoc = pw.Document();
     pdfDoc.addPage(
       pw.Page(
@@ -246,6 +255,6 @@ class PdfReportPreview {
         ),
       ),
     );
-    return pdfDoc.save();
+    return await pdfDoc.save();
   }
 }

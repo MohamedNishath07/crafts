@@ -1,16 +1,15 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+﻿import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Provider for current user authentication state
-final currentUserProvider = StateNotifierProvider<CurrentUserNotifier, User?>((ref) {
-  // Listen to auth changes
-  /// Notifier that manages the current user authentication state using Supabase
+/// Notifier that manages the current user authentication state using Supabase
 class CurrentUserNotifier extends StateNotifier<User?> {
   CurrentUserNotifier() : super(null) {
     // Listen to auth changes from Supabase
-    supabase.auth.onAuthStateChange.listen((data) {
+    _supabase.auth.onAuthStateChange.listen((data) {
       state = data.session?.user;
     });
+    state = _supabase.auth.currentUser;
   }
 
   // Supabase client instance
@@ -22,30 +21,23 @@ class CurrentUserNotifier extends StateNotifier<User?> {
   /// Forces a re-fetch of the current user session
   Future<void> refreshSession() async {
     await _supabase.auth.getSession();
+    state = _supabase.auth.currentUser;
   }
 
   /// Signs out the current user
   Future<void> signOut() async {
     await _supabase.auth.signOut();
+    state = null;
   }
 }
-  
-  
-  
-  
 
-  
-  supabase.auth.onAuthStateChange.listen((data) {
-    
-    
-  });
-  
-  
-  
+/// Provider for current user authentication state
+final currentUserProvider = StateNotifierProvider<CurrentUserNotifier, User?>((ref) {
+  return CurrentUserNotifier();
 });
 
 /// Extension to add Riverpod listener support
 extension CurrentUserExtension on Ref {
   User? get currentUser => read(currentUserProvider);
-  User? getMaybeCurrentUser => watch(currentUserProvider);
+  User? get getMaybeCurrentUser => watch(currentUserProvider);
 }

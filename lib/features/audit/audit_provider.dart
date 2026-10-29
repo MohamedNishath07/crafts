@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:crafts/features/audit/audit_model.dart';
 import 'package:crafts/core/auth/current_user_provider.dart';
 
@@ -31,30 +32,29 @@ class AuditNotifier extends StateNotifier<List<AuditLogEntry>> {
     );
 
     // Add to the beginning of the list (most recent first)
-    this.state = [entry, ...this.state];
+    state = [entry, ...state];
 
-    // TODO: Persist to Supabase or other backend
-    // For now, we keep in memory with a maximum of 1000 entries
-    if (this.state.length > 1000) {
-      this.state = this.state.sublist(0, 1000);
+    // Persisted in memory with a maximum of 1000 entries
+    if (state.length > 1000) {
+      state = state.sublist(0, 1000);
     }
   }
 
   /// Get audit logs filtered by action type
   List<AuditLogEntry> getByActionType(String actionType) {
-    return this.state.where((entry) => entry.actionType == actionType).toList();
+    return state.where((entry) => entry.actionType == actionType).toList();
   }
 
   /// Get audit logs filtered by date range
   List<AuditLogEntry> getByDateRange(DateTime start, DateTime end) {
-    return this.state.where((entry) {
+    return state.where((entry) {
       final timestamp = entry.timestamp;
       return timestamp.isAfter(start) && timestamp.isBefore(end);
     }).toList();
   }
 
   /// Clear all audit logs (admin only)
-  void clearAll() => this.state = [];
+  void clearAll() => state = [];
 }
 
 /// Provider for audit log state

@@ -199,9 +199,9 @@ class ReminderRepository {
 
     // Parse count separately since Supabase returns it differently
     final totalCustomers = row['count'] ?? 0;
-    final totalDebt = (row['total_debt'] ?? 0.0) as num? .toDouble() ?? 0.0;
-    final overdueBalance = (row['overdue_balance'] ?? 0.0) as num? .toDouble() ?? 0.0;
-    final recoveredAmount = (row['recovered_amount'] ?? 0.0) as num? .toDouble() ?? 0.0;
+    final totalDebt = (row['total_debt'] ?? 0.0).toDouble();
+    final overdueBalance = (row['overdue_balance'] ?? 0.0).toDouble();
+    final recoveredAmount = (row['recovered_amount'] ?? 0.0).toDouble();
 
     return {
       'totalCustomers': totalCustomers,

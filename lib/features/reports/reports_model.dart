@@ -1,15 +1,17 @@
+import 'package:flutter/material.dart';
+
 /// Model for reports state
 class ReportsModel {
-  final bool isLoading;
-  final bool hasError;
-  final String errorMessage;
-  final List<ReportItem> reports;
-  final double totalBilled;
-  final double totalCollected;
-  final double totalOutstanding;
-  final DateTimeRange? dateRange;
-  final String? selectedStatus;
-  final String? selectedOfficer;
+  bool isLoading;
+  bool hasError;
+  String errorMessage;
+  List<ReportItem> reports;
+  double totalBilled;
+  double totalCollected;
+  double totalOutstanding;
+  DateTimeRange<DateTime>? dateRange;
+  String? selectedStatus;
+  String? selectedOfficer;
 
   ReportsModel._({
     this.isLoading = false,
@@ -31,11 +33,13 @@ class ReportsModel {
     required double totalBilled,
     required double totalCollected,
     required double totalOutstanding,
-  }) => ReportsModel._()
-    ..reports = reports
-    ..totalBilled = totalBilled
-    ..totalCollected = totalCollected
-    ..totalOutstanding = totalOutstanding;
+  }) =>
+      ReportsModel._(
+        reports: reports,
+        totalBilled: totalBilled,
+        totalCollected: totalCollected,
+        totalOutstanding: totalOutstanding,
+      );
 
   ReportsModel copyWith({
     bool? isLoading,
@@ -45,20 +49,22 @@ class ReportsModel {
     double? totalBilled,
     double? totalCollected,
     double? totalOutstanding,
-    DateTimeRange? dateRange,
+    DateTimeRange<DateTime>? dateRange,
     String? selectedStatus,
     String? selectedOfficer,
-  }) => ReportsModel._()
-    ..isLoading = isLoading ?? this.isLoading
-    ..hasError = hasError ?? this.hasError
-    ..errorMessage = errorMessage ?? this.errorMessage
-    ..reports = reports ?? this.reports
-    ..totalBilled = totalBilled ?? this.totalBilled
-    ..totalCollected = totalCollected ?? this.totalCollected
-    ..totalOutstanding = totalOutstanding ?? this.totalOutstanding
-    ..dateRange = dateRange ?? this.dateRange
-    ..selectedStatus = selectedStatus ?? this.selectedStatus
-    ..selectedOfficer = selectedOfficer ?? this.selectedOfficer;
+  }) =>
+      ReportsModel._(
+        isLoading: isLoading ?? this.isLoading,
+        hasError: hasError ?? this.hasError,
+        errorMessage: errorMessage ?? this.errorMessage,
+        reports: reports ?? this.reports,
+        totalBilled: totalBilled ?? this.totalBilled,
+        totalCollected: totalCollected ?? this.totalCollected,
+        totalOutstanding: totalOutstanding ?? this.totalOutstanding,
+        dateRange: dateRange ?? this.dateRange,
+        selectedStatus: selectedStatus ?? this.selectedStatus,
+        selectedOfficer: selectedOfficer ?? this.selectedOfficer,
+      );
 }
 
 /// Individual report item

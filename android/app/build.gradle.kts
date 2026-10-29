@@ -7,7 +7,7 @@ plugins {
 android {
     namespace = "com.crafts.crafts"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    // ndkVersion omitted: NDK not installed and not required
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

@@ -1,0 +1,40 @@
+﻿Analyzing crafts...                                             
+
+warning - Unused import: 'package:flutter_riverpod/flutter_riverpod.dart'. Try removing the import directive - lib\features\audit\audit_log_notifier.dart:1:8 - unused_import
+warning - The value of the local variable 'entry' isn't used. Try removing the variable or using it - lib\features\audit\audit_log_repository.dart:23:11 - unused_local_variable
+warning - Unused import: 'package:crafts/features/audit/audit_log_model.dart'. Try removing the import directive - lib\features\audit\audit_log_viewer_screen.dart:7:8 - unused_import
+warning - The declaration '_buildFilterToolbar' isn't referenced. Try removing the declaration of '_buildFilterToolbar' - lib\features\audit\audit_log_viewer_screen.dart:40:10 - unused_element
+   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre. Try replacing the use of the deprecated member with the replacement - lib\features\audit\audit_log_viewer_screen.dart:87:7 - deprecated_member_use
+   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre. Try replacing the use of the deprecated member with the replacement - lib\features\audit\audit_log_viewer_screen.dart:136:13 - deprecated_member_use
+   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre. Try replacing the use of the deprecated member with the replacement - lib\features\audit\audit_log_viewer_screen.dart:152:13 - deprecated_member_use
+   info - Unnecessary 'this.' qualifier. Try removing 'this.' - lib\features\audit\audit_provider.dart:35:5 - unnecessary_this
+   info - Unnecessary 'this.' qualifier. Try removing 'this.' - lib\features\audit\audit_provider.dart:35:29 - unnecessary_this
+   info - Unnecessary 'this.' qualifier. Try removing 'this.' - lib\features\audit\audit_provider.dart:39:9 - unnecessary_this
+   info - Unnecessary 'this.' qualifier. Try removing 'this.' - lib\features\audit\audit_provider.dart:40:7 - unnecessary_this
+   info - Unnecessary 'this.' qualifier. Try removing 'this.' - lib\features\audit\audit_provider.dart:40:20 - unnecessary_this
+   info - Unnecessary 'this.' qualifier. Try removing 'this.' - lib\features\audit\audit_provider.dart:46:12 - unnecessary_this
+   info - Unnecessary 'this.' qualifier. Try removing 'this.' - lib\features\audit\audit_provider.dart:51:12 - unnecessary_this
+   info - Unnecessary 'this.' qualifier. Try removing 'this.' - lib\features\audit\audit_provider.dart:58:22 - unnecessary_this
+warning - Unused import: 'package:flutter/material.dart'. Try removing the import directive - lib\features\dashboard\dashboard_metrics_screen.dart:1:8 - unused_import
+warning - Unused import: 'package:flutter_riverpod/flutter_riverpod.dart'. Try removing the import directive - lib\features\dashboard\dashboard_metrics_screen.dart:2:8 - unused_import
+warning - Unused import: 'package:crafts/core/constants/app_colors.dart'. Try removing the import directive - lib\features\dashboard\dashboard_metrics_screen.dart:3:8 - unused_import
+warning - Unused import: 'package:flutter_riverpod/legacy.dart'. Try removing the import directive - lib\features\dashboard\dashboard_provider.dart:2:8 - unused_import
+warning - Unused import: 'package:crafts/features/dashboard/dashboard_model.dart'. Try removing the import directive - lib\features\dashboard\dashboard_provider.dart:4:8 - unused_import
+warning - The declaration '_exportPdf' isn't referenced. Try removing the declaration of '_exportPdf' - lib\features\dashboard\dashboard_report_screen.dart:213:16 - unused_element
+warning - The declaration '_exportExcel' isn't referenced. Try removing the declaration of '_exportExcel' - lib\features\dashboard\dashboard_report_screen.dart:227:16 - unused_element
+warning - The library 'package:crafts/features/dashboard/dashboard_report_screen.dart' doesn't export a member with the hidden name 'SingleChildScrollView'. Try removing the name from the list of hidden members - lib\features\dashboard\presentation\dashboard_screen.dart:7:47 - undefined_hidden_name
+warning - A value for optional parameter 'hasError' isn't ever given. Try removing the unused parameter - lib\features\reports\reports_model.dart:17:10 - unused_element_parameter
+warning - A value for optional parameter 'errorMessage' isn't ever given. Try removing the unused parameter - lib\features\reports\reports_model.dart:18:10 - unused_element_parameter
+warning - A value for optional parameter 'reports' isn't ever given. Try removing the unused parameter - lib\features\reports\reports_model.dart:19:10 - unused_element_parameter
+warning - A value for optional parameter 'totalBilled' isn't ever given. Try removing the unused parameter - lib\features\reports\reports_model.dart:20:10 - unused_element_parameter
+warning - A value for optional parameter 'totalCollected' isn't ever given. Try removing the unused parameter - lib\features\reports\reports_model.dart:21:10 - unused_element_parameter
+warning - A value for optional parameter 'totalOutstanding' isn't ever given. Try removing the unused parameter - lib\features\reports\reports_model.dart:22:10 - unused_element_parameter
+warning - A value for optional parameter 'dateRange' isn't ever given. Try removing the unused parameter - lib\features\reports\reports_model.dart:23:10 - unused_element_parameter
+warning - A value for optional parameter 'selectedStatus' isn't ever given. Try removing the unused parameter - lib\features\reports\reports_model.dart:24:10 - unused_element_parameter
+warning - A value for optional parameter 'selectedOfficer' isn't ever given. Try removing the unused parameter - lib\features\reports\reports_model.dart:25:10 - unused_element_parameter
+warning - The value of the field '_ref' isn't used. Try removing the field, or using it - lib\features\reports\reports_provider.dart:14:13 - unused_field
+   info - Missing type annotation. Try adding a type annotation - lib\features\reports\reports_provider.dart:15:19 - strict_top_level_inference
+   info - The local variable '_ref' starts with an underscore. Try renaming the variable to not start with an underscore - lib\features\reports\reports_provider.dart:15:19 - no_leading_underscores_for_local_identifiers
+warning - The value of the local variable 'pdfBytes' isn't used. Try removing the variable or using it - lib\features\reports\reports_screen.dart:48:21 - unused_local_variable
+   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre. Try replacing the use of the deprecated member with the replacement - lib\features\reports\reports_screen.dart:135:7 - deprecated_member_use
+

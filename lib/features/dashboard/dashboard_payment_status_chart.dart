@@ -12,18 +12,17 @@ class PaymentStatusChart extends StatelessWidget {
     required this.statusData,
     required this.colorScheme,
     super.key,
-  }) : super(key: Object keys: Object.hashAll([statusData, colorScheme]));
+  });
 
   /// Pre-configured with typical debt status distribution
-  const PaymentStatusChart.typical({
+  PaymentStatusChart.typical({
     super.key,
   })  : statusData = {'Current': 50000.00, 'Overdue': 15000.00, 'Settled': 40000.00},
         colorScheme = {
           'Current': AppColors.accentSuccess,
           'Overdue': AppColors.accentDanger,
           'Settled': AppColors.brandPrimary,
-        },
-        super.namedConstructorParameters: false;
+        };
 
   @override
   Widget build(BuildContext context) {
@@ -35,8 +34,7 @@ class PaymentStatusChart extends StatelessWidget {
     return PieChart(
       PieChartData(
         pieTouchData: PieTouchData(
-          touchBehavior: PieTouchBehavior.touchOnly,
-          pieCenterSectionRadius: 50,
+          enabled: true,
         ),
         borderData: FlBorderData(show: false),
         sectionsSpace: 0,
@@ -47,20 +45,19 @@ class PaymentStatusChart extends StatelessWidget {
   }
 
   /// Builds pie chart sections from status data
-  List<PieSection> _buildPieSections(
+  List<PieChartSectionData> _buildPieSections(
       Map<String, double> data,
       Map<String, Color> colors,
       bool isDark,
       double total,
       ) {
-    final entries = <PieSection>[];
-    var currentIndex = 0;
+    final entries = <PieChartSectionData>[];
 
     data.forEach((label, value) {
-      final percentage = total > 0 ? (value / total) * 100 : 0;
+      final percentage = total > 0 ? (value / total) * 100 : 0.0;
       final color = colors[label] ?? AppColors.inkSecondary;
 
-      entries.add(PieSection(
+      entries.add(PieChartSectionData(
         color: color,
         value: percentage,
         title: '$label ${percentage.toStringAsFixed(1)}%',
@@ -69,10 +66,10 @@ class PaymentStatusChart extends StatelessWidget {
           fontSize: 12,
           fontWeight: FontWeight.bold,
         ),
-        radius: 0.6,
+        radius: 60,
       ));
 
-      currentIndex++;
+
     });
 
     return entries;
