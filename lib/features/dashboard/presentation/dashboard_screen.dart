@@ -49,6 +49,25 @@ class DashboardScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Welcome header with admin name and profile picture
+            Row(
+              children: [
+                const CircleAvatar(
+                  radius: 28,
+                  backgroundColor: AppColors.brandPrimary,
+                  child: Icon(Icons.person, color: Colors.white, size: 30),
+                ),
+                const SizedBox(width: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text('Welcome back,', style: TextStyle(fontSize: 14, color: AppColors.inkSecondary)),
+                    Text('Admin', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.inkPrimary)),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
             const Text(
               'Real-time overview of outstanding debt and recovery performance',
               style: TextStyle(fontSize: 14, color: AppColors.inkSecondary),
@@ -230,7 +249,7 @@ List<String> _buildMonthLabels() {
     }).reversed.toList();
 }
 
-class _MetricCard extends StatelessWidget {
+class _MetricCard extends StatefulWidget {
   final String title;
   final String value;
   final IconData icon;
@@ -246,60 +265,73 @@ class _MetricCard extends StatelessWidget {
   });
 
   @override
+  State<_MetricCard> createState() => _MetricCardState();
+}
+
+class _MetricCardState extends State<_MetricCard> {
+  bool _hovering = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceRaised,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.borderSubtle),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.inkSecondary,
-                    fontWeight: FontWeight.w500,
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovering = true),
+      onExit: (_) => setState(() => _hovering = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: _hovering ? Colors.black : AppColors.surfaceRaised,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: AppColors.borderSubtle),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: _hovering ? Colors.white : AppColors.inkSecondary,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
-              ),
-              Icon(icon, color: accentColor, size: 18),
-            ],
-          ),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              value,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.inkPrimary,
-                fontFeatures: [FontFeature.tabularFigures()],
+                Icon(widget.icon, color: widget.accentColor, size: 18),
+              ],
+            ),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                widget.value,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: _hovering ? Colors.white : AppColors.inkPrimary,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
               ),
             ),
-          ),
-          Text(
-            trend,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 11,
-              color: accentColor,
-              fontWeight: FontWeight.w500,
+            Text(
+              widget.trend,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 11,
+                color: _hovering ? Colors.white70 : widget.accentColor,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

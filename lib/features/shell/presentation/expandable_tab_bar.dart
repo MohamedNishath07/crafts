@@ -44,8 +44,9 @@ class _ExpandableTabBarState extends ConsumerState<ExpandableTabBar> {
           ),
         Container(
           decoration: BoxDecoration(
-            color: AppColors.surfaceSidebar,
+            color: AppColors.surfaceBase,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+             border: Border.all(color: AppColors.accentSuccess, width: 1.5),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.25),
@@ -121,14 +122,14 @@ class _ExpandableTabBarState extends ConsumerState<ExpandableTabBar> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(item.icon,
-                color: selected ? AppColors.accentSuccess : AppColors.inkWhite,
+                color: selected ? AppColors.accentSuccess : AppColors.inkPrimary,
                 size: 22),
             const SizedBox(height: 4),
             Text(item.label,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     fontSize: 10,
-                    color: selected ? AppColors.accentSuccess : AppColors.inkWhite)),
+                    color: selected ? AppColors.accentSuccess : AppColors.inkPrimary)),
           ],
         ),
       ),
