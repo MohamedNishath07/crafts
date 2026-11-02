@@ -22,7 +22,7 @@ class DashboardScreen extends ConsumerWidget {
   Widget _buildSuccessScreen(BuildContext context, WidgetRef ref, DashboardMetricsState metricsState) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.brandPrimary,
+        backgroundColor: AppColors.surfaceBase,
         elevation: 0,
         title: const Text(
           'Operations Dashboard',
