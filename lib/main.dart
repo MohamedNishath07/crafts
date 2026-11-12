@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'core/constants/app_colors.dart';
 import 'core/router/app_router.dart';
+import 'core/theming/glassmorphism_theme.dart';
+
+/// State provider for dark/light mode toggle
+final darkModeProvider = StateProvider<bool>((ref) => false);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,38 +44,20 @@ class DebitRecoveryApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = ref.watch(darkModeProvider);
     final router = ref.watch(appRouterProvider);
 
     return MaterialApp.router(
       title: 'Debit Recovery System',
       debugShowCheckedModeBanner: false,
       routerConfig: router,
-      theme: ThemeData(
-        useMaterial3: true,
-        scaffoldBackgroundColor: AppColors.surfaceBase,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.brandPrimary,
-          primary: AppColors.brandPrimary,
-          surface: AppColors.surfaceRaised,
-        ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: AppColors.surfaceSidebar,
-          foregroundColor: AppColors.inkWhite,
-          elevation: 0,
-        ),
-        cardTheme: CardThemeData(
-          color: AppColors.surfaceRaised,
-          elevation: 1,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-            side: const BorderSide(color: AppColors.borderSubtle),
-          ),
-        ),
-        dividerTheme: const DividerThemeData(
-          color: AppColors.borderSubtle,
-          thickness: 1,
-        ),
+      theme: GlassmorphismTheme.light.copyWith(
+        extensions: [GlassmorphismTheme.extension],
       ),
+      darkTheme: GlassmorphismTheme.dark.copyWith(
+        extensions: [GlassmorphismTheme.extension],
+      ),
+      themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
     );
   }
 }

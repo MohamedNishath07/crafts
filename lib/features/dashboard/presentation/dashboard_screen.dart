@@ -6,20 +6,22 @@ import '../dashboard_payment_status_chart.dart';
 import '../dashboard_recovery_trend_chart.dart';
 import '../dashboard_report_screen.dart';
 
+
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final metricsState = ref.watch(dashboardMetricsNotifierprovider);
-    return _buildBody(context, ref, metricsState);
+    return _buildBody(context, ref, metricsState, isDark);
   }
 
-  Widget _buildBody(BuildContext context, WidgetRef ref, DashboardMetricsState metricsState) {
-    return _buildSuccessScreen(context, ref, metricsState);
+  Widget _buildBody(BuildContext context, WidgetRef ref, DashboardMetricsState metricsState, bool isDark) {
+    return _buildSuccessScreen(context, ref, metricsState, isDark);
   }
 
-  Widget _buildSuccessScreen(BuildContext context, WidgetRef ref, DashboardMetricsState metricsState) {
+  Widget _buildSuccessScreen(BuildContext context, WidgetRef ref, DashboardMetricsState metricsState, bool isDark) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.surfaceBase,
@@ -269,14 +271,11 @@ class _MetricCard extends StatefulWidget {
 }
 
 class _MetricCardState extends State<_MetricCard> {
-  bool _hovering = false;
+  final bool _hovering = false;
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _hovering = true),
-      onExit: (_) => setState(() => _hovering = false),
-      child: AnimatedContainer(
+    return AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -332,7 +331,6 @@ class _MetricCardState extends State<_MetricCard> {
             ),
           ],
         ),
-      ),
     );
   }
 }

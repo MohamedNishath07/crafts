@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:crafts/core/constants/app_colors.dart';
 import 'package:crafts/features/auth/presentation/auth_controller.dart';
 import 'package:crafts/features/customers/presentation/customer_controller.dart';
@@ -10,14 +9,16 @@ import 'package:crafts/features/debts/presentation/debt_controller.dart';
 import 'package:crafts/features/debts/presentation/widgets/add_debt_dialog.dart';
 import 'interaction_controller.dart';
 import 'widgets/log_action_dialog.dart';
+import 'package:crafts/core/theming/glassmorphism_widgets.dart';
 
 class RecoveryScreen extends ConsumerWidget {
   const RecoveryScreen({super.key});
 
 @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: AppColors.surfaceBase,
+      backgroundColor: isDark ? AppColors.surfaceDark : AppColors.surfaceBase,
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -26,34 +27,46 @@ class RecoveryScreen extends ConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Recovery Activities & Follow-ups',
-                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.inkPrimary)),
-                    SizedBox(height: 4),
-                    Text('Track customer calls, field visits, and promised payment dates',
-                        style: TextStyle(fontSize: 13, color: AppColors.inkSecondary)),
-                  ],
+                GlassmorphismContainer(
+                  isDark: isDark,
+                  child: const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Recovery Activities & Follow-ups',
+                          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.inkPrimary)),
+                      SizedBox(height: 4),
+                      Text('Track customer calls, field visits, and promised payment dates',
+                          style: TextStyle(fontSize: 13, color: AppColors.inkSecondary)),
+                    ],
+                  ),
                 ),
-                ElevatedButton.icon(
-                  onPressed: () => _showLogActionDialog(context, ref),
-                  icon: const Icon(Icons.add_call, size: 18),
-                  label: const Text('Log Action'),
-                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.brandPrimary, foregroundColor: AppColors.inkWhite),
+                GlassmorphismContainer(
+                  isDark: isDark,
+                  child: ElevatedButton.icon(
+                    onPressed: () => _showLogActionDialog(context, ref),
+                    icon: const Icon(Icons.add_call, size: 18),
+                    label: const Text('Log Action'),
+                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.brandPrimary, foregroundColor: AppColors.inkWhite),
+                  ),
                 ),
                 const SizedBox(width: 8),
-                ElevatedButton.icon(
-                  onPressed: () => _showAddCustomerDialog(context, ref),
-                  icon: const Icon(Icons.person_add, size: 18),
-                  label: const Text('Create Customer'),
-                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.brandPrimary, foregroundColor: AppColors.inkWhite),
+                GlassmorphismContainer(
+                  isDark: isDark,
+                  child: ElevatedButton.icon(
+                    onPressed: () => _showAddCustomerDialog(context, ref),
+                    icon: const Icon(Icons.person_add, size: 18),
+                    label: const Text('Create Customer'),
+                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.brandPrimary, foregroundColor: AppColors.inkWhite),
+                  ),
                 ),
-                ElevatedButton.icon(
-                  onPressed: () => _showAddDebtDialog(context, ref),
-                  icon: const Icon(Icons.add_circle_outline, size: 18),
-                  label: const Text('Create Debt'),
-                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.brandPrimary, foregroundColor: AppColors.inkWhite),
+                GlassmorphismContainer(
+                  isDark: isDark,
+                  child: ElevatedButton.icon(
+                    onPressed: () => _showAddDebtDialog(context, ref),
+                    icon: const Icon(Icons.add_circle_outline, size: 18),
+                    label: const Text('Create Debt'),
+                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.brandPrimary, foregroundColor: AppColors.inkWhite),
+                  ),
                 ),
               ],
             ),

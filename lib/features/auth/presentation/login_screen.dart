@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../domain/user_profile.dart';
 import 'auth_controller.dart';
+import '../theming/glassmorphism_widgets.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -16,7 +18,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController(text: 'admin@acme.com');
   final _passwordController = TextEditingController(text: 'Password123!');
-  bool _obscurePassword = true;
+  final bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -25,38 +27,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.dispose();
   }
 
-  void _submit() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    await ref.read(authControllerProvider.notifier).signIn(
-          email: _emailController.text,
-          password: _passwordController.text,
-        );
-
-    final state = ref.read(authControllerProvider);
-    if (!state.hasError && mounted) {
-      context.go('/dashboard');
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: AppColors.surfaceBase,
-      body: Center(
+      backgroundColor: isDark ? AppColors.surfaceDark : AppColors.surfaceBase,
+      body: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+        ),
+        child: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 440),
-            child: Card(
-              color: AppColors.surfaceRaised,
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(color: AppColors.borderSubtle),
-              ),
+            child: GlassmorphismContainer(
+              isDark: isDark,
+              border: Border.all(color: AppColors.borderGlassLight, width: 1),
               child: Padding(
                 padding: const EdgeInsets.all(32.0),
                 child: Form(
@@ -72,16 +63,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: AppColors.brandPrimary,
-                              borderRadius: BorderRadius.circular(8),
+                              color: AppColors.brandPrimary.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(
                               Icons.account_balance_wallet,
-                              color: AppColors.inkWhite,
-                              size: 28,
+                              color: AppColors.brandPrimary,
+                              size: 32,
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 16),
                           const Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -159,89 +150,90 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ],
 
                       // Email Field
-                      TextFormField(
+                      GlassTextField(
                         controller: _emailController,
+                        hintText: 'Email address',
+                        labelText: 'Email',
+                        prefixIcon: const Icon(Icons.email_outlined,
+                            color: AppColors.inkMuted, size: 20),
                         keyboardType: TextInputType.emailAddress,
-                        decoration: InputDecoration(
-                          labelText: 'Email Address',
-                          hintText: 'name@company.com',
-                          prefixIcon: const Icon(Icons.email_outlined, size: 20),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: AppColors.borderSubtle),
-                          ),
-                        ),
                         validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
+                          if (value == null || value.isEmpty) {
                             return 'Please enter your email';
-                          }
-                          if (!value.contains('@')) {
-                            return 'Please enter a valid email';
                           }
                           return null;
                         },
+                        isDark: isDark,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                       ),
                       const SizedBox(height: 16),
 
                       // Password Field
-                      TextFormField(
+                      GlassTextField(
                         controller: _passwordController,
+                        hintText: 'Password',
+                        labelText: 'Password',
+                        prefixIcon: const Icon(Icons.lock_outlined,
+                            color: AppColors.inkMuted, size: 20),
                         obscureText: _obscurePassword,
-                        decoration: InputDecoration(
-                          labelText: 'Password',
-                          prefixIcon: const Icon(Icons.lock_outline, size: 20),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                              size: 20,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _obscurePassword = !_obscurePassword;
-                              });
-                            },
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: AppColors.borderSubtle),
-                          ),
-                        ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter your password';
                           }
                           return null;
                         },
+                        isDark: isDark,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                       ),
                       const SizedBox(height: 24),
 
                       // Submit Button
-                      ElevatedButton(
-                        onPressed: authState.isLoading ? null : _submit,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.brandPrimary,
-                          foregroundColor: AppColors.inkWhite,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                      GlassmorphismContainer(
+                        isDark: isDark,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: ElevatedButton(
+                          onPressed: authState.isLoading
+                              ? null
+                              : () async {
+                                  if (!_formKey.currentState!.validate()) return;
+                                  await ref
+                                      .read(authControllerProvider.notifier)
+                                      .signIn(
+                                        email: _emailController.text,
+                                        password: _passwordController.text,
+                                      );
+
+                                  final state = ref.read(authControllerProvider);
+                                  if (!state.hasError && context.mounted) {
+                                    context.go('/dashboard');
+                                  }
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.brandPrimary,
+                            foregroundColor: AppColors.inkWhite,
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            elevation: 2,
                           ),
+                          child: authState.isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.inkWhite,
+                                  ),
+                                )
+                              : const Text(
+                                  'Sign In',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                         ),
-                        child: authState.isLoading
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: AppColors.inkWhite,
-                                ),
-                              )
-                            : const Text(
-                                'Sign In',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
                       ),
                       const SizedBox(height: 24),
 
@@ -301,6 +293,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
           ),
         ),
+      ),
       ),
     );
   }

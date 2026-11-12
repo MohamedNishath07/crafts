@@ -16,6 +16,7 @@ class DebtsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final debtAsync = ref.watch(debtControllerProvider);
     final paginatedDebts = ref.watch(paginatedDebtsProvider);
 
@@ -26,7 +27,7 @@ class DebtsScreen extends ConsumerWidget {
     final maxPage = totalCount == 0 ? 0 : ((totalCount - 1) ~/ pageSize);
 
     return Scaffold(
-      backgroundColor: AppColors.surfaceBase,
+      backgroundColor: isDark ? AppColors.surfaceDark : AppColors.surfaceBase,
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -199,8 +200,8 @@ class DebtsScreen extends ConsumerWidget {
       _AgingFilterItem(key: 'current', label: 'Current', color: AppColors.accentSuccess),
       _AgingFilterItem(key: '1-30', label: '1-30 DPD', color: AppColors.accentWarning),
       _AgingFilterItem(key: '31-60', label: '31-60 DPD', color: AppColors.accentWarning),
-      _AgingFilterItem(key: '61-90', label: '61-90 DPD', color: AppColors.accentUrgent),
-      _AgingFilterItem(key: '90+', label: '90+ DPD', color: AppColors.accentUrgent),
+      _AgingFilterItem(key: '61-90', label: '61-90 DPD', color: AppColors.accentDanger),
+      _AgingFilterItem(key: '90+', label: '90+ DPD', color: AppColors.accentDanger),
       _AgingFilterItem(key: 'settled', label: 'Settled', color: AppColors.inkMuted),
     ];
 
@@ -245,7 +246,7 @@ class DebtsScreen extends ConsumerWidget {
       case 'ptp_scheduled':
         return AppColors.accentWarning;
       case 'written_off':
-        return AppColors.accentUrgent;
+        return AppColors.accentDanger;
       case 'active':
       default:
         return AppColors.accentDanger;
