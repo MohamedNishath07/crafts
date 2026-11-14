@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/admin/presentation/admin_audit_logs_screen.dart';
 import '../../features/admin/presentation/admin_users_screen.dart';
+import '../../features/auth/data/php_auth_session.dart';
 import '../../features/auth/domain/user_profile.dart';
 import '../../features/auth/presentation/auth_controller.dart';
 import '../../features/auth/presentation/create_account_screen.dart';
@@ -17,12 +18,15 @@ import '../../features/shell/presentation/app_shell.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authControllerProvider);
+  final phpUser = ref.watch(phpAuthSessionProvider);
 
   return GoRouter(
     initialLocation: '/dashboard',
     redirect: (context, state) {
       final isLoading = authState.isLoading;
-      final isAuthenticated = authState.value != null;
+      final supabaseAuthenticated = authState.value != null;
+      final phpAuthenticated = phpUser != null;
+      final isAuthenticated = supabaseAuthenticated || phpAuthenticated;
       final isLoggingIn = state.matchedLocation == '/login';
 
       if (isLoading) return null;
@@ -39,9 +43,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return '/dashboard';
       }
 
-      // Role permission guards
+      // Role permission guards (use Supabase user when available, otherwise PHP user)
       if (isAuthenticated) {
-        final role = authState.value!.role;
+        final user = supabaseAuthenticated ? authState.value! : phpUser!;
+        final role = user.role;
         final path = state.matchedLocation;
 
         if (path.startsWith('/admin') && role != UserRole.admin) {
