@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../auth/data/php_auth_session.dart';
+import '../../auth/domain/user_profile.dart';
 import '../dashboard_provider.dart';
 import '../dashboard_payment_status_chart.dart';
 import '../dashboard_recovery_trend_chart.dart';
@@ -13,15 +15,16 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final user = ref.watch(phpAuthSessionProvider);
     final metricsState = ref.watch(dashboardMetricsNotifierprovider);
-    return _buildBody(context, ref, metricsState, isDark);
+    return _buildBody(context, ref, metricsState, isDark, user);
   }
 
-  Widget _buildBody(BuildContext context, WidgetRef ref, DashboardMetricsState metricsState, bool isDark) {
-    return _buildSuccessScreen(context, ref, metricsState, isDark);
+  Widget _buildBody(BuildContext context, WidgetRef ref, DashboardMetricsState metricsState, bool isDark, UserProfile? user) {
+    return _buildSuccessScreen(context, ref, metricsState, isDark, user);
   }
 
-  Widget _buildSuccessScreen(BuildContext context, WidgetRef ref, DashboardMetricsState metricsState, bool isDark) {
+  Widget _buildSuccessScreen(BuildContext context, WidgetRef ref, DashboardMetricsState metricsState, bool isDark, UserProfile? user) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.surfaceBase,
@@ -62,18 +65,15 @@ class DashboardScreen extends ConsumerWidget {
                 const SizedBox(width: 16),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text('Welcome back,', style: TextStyle(fontSize: 14, color: AppColors.inkSecondary)),
-                    Text('Admin', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.inkPrimary)),
+                    Text(user?.fullName ?? 'Admin', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.inkPrimary)),
                   ],
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            const Text(
-              'Real-time overview of outstanding debt and recovery performance',
-              style: TextStyle(fontSize: 14, color: AppColors.inkSecondary),
-            ),
+
+
             const SizedBox(height: 24),
 
             // Metric KPI Cards Grid

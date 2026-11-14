@@ -4,6 +4,7 @@ import '../../features/admin/presentation/admin_audit_logs_screen.dart';
 import '../../features/admin/presentation/admin_users_screen.dart';
 import '../../features/auth/domain/user_profile.dart';
 import '../../features/auth/presentation/auth_controller.dart';
+import '../../features/auth/presentation/create_account_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/profile_screen.dart';
 import '../../features/customers/presentation/customers_screen.dart';
@@ -26,8 +27,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       if (isLoading) return null;
 
+      final isCreatingAccount = state.matchedLocation == '/create-account';
+
       // Unauthenticated users are redirected to login
-      if (!isAuthenticated && !isLoggingIn) {
+      if (!isAuthenticated && !isLoggingIn && !isCreatingAccount) {
         return '/login';
       }
 
@@ -60,6 +63,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
+      ),
+GoRoute(
+        path: '/create-account',
+        builder: (context, state) => const CreateAccountScreen(),
       ),
       ShellRoute(
         builder: (context, state, child) => AppShell(child: child),

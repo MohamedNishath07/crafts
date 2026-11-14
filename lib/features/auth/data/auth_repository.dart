@@ -130,5 +130,47 @@ class AuthRepository {
       UserAttributes(password: newPassword),
     );
   }
+
+  /// Sign up with email and password
+  Future<UserProfile> signUp({
+    required String email,
+    required String password,
+    required String firstName,
+    required String lastName,
+    required String idNumber,
+  }) async {
+    final client = _client;
+    if (client == null) {
+      throw const AuthException('Supabase client not initialized');
+    }
+    final response = await client.auth.signUp(
+      email: email.trim(),
+      password: password,
+      data: {
+        'first_name': firstName.trim(),
+        'last_name': lastName.trim(),
+        'id_number': idNumber.trim(),
+      },
+    );
+
+    final user = response.user;
+    if (user == null) {
+      throw const AuthException('Sign up failed: user not created');
+    }
+
+    // Derive role from app_metadata if profile row is not yet propagated
+    final tenantId = user.appMetadata['tenant_id'] as String? ?? 'default_tenant';
+    final roleString = user.appMetadata['role'] as String? ?? 'recovery_officer';
+    final fullName =
+        user.userMetadata?['full_name'] as String? ?? '${firstName.trim()} ${lastName.trim()}'.trim();
+
+    return UserProfile(
+      id: user.id,
+      tenantId: tenantId,
+      email: user.email ?? email,
+      fullName: fullName,
+      role: UserRole.fromString(roleString),
+    );
+  }
 }
 

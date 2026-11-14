@@ -1,8 +1,13 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
 import '../../../core/constants/app_colors.dart';
+import '../../../api_config.dart';
 import '../domain/user_profile.dart';
 import 'auth_controller.dart';
+import '../data/php_auth_session.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -21,14 +26,52 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   bool _isSavingProfile = false;
   bool _isSavingPassword = false;
+  bool _isLoadingProfile = false;
   bool _obscureNewPassword = true;
   bool _obscureConfirmPassword = true;
+
+  String _displayPhone = '';
+  String _displayUsername = '';
 
   @override
   void initState() {
     super.initState();
-    final user = ref.read(authControllerProvider).value;
+    final user = ref.read(phpAuthSessionProvider.notifier).currentUser;
     _nameController = TextEditingController(text: user?.fullName ?? '');
+    _displayPhone = user?.email ?? ''; // placeholder, will be updated from API
+    _displayUsername = user?.email?.split('@').first ?? '';
+    _loadProfileFromBackend();
+  }
+
+  Future<void> _loadProfileFromBackend() async {
+    final notifier = ref.read(phpAuthSessionProvider.notifier);
+    final user = notifier.currentUser;
+    if (user == null || user.id.isEmpty) return;
+
+    setState(() => _isLoadingProfile = true);
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.getProfileUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'user_id': user.id}),
+      );
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      if (response.statusCode >= 200 && response.statusCode < 300 && data['success'] == true) {
+        final userData = data['user'] as Map<String, dynamic>;
+        if (mounted) {
+          setState(() {
+            _displayPhone = userData['phone']?.toString() ?? '';
+            _displayUsername = userData['username']?.toString() ?? '';
+            // Update name from backend too
+            _nameController.text = userData['full_name']?.toString() ?? user.fullName;
+          });
+        }
+      }
+    } catch (_) {
+      // Silently ignore - profile will show session data
+    } finally {
+      if (mounted) setState(() => _isLoadingProfile = false);
+    }
   }
 
   @override
@@ -156,7 +199,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 const SizedBox(height: 24),
 
                 // Card 1: Profile Information
-                _buildProfileCard(user),
+                _buildProfileCard(user, _displayPhone, _displayUsername, _isLoadingProfile),
                 const SizedBox(height: 24),
 
                 // Card 2: Security & Password
@@ -169,7 +212,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Widget _buildProfileCard(UserProfile? user) {
+  Widget _buildProfileCard(UserProfile? user, String phone, String username, bool isLoading) {
     final role = user?.role ?? UserRole.recoveryOfficer;
     final roleColor = _getRoleColor(role);
 
@@ -217,23 +260,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
               const SizedBox(height: 20),
 
-              // Email Field (Read-only)
-              TextFormField(
-                initialValue: user?.email ?? '',
-                readOnly: true,
-                decoration: InputDecoration(
-                  labelText: 'Email Address',
-                  prefixIcon: const Icon(Icons.email_outlined, size: 20),
-                  helperText: 'Email address cannot be modified',
-                  filled: true,
-                  fillColor: const Color(0xFFF1F5F9),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.borderSubtle),
-                  ),
+              // Loading indicator
+              if (isLoading)
+                const Center(
+                  child: CircularProgressIndicator(),
                 ),
-              ),
-              const SizedBox(height: 16),
 
               // Full Name Field (Editable)
               TextFormField(
@@ -253,6 +284,60 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   }
                   return null;
                 },
+              ),
+              const SizedBox(height: 16),
+
+              // Email Field (Read-only)
+              TextFormField(
+                initialValue: user?.email ?? '',
+                readOnly: true,
+                decoration: InputDecoration(
+                  labelText: 'Email Address',
+                  prefixIcon: const Icon(Icons.email_outlined, size: 20),
+                  helperText: 'Email address cannot be modified',
+                  filled: true,
+                  fillColor: const Color(0xFFF1F5F9),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: AppColors.borderSubtle),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Phone Field
+              TextFormField(
+                initialValue: phone.isNotEmpty ? phone : '',
+                readOnly: true,
+                decoration: InputDecoration(
+                  labelText: 'Phone Number',
+                  prefixIcon: const Icon(Icons.phone_outlined, size: 20),
+                  helperText: 'Phone number from your account',
+                  filled: true,
+                  fillColor: const Color(0xFFF1F5F9),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: AppColors.borderSubtle),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Username Field
+              TextFormField(
+                initialValue: username.isNotEmpty ? username : '',
+                readOnly: true,
+                decoration: InputDecoration(
+                  labelText: 'Username',
+                  prefixIcon: const Icon(Icons.account_circle_outlined, size: 20),
+                  helperText: 'Your account username',
+                  filled: true,
+                  fillColor: const Color(0xFFF1F5F9),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: AppColors.borderSubtle),
+                  ),
+                ),
               ),
               const SizedBox(height: 20),
 
@@ -408,10 +493,30 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ),
                 ),
               ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Tooltip(
+                    message: 'Sign out',
+                    child: TextButton(
+                      onPressed: _signOut,
+                      child: const Text('Sign out', style: TextStyle(color: AppColors.accentDanger)),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _signOut() async {
+    await ref.read(authControllerProvider.notifier).signOut();
+    ref.read(phpAuthSessionProvider.notifier).clear();
+    if (!mounted) return;
+    context.go('/login');
   }
 }

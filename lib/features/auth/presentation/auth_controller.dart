@@ -75,5 +75,25 @@ class AuthController extends AsyncNotifier<UserProfile?> {
   Future<void> changePassword({required String newPassword}) async {
     await _repository.updatePassword(newPassword: newPassword);
   }
+
+  /// Create a new account with email and password
+  Future<void> createAccount({
+    required String email,
+    required String password,
+    required String firstName,
+    required String lastName,
+    required String idNumber,
+  }) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      return await _repository.signUp(
+        email: email,
+        password: password,
+        firstName: firstName,
+        lastName: lastName,
+        idNumber: idNumber,
+      );
+    });
+  }
 }
 
