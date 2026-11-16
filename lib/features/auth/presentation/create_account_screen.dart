@@ -207,10 +207,12 @@ class _CreateAccountScreenState extends ConsumerState<CreateAccountScreen> {
                         ),
                       ),
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty)
+                        if (v == null || v.trim().isEmpty) {
                           return 'Email is required';
-                        if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(v.trim()))
+                        }
+                        if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(v.trim())) {
                           return 'Enter a valid email';
+                        }
                         return null;
                       },
                     ),
@@ -226,10 +228,13 @@ class _CreateAccountScreenState extends ConsumerState<CreateAccountScreen> {
                         ),
                       ),
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty)
+                        if (v == null || v.trim().isEmpty) {
                           return 'Phone number is required';
+                        }
                         final d = v.replaceAll(RegExp(r'\D'), '');
-                        if (d.length < 9) return 'Enter a valid phone number';
+                        if (d.length < 9) {
+                          return 'Enter a valid phone number';
+                        }
                         return null;
                       },
                     ),
@@ -269,9 +274,12 @@ class _CreateAccountScreenState extends ConsumerState<CreateAccountScreen> {
                         ),
                       ),
                       validator: (v) {
-                        if (v == null || v.isEmpty)
+                        if (v == null || v.isEmpty) {
                           return 'Password is required';
-                        if (v.length < 6) return 'At least 6 characters';
+                        }
+                        if (v.length < 6) {
+                          return 'At least 6 characters';
+                        }
                         return null;
                       },
                     ),
@@ -297,10 +305,12 @@ class _CreateAccountScreenState extends ConsumerState<CreateAccountScreen> {
                         ),
                       ),
                       validator: (v) {
-                        if (v == null || v.isEmpty)
+                        if (v == null || v.isEmpty) {
                           return 'Confirm Password is required';
-                        if (v != _passwordController.text)
+                        }
+                        if (v != _passwordController.text) {
                           return 'Passwords do not match';
+                        }
                         return null;
                       },
                     ),
