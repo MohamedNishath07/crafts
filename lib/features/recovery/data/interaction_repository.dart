@@ -1,60 +1,51 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+﻿import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../domain/interaction.dart';
 
+import '../../../core/sqlitedatabase.dart';
+
 final interactionRepositoryProvider = Provider<InteractionRepository>((ref) {
   try {
-    return InteractionRepository(Supabase.instance.client);
+    return InteractionRepository(SQLiteDatabase());
   } catch (_) {
     return InteractionRepository(null);
   }
 });
 
 class InteractionRepository {
-  final SupabaseClient? _client;
+  final SQLiteDatabase? _db;
   static const _uuid = Uuid();
 
-  InteractionRepository(this._client);
+  InteractionRepository(this._db);
 
   /// Fetch all interactions for the tenant, newest first
   Future<List<Interaction>> fetchInteractions(String tenantId) async {
-    final client = _client;
-    if (client == null) {
-      throw const PostgrestException(message: 'Supabase client not initialized');
+    if (_db == null) {
+      throw Exception('SQLite database not initialized');
     }
 
-    final response = await client
-        .from('interaction_logs')
-        .select()
-        .eq('tenant_id', tenantId)
-        .order('created_at', ascending: false);
-
-    return (response as List<dynamic>)
-        .map((row) => Interaction.fromJson(row as Map<String, dynamic>))
-        .toList();
+    final response = await _db.fetchInteractions(tenantId);
+    return response.map((row) => Interaction.fromJson(row)).toList();
   }
 
   /// Fetch interactions filtered by follow-up date
-  Future<List<Interaction>> fetchFollowUpInteractions(String tenantId, DateTime followUpDate) async {
-    final client = _client;
-    if (client == null) {
-      throw const PostgrestException(message: 'Supabase client not initialized');
+  Future<List<Interaction>> fetchFollowUpInteractions(
+      String tenantId, DateTime followUpDate) async {
+    if (_db == null) {
+      throw Exception('SQLite database not initialized');
     }
 
     final start = DateTime(followUpDate.year, followUpDate.month, followUpDate.day).toIso8601String();
     final end = DateTime(followUpDate.year, followUpDate.month, followUpDate.day + 1).toIso8601String();
 
-    final response = await client
-        .from('interaction_logs')
-        .select()
-        .eq('tenant_id', tenantId)
-        .gte('follow_up_date', start)
-        .lte('follow_up_date', end)
-        .order('follow_up_date', ascending: true);
-
-    return (response as List<dynamic>)
-        .map((row) => Interaction.fromJson(row as Map<String, dynamic>))
+    final response = await _db.fetchInteractions(tenantId);
+    return response
+        .where((row) {
+          final followUp = row['follow_up_date'] as String?;
+          if (followUp == null) return false;
+          return followUp.compareTo(start) >= 0 && followUp.compareTo(end) <= 0;
+        })
+        .map((row) => Interaction.fromJson(row))
         .toList();
   }
 
@@ -69,51 +60,26 @@ class InteractionRepository {
     int? promisedAmountCents,
     String? notes,
   }) async {
-    final client = _client;
-    if (client == null) {
-      throw const PostgrestException(message: 'Supabase client not initialized');
+    if (_db == null) {
+      throw Exception('SQLite database not initialized');
     }
 
     final newId = _uuid.v4();
     final now = DateTime.now().toIso8601String();
 
-    if (followUpDate != null) {
-      final debtResponse = await client
-          .from('debts')
-          .select('status')
-          .eq('id', debtId)
-          .eq('tenant_id', debtId.contains('-') ? debtId.split('-').first : debtId)
-          .single();
-
-      if (debtResponse['status'] != 'settled') {
-        await client
-            .from('debts')
-            .update({
-              'status': 'ptp_scheduled',
-              'updated_at': now,
-            })
-            .eq('id', debtId)
-            .eq('tenant_id', debtId.contains('-') ? debtId.split('-').first : debtId);
-      }
-    }
-
-    final response = await client
-        .from('interaction_logs')
-        .insert({
-          'id': newId,
-          'tenant_id': debtId,
-          'debt_id': debtId,
-          'customer_id': debtCustomerId,
-          'officer_id': officerId,
-          'action_type': actionType,
-          'outcome': outcome,
-          'follow_up_date': followUpDate?.toIso8601String(),
-          'promised_amount_cents': promisedAmountCents,
-          'notes': notes?.trim(),
-          'created_at': now,
-        })
-        .select()
-        .single();
+    final response = await _db.insertInteractionLog({
+      'id': newId,
+      'tenant_id': debtId,
+      'debt_id': debtId,
+      'customer_id': debtCustomerId,
+      'officer_id': officerId,
+      'action_type': actionType,
+      'outcome': outcome,
+      'follow_up_date': followUpDate?.toIso8601String(),
+      'promised_amount_cents': promisedAmountCents,
+      'notes': notes?.trim(),
+      'created_at': now,
+    });
 
     return Interaction.fromJson(response);
   }

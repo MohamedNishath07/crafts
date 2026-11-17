@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'core/sqlitedatabase.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/router/app_router.dart';
 import 'core/theming/glassmorphism_theme.dart';
@@ -10,6 +11,10 @@ final darkModeProvider = StateProvider<bool>((ref) => false);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize SQLite database
+  final sqliteDatabase = SQLiteDatabase();
+  await sqliteDatabase.database;
 
   // Initialize Supabase client
   // Uses environment variables or local development fallback

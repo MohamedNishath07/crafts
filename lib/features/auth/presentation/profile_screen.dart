@@ -39,7 +39,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final user = ref.read(phpAuthSessionProvider.notifier).currentUser;
     _nameController = TextEditingController(text: user?.fullName ?? '');
     _displayPhone = user?.email ?? ''; // placeholder, will be updated from API
-    _displayUsername = user?.email?.split('@').first ?? '';
+    _displayUsername = user == null ? '' : (user.email.split('@').firstOrNull ?? '');
     _loadProfileFromBackend();
   }
 

@@ -1,38 +1,31 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+﻿import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../auth/domain/user_profile.dart';
 
+import '../../../core/sqlitedatabase.dart';
+
 final staffRepositoryProvider = Provider<StaffRepository>((ref) {
   try {
-    return StaffRepository(Supabase.instance.client);
+    return StaffRepository(SQLiteDatabase());
   } catch (_) {
     return StaffRepository(null);
   }
 });
 
 class StaffRepository {
-  final SupabaseClient? _client;
+  final SQLiteDatabase? _db;
   static const _uuid = Uuid();
 
-  StaffRepository(this._client);
+  StaffRepository(this._db);
 
   /// Fetch all staff members belonging to the tenant
   Future<List<UserProfile>> fetchStaffMembers(String tenantId) async {
-    final client = _client;
-    if (client == null) {
-      throw const PostgrestException(message: 'Supabase client not initialized');
+    if (_db == null) {
+      throw Exception('SQLite database not initialized');
     }
 
-    final response = await client
-        .from('profiles')
-        .select()
-        .eq('tenant_id', tenantId)
-        .order('created_at', ascending: false);
-
-    return (response as List<dynamic>)
-        .map((row) => UserProfile.fromJson(row as Map<String, dynamic>))
-        .toList();
+    final response = await _db.fetchProfiles(tenantId);
+    return response.map((row) => UserProfile.fromJson(row)).toList();
   }
 
   /// Create a new staff profile within the organization
@@ -42,9 +35,8 @@ class StaffRepository {
     required String fullName,
     required UserRole role,
   }) async {
-    final client = _client;
-    if (client == null) {
-      throw const PostgrestException(message: 'Supabase client not initialized');
+    if (_db == null) {
+      throw Exception('SQLite database not initialized');
     }
 
     final newId = _uuid.v4();
@@ -55,55 +47,56 @@ class StaffRepository {
       'email': email.trim().toLowerCase(),
       'full_name': fullName.trim(),
       'role': role.toDbValue(),
-      'is_active': true,
+      'is_active': 1,
     };
 
-    final response = await client
-        .from('profiles')
-        .insert(payload)
-        .select()
-        .single();
+    await _db.insert('profiles', payload);
 
-    return UserProfile.fromJson(response);
+    final profile = await _db.fetchProfiles(tenantId);
+    return UserProfile.fromJson(profile.firstWhere((p) => p['id'] == newId));
   }
 
   /// Update staff active status (activate / deactivate)
   Future<UserProfile> updateStaffStatus({
+    required String tenantId,
     required String userId,
     required bool isActive,
   }) async {
-    final client = _client;
-    if (client == null) {
-      throw const PostgrestException(message: 'Supabase client not initialized');
+    if (_db == null) {
+      throw Exception('SQLite database not initialized');
     }
 
-    final response = await client
-        .from('profiles')
-        .update({'is_active': isActive, 'updated_at': DateTime.now().toIso8601String()})
-        .eq('id', userId)
-        .select()
-        .single();
+    final now = DateTime.now().toIso8601String();
 
-    return UserProfile.fromJson(response);
+    await _db.updateProfile({
+      'id': userId,
+      'is_active': isActive ? 1 : 0,
+      'updated_at': now,
+    });
+
+    final profiles = await _db.fetchProfiles(tenantId);
+    return UserProfile.fromJson(profiles.firstWhere((p) => p['id'] == userId));
   }
 
   /// Update staff role allocation
   Future<UserProfile> updateStaffRole({
+    required String tenantId,
     required String userId,
     required UserRole role,
   }) async {
-    final client = _client;
-    if (client == null) {
-      throw const PostgrestException(message: 'Supabase client not initialized');
+    if (_db == null) {
+      throw Exception('SQLite database not initialized');
     }
 
-    final response = await client
-        .from('profiles')
-        .update({'role': role.toDbValue(), 'updated_at': DateTime.now().toIso8601String()})
-        .eq('id', userId)
-        .select()
-        .single();
+    final now = DateTime.now().toIso8601String();
 
-    return UserProfile.fromJson(response);
+    await _db.updateProfile({
+      'id': userId,
+      'role': role.toDbValue(),
+      'updated_at': now,
+    });
+
+    final profiles = await _db.fetchProfiles(tenantId);
+    return UserProfile.fromJson(profiles.firstWhere((p) => p['id'] == userId));
   }
 }

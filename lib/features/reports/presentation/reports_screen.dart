@@ -17,8 +17,10 @@ class ReportsScreen extends ConsumerWidget {
   Future<void> _exportExcel(BuildContext context) async {
     try {
       final repository = ReportRepository();
-      final rows = await repository.fetchReportRows(FinancialReportQuery());
-      final summary = await repository.fetchReportSummary(FinancialReportQuery());
+      final rows =
+          await repository.fetchReportRows(FinancialReportQuery(tenantId: 'default_tenant'));
+      final summary = await repository.fetchReportSummary(
+          FinancialReportQuery(tenantId: 'default_tenant'));
 
       final excel = Excel.createExcel();
       final sheet = excel['Financial Report'];
@@ -106,7 +108,7 @@ class ReportsScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ReportFilterToolbar(
-                initialQuery: FinancialReportQuery(),
+                initialQuery: FinancialReportQuery(tenantId: 'default_tenant'),
                 onQueryChanged: (query) {},
                 selectedOfficer: '',
                 onOfficerChanged: (_) {},

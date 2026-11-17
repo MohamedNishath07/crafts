@@ -1,11 +1,13 @@
 /// Query parameters for financial reports
 class FinancialReportQuery {
+  final String tenantId;
   final DateTime? startDate;
   final DateTime? endDate;
   final String? statusFilter; // 'Overdue', 'Settled', 'All'
   final String? officerFilter;
 
   FinancialReportQuery({
+    required this.tenantId,
     this.startDate,
     this.endDate,
     this.statusFilter,

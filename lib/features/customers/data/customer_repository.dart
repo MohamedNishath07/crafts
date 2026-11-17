@@ -1,38 +1,31 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+﻿import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../domain/customer.dart';
 
+import '../../../core/sqlitedatabase.dart';
+
 final customerRepositoryProvider = Provider<CustomerRepository>((ref) {
   try {
-    return CustomerRepository(Supabase.instance.client);
+    return CustomerRepository(SQLiteDatabase());
   } catch (_) {
     return CustomerRepository(null);
   }
 });
 
 class CustomerRepository {
-  final SupabaseClient? _client;
+  final SQLiteDatabase? _db;
   static const _uuid = Uuid();
 
-  CustomerRepository(this._client);
+  CustomerRepository(this._db);
 
   /// Fetch all customers for a given tenant
   Future<List<Customer>> fetchCustomers(String tenantId) async {
-    final client = _client;
-    if (client == null) {
-      throw const PostgrestException(message: 'Supabase client not initialized');
+    if (_db == null) {
+      throw Exception('SQLite database not initialized');
     }
 
-    final response = await client
-        .from('customers')
-        .select()
-        .eq('tenant_id', tenantId)
-        .order('created_at', ascending: false);
-
-    return (response as List<dynamic>)
-        .map((row) => Customer.fromJson(row as Map<String, dynamic>))
-        .toList();
+    final response = await _db.fetchCustomers(tenantId);
+    return response.map((row) => Customer.fromJson(row)).toList();
   }
 
   /// Create a new customer record
@@ -45,39 +38,42 @@ class CustomerRepository {
     String? nationalId,
     String? address,
   }) async {
-    final client = _client;
-    if (client == null) {
-      throw const PostgrestException(message: 'Supabase client not initialized');
+    if (_db == null) {
+      throw Exception('SQLite database not initialized');
     }
 
     final newId = _uuid.v4();
     final now = DateTime.now().toIso8601String();
+
+    final secondaryPhoneTrimmed = secondaryPhone?.trim();
+    final emailTrimmed = email?.trim();
+    final nationalIdTrimmed = nationalId?.trim();
+    final addressTrimmed = address?.trim();
 
     final payload = {
       'id': newId,
       'tenant_id': tenantId,
       'full_name': fullName.trim(),
       'phone_number': phoneNumber.trim(),
-      'secondary_phone': secondaryPhone?.trim().isNotEmpty == true ? secondaryPhone!.trim() : null,
-      'email': email?.trim().isNotEmpty == true ? email!.trim().toLowerCase() : null,
-      'national_id': nationalId?.trim().isNotEmpty == true ? nationalId!.trim() : null,
-      'address': address?.trim().isNotEmpty == true ? address!.trim() : null,
+      'secondary_phone':
+          secondaryPhoneTrimmed?.isNotEmpty == true ? secondaryPhoneTrimmed : null,
+      'email': emailTrimmed?.isNotEmpty == true ? emailTrimmed!.toLowerCase() : null,
+      'national_id': nationalIdTrimmed?.isNotEmpty == true ? nationalIdTrimmed : null,
+      'address': addressTrimmed?.isNotEmpty == true ? addressTrimmed : null,
       'created_at': now,
       'updated_at': now,
     };
 
-    final response = await client
-        .from('customers')
-        .insert(payload)
-        .select()
-        .single();
+    await _db.getRawDatabase().insert('customers', payload);
 
-    return Customer.fromJson(response);
+    final customer = await _db.fetchCustomerById(newId, tenantId);
+    return Customer.fromJson(customer!);
   }
 
   /// Update an existing customer record
   Future<Customer> updateCustomer({
     required String customerId,
+    required String tenantId,
     required String fullName,
     required String phoneNumber,
     String? secondaryPhone,
@@ -85,31 +81,38 @@ class CustomerRepository {
     String? nationalId,
     String? address,
   }) async {
-    final client = _client;
-    if (client == null) {
-      throw const PostgrestException(message: 'Supabase client not initialized');
+    if (_db == null) {
+      throw Exception('SQLite database not initialized');
     }
 
     final now = DateTime.now().toIso8601String();
 
+    final secondaryPhoneTrimmed = secondaryPhone?.trim();
+    final emailTrimmed = email?.trim();
+    final nationalIdTrimmed = nationalId?.trim();
+    final addressTrimmed = address?.trim();
+
     final payload = {
       'full_name': fullName.trim(),
       'phone_number': phoneNumber.trim(),
-      'secondary_phone': secondaryPhone?.trim().isNotEmpty == true ? secondaryPhone!.trim() : null,
-      'email': email?.trim().isNotEmpty == true ? email!.trim().toLowerCase() : null,
-      'national_id': nationalId?.trim().isNotEmpty == true ? nationalId!.trim() : null,
-      'address': address?.trim().isNotEmpty == true ? address!.trim() : null,
+      'secondary_phone':
+          secondaryPhoneTrimmed?.isNotEmpty == true ? secondaryPhoneTrimmed : null,
+      'email': emailTrimmed?.isNotEmpty == true ? emailTrimmed!.toLowerCase() : null,
+      'national_id': nationalIdTrimmed?.isNotEmpty == true ? nationalIdTrimmed : null,
+      'address': addressTrimmed?.isNotEmpty == true ? addressTrimmed : null,
       'updated_at': now,
     };
 
-    final response = await client
-        .from('customers')
-        .update(payload)
-        .eq('id', customerId)
-        .select()
-        .single();
+    await _db.getRawDatabase().update(
+      'customers',
+      payload,
+      where: 'id = ?',
+      whereArgs: [customerId],
+    );
 
-    return Customer.fromJson(response);
+    // Fetch the updated customer record
+    final customer = await _db.fetchCustomerById(customerId, tenantId);
+    return Customer.fromJson(customer!);
   }
 
   /// Default customer records used in offline development or test environments
@@ -179,3 +182,4 @@ class CustomerRepository {
     ];
   }
 }
+

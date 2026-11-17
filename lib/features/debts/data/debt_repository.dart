@@ -1,38 +1,31 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+﻿import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../domain/debt.dart';
 
+import '../../../core/sqlitedatabase.dart';
+
 final debtRepositoryProvider = Provider<DebtRepository>((ref) {
   try {
-    return DebtRepository(Supabase.instance.client);
+    return DebtRepository(SQLiteDatabase());
   } catch (_) {
     return DebtRepository(null);
   }
 });
 
 class DebtRepository {
-  final SupabaseClient? _client;
+  final SQLiteDatabase? _db;
   static const _uuid = Uuid();
 
-  DebtRepository(this._client);
+  DebtRepository(this._db);
 
   /// Fetch all debts for a given tenant
   Future<List<Debt>> fetchDebts(String tenantId) async {
-    final client = _client;
-    if (client == null) {
-      throw const PostgrestException(message: 'Supabase client not initialized');
+    if (_db == null) {
+      throw Exception('SQLite database not initialized');
     }
 
-    final response = await client
-        .from('debts')
-        .select()
-        .eq('tenant_id', tenantId)
-        .order('created_at', ascending: false);
-
-    return (response as List<dynamic>)
-        .map((row) => Debt.fromJson(row as Map<String, dynamic>))
-        .toList();
+    final response = await _db.fetchDebts(tenantId);
+    return response.map((row) => Debt.fromJson(row)).toList();
   }
 
   /// Create a new debt record. remaining_balance is initialized to principal_amount.
@@ -45,9 +38,8 @@ class DebtRepository {
     required DateTime originDate,
     required DateTime dueDate,
   }) async {
-    final client = _client;
-    if (client == null) {
-      throw const PostgrestException(message: 'Supabase client not initialized');
+    if (_db == null) {
+      throw Exception('SQLite database not initialized');
     }
 
     final newId = _uuid.v4();
@@ -68,17 +60,14 @@ class DebtRepository {
       'updated_at': now,
     };
 
-    final response = await client
-        .from('debts')
-        .insert(payload)
-        .select()
-        .single();
-
-    return Debt.fromJson(response);
+    await _db.insertDebt(payload);
+    final debt = await _db.fetchDebtById(newId, tenantId);
+    return Debt.fromJson(debt!);
   }
 
   /// Update an existing debt record (e.g. status or assigned officer).
   Future<Debt> updateDebt({
+    required String tenantId,
     required String debtId,
     String? referenceNumber,
     int? principalAmountCents,
@@ -88,12 +77,12 @@ class DebtRepository {
     String? status,
     String? assignedOfficerId,
   }) async {
-    final client = _client;
-    if (client == null) {
-      throw const PostgrestException(message: 'Supabase client not initialized');
+    if (_db == null) {
+      throw Exception('SQLite database not initialized');
     }
 
     final now = DateTime.now().toIso8601String();
+
     final payload = <String, dynamic>{
       'updated_at': now,
     };
@@ -106,30 +95,22 @@ class DebtRepository {
     if (status != null) payload['status'] = status;
     if (assignedOfficerId != null) payload['assigned_officer_id'] = assignedOfficerId;
 
-    final response = await client
-        .from('debts')
-        .update(payload)
-        .eq('id', debtId)
-        .select()
-        .single();
+    await _db.updateDebt({
+      'id': debtId,
+      ...payload,
+    });
 
-    return Debt.fromJson(response);
+    final debt = await _db.fetchDebtById(debtId, tenantId);
+    return debt != null ? Debt.fromJson(debt) : Debt.initial();
   }
 
   /// Fetch a single debt by ID (tenant-scoped)
   Future<Debt?> fetchDebtById(String tenantId, String debtId) async {
-    final client = _client;
-    if (client == null) {
-      throw const PostgrestException(message: 'Supabase client not initialized');
+    if (_db == null) {
+      throw Exception('SQLite database not initialized');
     }
 
-    final response = await client
-        .from('debts')
-        .select()
-        .eq('id', debtId)
-        .eq('tenant_id', tenantId)
-        .maybeSingle();
-
+    final response = await _db.fetchDebtById(debtId, tenantId);
     if (response == null) return null;
     return Debt.fromJson(response);
   }

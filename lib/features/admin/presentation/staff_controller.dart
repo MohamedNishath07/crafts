@@ -55,12 +55,13 @@ final filteredStaffListProvider = Provider<List<UserProfile>>((ref) {
 
 class StaffController extends AsyncNotifier<List<UserProfile>> {
   late final StaffRepository _repository;
+  late final String tenantId;
 
   @override
   FutureOr<List<UserProfile>> build() async {
     _repository = ref.watch(staffRepositoryProvider);
     final authProfile = ref.read(authControllerProvider).value;
-    final tenantId = authProfile?.tenantId ?? 'a0000000-0000-0000-0000-000000000001';
+    tenantId = authProfile?.tenantId ?? 'a0000000-0000-0000-0000-000000000001';
 
     try {
       final members = await _repository.fetchStaffMembers(tenantId).timeout(
@@ -76,8 +77,6 @@ class StaffController extends AsyncNotifier<List<UserProfile>> {
   Future<void> refresh() async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
-      final authProfile = ref.read(authControllerProvider).value;
-      final tenantId = authProfile?.tenantId ?? 'a0000000-0000-0000-0000-000000000001';
       try {
         final members = await _repository.fetchStaffMembers(tenantId).timeout(
           const Duration(seconds: 2),
@@ -95,8 +94,6 @@ class StaffController extends AsyncNotifier<List<UserProfile>> {
     required UserRole role,
   }) async {
     final currentList = state.value ?? [];
-    final authProfile = ref.read(authControllerProvider).value;
-    final tenantId = authProfile?.tenantId ?? 'a0000000-0000-0000-0000-000000000001';
 
     try {
       final newMember = await _repository.createStaffMember(
@@ -128,9 +125,11 @@ class StaffController extends AsyncNotifier<List<UserProfile>> {
     final newStatus = !currentStatus;
 
     try {
-      await _repository.updateStaffStatus(userId: userId, isActive: newStatus).timeout(
-        const Duration(seconds: 2),
-      );
+      await _repository.updateStaffStatus(
+        tenantId: tenantId,
+        userId: userId,
+        isActive: newStatus,
+      ).timeout(const Duration(seconds: 2));
     } catch (_) {
       // Allow local state update if DB offline
     }
@@ -159,9 +158,11 @@ class StaffController extends AsyncNotifier<List<UserProfile>> {
     final currentList = state.value ?? [];
 
     try {
-      await _repository.updateStaffRole(userId: userId, role: newRole).timeout(
-        const Duration(seconds: 2),
-      );
+      await _repository.updateStaffRole(
+        tenantId: tenantId,
+        userId: userId,
+        role: newRole,
+      ).timeout(const Duration(seconds: 2));
     } catch (_) {
       // Allow local state update if DB offline
     }

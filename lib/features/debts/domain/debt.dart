@@ -27,6 +27,21 @@ class Debt {
     required this.updatedAt,
   });
 
+  /// Default/empty debt used when a record cannot be fetched from the database.
+  factory Debt.initial() => Debt(
+        id: '',
+        tenantId: '',
+        customerId: '',
+        referenceNumber: '',
+        principalAmountCents: 0,
+        remainingBalanceCents: 0,
+        originDate: DateTime.now(),
+        dueDate: DateTime.now(),
+        status: 'active',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
   /// Returns the principal amount in display currency units (e.g. dollars).
   double get principalAmount => principalAmountCents / 100;
 

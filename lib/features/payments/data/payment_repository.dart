@@ -1,46 +1,34 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+﻿import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../domain/payment.dart';
 
+import '../../../core/sqlitedatabase.dart';
+
 final paymentRepositoryProvider = Provider<PaymentRepository>((ref) {
   try {
-    return PaymentRepository(Supabase.instance.client);
+    return PaymentRepository(SQLiteDatabase());
   } catch (_) {
     return PaymentRepository(null);
   }
 });
 
 class PaymentRepository {
-  final SupabaseClient? _client;
+  final SQLiteDatabase? _db;
   static const _uuid = Uuid();
 
-  PaymentRepository(this._client);
+  PaymentRepository(this._db);
 
   /// Fetch all payments for a given tenant, newest first
   Future<List<Payment>> fetchPayments(String tenantId) async {
-    final client = _client;
-    if (client == null) {
-      throw const PostgrestException(message: 'Supabase client not initialized');
+    if (_db == null) {
+      throw Exception('SQLite database not initialized');
     }
 
-    final response = await client
-        .from('payments')
-        .select()
-        .eq('tenant_id', tenantId)
-        .order('created_at', ascending: false);
-
-    return (response as List<dynamic>)
-        .map((row) => Payment.fromJson(row as Map<String, dynamic>))
-        .toList();
+    final response = await _db.fetchPayments(tenantId);
+    return response.map((row) => Payment.fromJson(row)).toList();
   }
 
   /// Record a payment and atomically deflate the debt's remaining balance.
-  ///
-  /// Steps:
-  /// 1. Insert into `payments` (append-only, immutable)
-  /// 2. Decrement `debts.remaining_balance_cents` by amount_cents
-  /// 3. If remaining balance reaches 0, set debt status to 'settled'
   Future<Payment> recordPayment({
     required String tenantId,
     required String debtId,
@@ -50,20 +38,13 @@ class PaymentRepository {
     required String transactionReference,
     String? notes,
   }) async {
-    final client = _client;
-    if (client == null) {
-      throw const PostgrestException(message: 'Supabase client not initialized');
+    if (_db == null) {
+      throw Exception('SQLite database not initialized');
     }
 
     // Fetch the current debt to validate balance and get remaining balance
-    final debtResponse = await client
-        .from('debts')
-        .select('id, remaining_balance_cents, status, principal_amount_cents')
-        .eq('id', debtId)
-        .eq('tenant_id', tenantId)
-        .single();
-
-    final debt = debtResponse;
+    final debtResponse = await _db.fetchDebtById(debtId, tenantId);
+    final debt = debtResponse!;
     final currentRemaining = debt['remaining_balance_cents'] as int;
     final currentStatus = debt['status'] as String;
 
@@ -77,8 +58,8 @@ class PaymentRepository {
 
     if (amountCents > currentRemaining) {
       throw Exception(
-        'Payment amount (\$${(amountCents / 100).toStringAsFixed(2)}) exceeds outstanding balance '
-        '(\$${(currentRemaining / 100).toStringAsFixed(2)}).',
+        'Payment amount ${(amountCents / 100).toStringAsFixed(2)} exceeds outstanding balance '
+        '${(currentRemaining / 100).toStringAsFixed(2)}.',
       );
     }
 
@@ -103,24 +84,20 @@ class PaymentRepository {
       'created_at': now,
     };
 
-    final paymentResponse = await client
-        .from('payments')
-        .insert(paymentPayload)
-        .select()
-        .single();
+    await _db.insertPayment(paymentPayload);
 
     // Update debt balance and status
-    await client
-        .from('debts')
-        .update({
-          'remaining_balance_cents': newRemaining,
-          'status': newStatus,
-          'updated_at': now,
-        })
-        .eq('id', debtId)
-        .eq('tenant_id', tenantId);
+    await _db.updateDebt({
+      'id': debtId,
+      'remaining_balance_cents': newRemaining,
+      'status': newStatus,
+      'updated_at': now,
+    });
 
-    return Payment.fromJson(paymentResponse);
+    // Return the created payment - fetch from database
+    final payment = await _db.fetchPayments(tenantId);
+    final row = payment.firstWhere((p) => p['id'] == newId, orElse: () => payment.first);
+    return Payment.fromJson(row);
   }
 
   /// Default payment records used in offline development or test environments

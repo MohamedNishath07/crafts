@@ -22,6 +22,20 @@ class ReminderSettings {
     required this.updatedAt,
   });
 
+  /// Default reminder settings used when none exist for a tenant.
+  factory ReminderSettings.initial() => ReminderSettings(
+        id: '',
+        tenantId: '',
+        emailEnabled: true,
+        smsEnabled: false,
+        emailOffsetDays: const [3, 1, 0],
+        smsOffsetDays: const [3, 0],
+        messageTemplate:
+            'Dear {{customer_name}}, a payment of {{amount}} on account {{reference_number}} is due on {{due_date}}. Please make your payment to avoid further collection action.',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
   factory ReminderSettings.fromJson(Map<String, dynamic> json) {
     return ReminderSettings(
       id: json['id'] as String,

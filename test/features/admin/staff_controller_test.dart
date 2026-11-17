@@ -63,10 +63,12 @@ class MockStaffRepository extends StaffRepository {
 
   @override
   Future<UserProfile> updateStaffStatus({
+    required String tenantId,
     required String userId,
     required bool isActive,
   }) async {
-    final index = _store.indexWhere((s) => s.id == userId);
+    final index =
+        _store.indexWhere((s) => s.id == userId && s.tenantId == tenantId);
     final current = _store[index];
     final updated = UserProfile(
       id: current.id,
@@ -82,10 +84,12 @@ class MockStaffRepository extends StaffRepository {
 
   @override
   Future<UserProfile> updateStaffRole({
+    required String tenantId,
     required String userId,
     required UserRole role,
   }) async {
-    final index = _store.indexWhere((s) => s.id == userId);
+    final index =
+        _store.indexWhere((s) => s.id == userId && s.tenantId == tenantId);
     final current = _store[index];
     final updated = UserProfile(
       id: current.id,
