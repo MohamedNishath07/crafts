@@ -16,16 +16,31 @@ void main() async {
   final sqliteDatabase = SQLiteDatabase();
   await sqliteDatabase.database;
 
-  // Initialize Supabase client
-  // Uses environment variables or local development fallback
-  const supabaseUrl = String.fromEnvironment(
+  // ══════════════════════════════════════════════════════════════════════
+// SUPABASE CONFIGURATION — REPLACE THESE WITH YOUR OWN PROJECT CREDENTIALS
+// ══════════════════════════════════════════════════════════════════════
+//
+// 1. Create a free project at https://supabase.com
+// 2. Go to Project Settings → API to get your Project URL and anon public key
+// 3. Enable Email/Password auth: Authentication → Providers → Email → Enable
+//
+// Then either:
+//   a) Set environment variables before running:
+//      $env:SUPABASE_URL = "https://your-project-ref.supabase.co"
+//      $env:SUPABASE_ANON_KEY = "your-anon-public-key"
+//   b) Or replace the defaultValue strings below with your real credentials.
+// ══════════════════════════════════════════════════════════════════════
+  final supabaseUrl = String.fromEnvironment(
     'SUPABASE_URL',
-    defaultValue: 'https://demo-debit-recovery.supabase.co',
+    defaultValue: 'https://YOUR_PROJECT_REF.supabase.co', // <-- REPLACE ME
   );
-  const supabaseAnonKey = String.fromEnvironment(
+  final supabaseAnonKey = String.fromEnvironment(
     'SUPABASE_ANON_KEY',
-    defaultValue: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.demo-anon-key',
+    defaultValue: 'YOUR_ANON_PUBLIC_KEY', // <-- REPLACE ME
   );
+
+  final isDemoCredentials = supabaseUrl.contains('YOUR_PROJECT_REF') ||
+      supabaseAnonKey == 'YOUR_ANON_PUBLIC_KEY';
 
   try {
     await Supabase.initialize(
@@ -33,8 +48,17 @@ void main() async {
       publishableKey: supabaseAnonKey,
       debug: false,
     );
+    if (isDemoCredentials) {
+      debugPrint(
+        '⚠️  Supabase is running with demo placeholder credentials. '
+        'Sign in / sign up will not work until you add real Supabase API keys.',
+      );
+    } else {
+      debugPrint('✅ Supabase initialized successfully');
+    }
   } catch (e) {
-    debugPrint('Supabase initialization notice: $e');
+    debugPrint('❌ Supabase initialization failed: $e');
+    debugPrint('   The app will continue with SQLite (offline mode) only.');
   }
 
   runApp(

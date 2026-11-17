@@ -1,13 +1,9 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:http/http.dart' as http;
-import '../../../api_config.dart';
 
 import '../../../core/constants/app_colors.dart';
-import '../domain/user_profile.dart';
-import '../data/php_auth_session.dart';
+import 'auth_controller.dart';
 
 /// Validation helper methods
 class ValidationHelpers {
@@ -94,44 +90,38 @@ class _CreateAccountScreenState extends ConsumerState<CreateAccountScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isSubmitting = true);
     try {
-      final response = await http.post(
-        Uri.parse(ApiConfig.registerUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'full_name': _firstNameController.text.trim(),
-          'email': _emailController.text.trim(),
-          'phone': _phoneController.text.trim(),
-          'username': _usernameController.text.trim(),
-          'password': _passwordController.text,
-        }),
+      await ref.read(authControllerProvider.notifier).createAccount(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        firstName: _firstNameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
+        idNumber: _idNumberController.text.trim(),
       );
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      if (response.statusCode >= 200 && response.statusCode < 300 && (data['success'] == true)) {
-        final userData = data['user'] as Map<String, dynamic>?;
-        if (userData != null && mounted) {
-          final user = UserProfile(
-            id: userData['id']?.toString() ?? '',
-            tenantId: '',
-            email: userData['email']?.toString() ?? '',
-            fullName: userData['full_name']?.toString() ?? '',
-            role: UserRole.recoveryOfficer,
-            isActive: true,
+
+      final authState = ref.read(authControllerProvider);
+      if (authState.hasError) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Registration failed: ${authState.error}'),
+              backgroundColor: AppColors.accentDanger,
+            ),
           );
-          ref.read(phpAuthSessionProvider.notifier).setUser(user);
-          debugPrint('Registration success: user stored in session');
         }
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message']?.toString() ?? 'Registration successful')));
-          context.go('/dashboard');
-        }
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message']?.toString() ?? 'Registration failed')));
-        }
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Account created successfully'),
+            backgroundColor: AppColors.accentSuccess,
+          ),
+        );
+        context.go('/dashboard');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Network error. Please try again.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Network error. Please try again.')),
+        );
       }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);

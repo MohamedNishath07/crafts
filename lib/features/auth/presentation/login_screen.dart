@@ -1,16 +1,12 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:http/http.dart' as http;
-import '../../../api_config.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../domain/user_profile.dart';
 import 'auth_controller.dart';
-import '../data/php_auth_session.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -35,54 +31,39 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    debugPrint('Login submit started');
     setState(() => _isLoggingIn = true);
     try {
-      final response = await http.post(
-        Uri.parse(ApiConfig.loginUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'identifier': _emailController.text.trim(),
-          'password': _passwordController.text,
-        }),
+      await ref.read(authControllerProvider.notifier).signIn(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
       );
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      debugPrint('Login response status: ${response.statusCode}');
-      debugPrint('Login response body: ${response.body}');
-      if (response.statusCode >= 200 && response.statusCode < 300 && data['success'] == true) {
-        final userData = data['user'] as Map<String, dynamic>?;
-        if (userData != null && mounted) {
-          final user = UserProfile(
-            id: userData['id']?.toString() ?? '',
-            tenantId: '',
-            email: userData['email']?.toString() ?? '',
-            fullName: userData['full_name']?.toString() ?? '',
-            role: UserRole.recoveryOfficer,
-            isActive: true,
-          );
-          ref.read(phpAuthSessionProvider.notifier).setUser(user);
-          debugPrint('Login success: user stored in session');
-        }
+
+      final authState = ref.read(authControllerProvider);
+      if (authState.hasError) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(data['message']?.toString() ?? 'Login successful'),
-              backgroundColor: AppColors.accentSuccess,
+              content: Text('Login failed: ${authState.error}'),
+              backgroundColor: AppColors.accentDanger,
             ),
           );
-          context.go('/dashboard');
         }
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(data['message']?.toString() ?? 'Login failed'), backgroundColor: AppColors.accentDanger),
-          );
-        }
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Login successful'),
+            backgroundColor: AppColors.accentSuccess,
+          ),
+        );
+        context.go('/dashboard');
       }
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Network error. Please try again.'), backgroundColor: AppColors.accentDanger),
+          const SnackBar(
+            content: Text('Network error. Please try again.'),
+            backgroundColor: AppColors.accentDanger,
+          ),
         );
       }
     } finally {
