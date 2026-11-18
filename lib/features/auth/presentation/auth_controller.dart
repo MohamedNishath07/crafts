@@ -14,14 +14,14 @@ class AuthController extends AsyncNotifier<UserProfile?> {
   @override
   FutureOr<UserProfile?> build() async {
     final user = await _repository.getCurrentProfile();
-    return user != null ? UserProfile(
+    return UserProfile(
       id: user.id,
       email: user.email,
       fullName: user.name ?? 'Staff Member',
       role: UserRole.recoveryOfficer,
       isActive: user.isActive,
       tenantId: 'default_tenant',
-    ) : null;
+    );
   }
 
   Future<void> signIn({
@@ -31,16 +31,14 @@ class AuthController extends AsyncNotifier<UserProfile?> {
     state = const AsyncValue.loading();
     await _repository.signIn(email: email, password: password, tenantId: 'default_tenant');
     final user = await _repository.getCurrentProfile();
-    state = user != null
-        ? AsyncValue.data(UserProfile(
+    state = AsyncValue.data(UserProfile(
             id: user.id,
             email: user.email,
             fullName: user.name ?? 'Staff Member',
             role: UserRole.recoveryOfficer,
             isActive: user.isActive,
-tenantId: 'default_tenant',
-          ))
-        : const AsyncValue.data(null);
+            tenantId: 'default_tenant',
+          ));
   }
 
   Future<void> signOut() async {
@@ -117,14 +115,14 @@ tenantId: 'default_tenant',
         lastName: lastName,
         tenantId: 'default_tenant',
       );
-      return user != null ? UserProfile(
+      return UserProfile(
         id: user.id,
         email: user.email,
         fullName: user.name ?? 'Staff Member',
         role: UserRole.recoveryOfficer,
         isActive: user.isActive,
 tenantId: 'default_tenant',
-      ) : null;
+      );
     });
   }
 }

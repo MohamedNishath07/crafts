@@ -24,9 +24,9 @@ class AuditLogRepository {
     final id = await db.insert('audit_logs', {
       'tenant_id': _tenantId,
       'action': action,
-      if (entityType != null) 'entity_type': entityType,
-      if (entityId != null) 'entity_id': entityId,
-      if (details != null) 'details': details,
+      'entity_type': entityType,
+      'entity_id': entityId,
+      'details': details,
       'created_at': DateTime.now().toIso8601String(),
       'user_id': userId,
     });
