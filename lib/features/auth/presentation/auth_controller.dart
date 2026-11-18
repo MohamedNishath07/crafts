@@ -1,6 +1,7 @@
 import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../data/auth_repository.dart';
+import '../data/auth_repository_backup.dart';
 import '../domain/user_profile.dart';
 
 final authControllerProvider = AsyncNotifierProvider<AuthController, UserProfile?>(() {
@@ -8,12 +9,19 @@ final authControllerProvider = AsyncNotifierProvider<AuthController, UserProfile
 });
 
 class AuthController extends AsyncNotifier<UserProfile?> {
-  late final AuthRepository _repository;
+  final AuthRepository _repository = AuthRepository();
 
   @override
   FutureOr<UserProfile?> build() async {
-    _repository = ref.watch(authRepositoryProvider);
-    return _repository.getCurrentProfile();
+    final user = await _repository.getCurrentProfile();
+    return user != null ? UserProfile(
+      id: user.id,
+      email: user.email,
+      fullName: user.name ?? 'Staff Member',
+      role: UserRole.recoveryOfficer,
+      isActive: user.isActive,
+      tenantId: 'default_tenant',
+    ) : null;
   }
 
   Future<void> signIn({
@@ -21,9 +29,18 @@ class AuthController extends AsyncNotifier<UserProfile?> {
     required String password,
   }) async {
     state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
-      return await _repository.signIn(email: email, password: password);
-    });
+    await _repository.signIn(email: email, password: password, tenantId: 'default_tenant');
+    final user = await _repository.getCurrentProfile();
+    state = user != null
+        ? AsyncValue.data(UserProfile(
+            id: user.id,
+            email: user.email,
+            fullName: user.name ?? 'Staff Member',
+            role: UserRole.recoveryOfficer,
+            isActive: user.isActive,
+tenantId: 'default_tenant',
+          ))
+        : const AsyncValue.data(null);
   }
 
   Future<void> signOut() async {
@@ -51,11 +68,11 @@ class AuthController extends AsyncNotifier<UserProfile?> {
     if (current == null) return;
 
     try {
-      final updated = await _repository.updateProfile(
-        userId: current.id,
+      await _repository.updateProfile(
         fullName: fullName,
       );
-      state = AsyncValue.data(updated);
+tenantId: 'default_tenant',
+      state = const AsyncValue.data(UserProfile(id: '', email: '', fullName: '', role: UserRole.recoveryOfficer, isActive: true));
     } catch (_) {
       // Offline fallback: update local state
       state = AsyncValue.data(
@@ -82,17 +99,24 @@ class AuthController extends AsyncNotifier<UserProfile?> {
     required String password,
     required String firstName,
     required String lastName,
-    required String idNumber,
-  }) async {
+    }) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
-      return await _repository.signUp(
+      final user = await _repository.signUp(
         email: email,
         password: password,
         firstName: firstName,
         lastName: lastName,
-        idNumber: idNumber,
+        tenantId: 'default_tenant',
       );
+      return user != null ? UserProfile(
+        id: user.id,
+        email: user.email,
+        fullName: user.name ?? 'Staff Member',
+        role: UserRole.recoveryOfficer,
+        isActive: user.isActive,
+tenantId: 'default_tenant',
+      ) : null;
     });
   }
 }

@@ -33,6 +33,20 @@ class SQLiteDatabase {
 
   /// Create all tables
   Future<void> _onCreate(Database db, int version) async {
+    // Audit logs table
+    await db.execute('''\
+      CREATE TABLE IF NOT EXISTS audit_logs (
+        id TEXT PRIMARY KEY,
+        tenant_id TEXT NOT NULL,
+        user_id TEXT NOT NULL,
+        action TEXT NOT NULL,
+        entity_type TEXT,
+        entity_id TEXT,
+        details TEXT,
+        created_at TEXT NOT NULL
+      )
+    ''');
+
     // Customers table
     await db.execute('''
       CREATE TABLE customers (

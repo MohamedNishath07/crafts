@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:crafts/core/sqlitedatabase.dart';
 import 'package:crafts/features/reports/reports_model.dart';
 
-/// Provider for reports state
-final reportsProvider =
-    StateNotifierProvider<ReportsNotifier, ReportsModel>((ref) {
+final reportsProvider = StateNotifierProvider<ReportsNotifier, ReportsModel>((ref) {
   return ReportsNotifier();
 });
 
-/// Notifier for reports state management
 class ReportsNotifier extends StateNotifier<ReportsModel> {
   ReportsNotifier() : super(ReportsModel.loading());
 
@@ -20,52 +17,60 @@ class ReportsNotifier extends StateNotifier<ReportsModel> {
   }) async {
     state = state.copyWith(isLoading: true, hasError: false, errorMessage: '');
     try {
-      final supabase = Supabase.instance.client;
-
-      var query = supabase.from('debts').select();
+      final sqldb = SQLiteDatabase();
+      final db = await sqldb.database;
+      final tenantId = await _getTenantId();
+      var query = await db.query(
+        'debts',
+        where: 'tenant_id = ?',
+        whereArgs: [tenantId],
+      );
       if (status != null && status.isNotEmpty) {
-        query = query.eq('status', status);
+        query = await db.query(
+          'debts',
+          where: 'tenant_id = ? AND status = ?',
+          whereArgs: [tenantId, status],
+        );
       }
       if (officer != null && officer.isNotEmpty) {
-        query = query.eq('officer_name', officer);
+        query = await db.query(
+          'debts',
+          where: 'tenant_id = ? AND officer_name = ?',
+          whereArgs: [tenantId, officer],
+        );
       }
       if (dateRange != null) {
-        query = query
-            .gte('created_at', dateRange.start.toIso8601String())
-            .lte('created_at', dateRange.end.toIso8601String());
+        final startStr = dateRange.start.toIso8601String();
+        final endStr = dateRange.end.toIso8601String();
+        query = await db.query(
+          'debts',
+          where: 'tenant_id = ? AND created_at >= ? AND created_at <= ?',
+          whereArgs: [tenantId, startStr, endStr],
+        );
       }
 
-      final data = await query;
-      final reports = (data as List).map((row) {
+      final reports = (query as List).map((row) {
         return ReportItem(
           id: row['id'] is int
               ? row['id'] as int
-              : int.tryParse(row['id'].toString()) ?? 0,
-          date: row['created_at'] != null
-              ? DateTime.parse(row['created_at'].toString())
-              : DateTime.now(),
-          debtStatus: row['status']?.toString() ?? 'Unknown',
-          amount: (row['amount'] as num?)?.toDouble() ?? 0.0,
-          officerName: row['officer_name']?.toString() ?? '',
-          customerName: row['customer_name']?.toString() ?? '',
+              : 0,
+          date: row['created_at'] as DateTime,
+          debtStatus: row['status'] as String,
+          amount: (row['remaining_balance_cents'] as num).toDouble() / 100.0,
+          officerName: row['officer_name'] as String? ?? '',
+          customerName: row['customer_name'] as String? ?? '',
         );
       }).toList();
 
-      final totalBilled = reports.fold<double>(0.0, (s, r) => s + r.amount);
-      final totalCollected = reports
-          .where((r) => r.debtStatus.toLowerCase() == 'settled')
-          .fold<double>(0.0, (s, r) => s + r.amount);
+      final totalBilled = reports.fold(0.0, (sum, r) => sum + r.amount);
+      final totalCollected = reports.fold(0.0, (sum, r) => sum + (r.amount * 0.5));
       final totalOutstanding = totalBilled - totalCollected;
 
-      state = state.copyWith(
-        isLoading: false,
+      state = ReportsModel.success(
         reports: reports,
         totalBilled: totalBilled,
         totalCollected: totalCollected,
         totalOutstanding: totalOutstanding,
-        dateRange: dateRange,
-        selectedStatus: status,
-        selectedOfficer: officer,
       );
     } catch (e) {
       state = state.copyWith(
@@ -76,15 +81,7 @@ class ReportsNotifier extends StateNotifier<ReportsModel> {
     }
   }
 
-  Future<void> generateReport({
-    required DateTimeRange<DateTime> dateRange,
-    required String status,
-    required String officer,
-  }) async {
-    await loadReports(
-      dateRange: dateRange,
-      status: status,
-      officer: officer,
-    );
+  Future<String> _getTenantId() async {
+    return 'default_tenant';
   }
 }

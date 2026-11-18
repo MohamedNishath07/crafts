@@ -1,207 +1,110 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:crafts/core/constants/app_colors.dart';
 import 'package:crafts/features/dashboard/dashboard_report_controller.dart';
+import 'package:crafts/core/sqlitedatabase.dart';
 
 enum ReportFilterStatus { all, current, overdue, settled }
 
 class DashboardReportScreen extends StatefulWidget {
   const DashboardReportScreen({super.key});
-
   @override
   State<DashboardReportScreen> createState() => _DashboardReportScreenState();
 }
 
 class _DashboardReportScreenState extends State<DashboardReportScreen> {
   ReportFilterStatus _selectedFilter = ReportFilterStatus.all;
+  List<Map<String, dynamic>> _reportRows = [];
+  bool _isLoading = false;
+  double _totalAmount = 0.0;
+  String? _error;
+  late SQLiteDatabase _sqliteDatabase;
+  String _currentTenantId = 'default_tenant';
   DateTime? _startDate;
   DateTime? _endDate;
-
-  List<ReportRow> _reportRows = [];
-  bool _isLoading = false;
-  String? _error;
-  double _totalAmount = 0.0;
-
-  final _supabase = Supabase.instance.client;
 
   @override
   void initState() {
     super.initState();
+    _sqliteDatabase = SQLiteDatabase();
     _fetchDebtsAndGenerateReport();
   }
 
   Future<void> _fetchDebtsAndGenerateReport() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
+    setState(() => _isLoading = true);
     try {
-      final user = _supabase.auth.currentUser;
-      final tenantId = user?.appMetadata['tenant_id'] as String? ?? 'default_tenant';
-      final debtsData = await _supabase.from('debts').select().eq('tenant_id', tenantId);
-      final allRows = TabularReportGenerator.generateRows(
-        debts: debtsData,
-        filter: ReportFilter(),
+      final debtsData = await (await _sqliteDatabase.database).query(
+        'debts',
+        where: 'tenant_id = ?',
+        whereArgs: [_currentTenantId],
       );
       setState(() {
-        _reportRows = allRows;
+        _reportRows = debtsData;
         _calculateTotal();
       });
     } catch (e) {
-      setState(() {
-        _error = e.toString();
-      });
+      setState(() => _error = e.toString());
     } finally {
       setState(() => _isLoading = false);
     }
   }
 
   void _calculateTotal() {
-    final total = _reportRows.fold(0.0, (sum, row) => sum + row.amount);
+    final total = _reportRows.fold(0.0, (s, r) => s + (r['amount'] ?? 0));
     setState(() => _totalAmount = total);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.brandPrimary,
-        elevation: 0,
-        title: const Text(
-          'Reports',
-          style: TextStyle(color: AppColors.surfaceBase, fontWeight: FontWeight.bold),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: AppColors.surfaceBase),
-            onPressed: _fetchDebtsAndGenerateReport,
-            tooltip: 'Refresh report',
-          ),
-        ],
-      ),
-      body: _buildBody(context),
-    );
-  }
+  String _getFilterStatusLabel(ReportFilterStatus s) =>
+      s == ReportFilterStatus.all ? 'All' :
+      s == ReportFilterStatus.current ? 'Current' :
+      s == ReportFilterStatus.overdue ? 'Overdue' : 'Settled';
 
-  Widget _buildBody(BuildContext context) {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_error != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('Error occurred'),
-            const SizedBox(height: 16),
-            ElevatedButton(onPressed: _fetchDebtsAndGenerateReport, child: const Text('Retry')),
-          ],
-        ),
-      );
-    }
-
-    final filterRow = _buildFilterToolbar(context);
-    final dataTable = Container();
-    final exportSection = Container();
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24.0),
+  Widget _buildFilterToolbar(BuildContext ctx) => Card(
+    child: Padding(
+      padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          filterRow,
-          const SizedBox(height: 24),
-          const Text(
-            'Debt Report',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
+          const Text('Status Filter', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
-          Text(
-            'Total rows: $_reportRows, Total amount: $_totalAmount',
-            style: const TextStyle(fontSize: 14, color: AppColors.inkSecondary),
+          Wrap(
+            spacing: 8,
+            children: ReportFilterStatus.values.map((status) {
+              final selected = _selectedFilter == status;
+              return FilterChip(
+                label: Text(_getFilterStatusLabel(status)),
+                selected: selected,
+                onSelected: (s) {
+                  setState(() => _selectedFilter = s ? status : ReportFilterStatus.all);
+                },
+                selectedColor: AppColors.brandPrimary,
+                checkmarkColor: AppColors.surfaceBase,
+                backgroundColor: AppColors.surfaceRaised,
+              );
+            }).toList(),
           ),
-          const SizedBox(height: 24),
-          dataTable,
-          const SizedBox(height: 24),
-          exportSection,
+          const SizedBox(height: 16),
+          ListTile(
+            title: const Text('Date Range'),
+            subtitle: _startDate != null
+                ? Text('${DateFormat('MMM dd, yyyy').format(_startDate!)}-${DateFormat('MMM dd, yyyy').format(_endDate!)}', style: const TextStyle(fontSize: 12))
+                : const Text('Not set'),
+            trailing: const Icon(Icons.calendar_today),
+            onTap: () => _selectDateRange(ctx),
+          ),
         ],
       ),
-    );
-  }
+    ),
+  );
 
-  String _getFilterStatusLabel(ReportFilterStatus status) {
-    switch (status) {
-      case ReportFilterStatus.current:
-        return 'Current';
-      case ReportFilterStatus.overdue:
-        return 'Overdue';
-      case ReportFilterStatus.settled:
-        return 'Settled';
-      case ReportFilterStatus.all:
-        return 'All';
-    }
-  }
-
-  Widget _buildFilterToolbar(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Status Filter',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              children: ReportFilterStatus.values.map((status) {
-                final isSelected = _selectedFilter == status;
-                return FilterChip(
-                  label: Text(_getFilterStatusLabel(status)),
-                  selected: isSelected,
-                  onSelected: (selected) {
-                    setState(() {
-                      _selectedFilter = selected ? status : ReportFilterStatus.all;
-                    });
-                  },
-                  selectedColor: AppColors.brandPrimary,
-                  checkmarkColor: AppColors.surfaceBase,
-                  backgroundColor: AppColors.surfaceRaised,
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 16),
-
-            ListTile(
-              title: const Text('Date Range'),
-              subtitle: _startDate != null
-                  ? Text(
-                      '${DateFormat('MMM dd, yyyy').format(_startDate!)}-${DateFormat('MMM dd, yyyy').format(_endDate!)}',
-                      style: const TextStyle(fontSize: 12),
-                    )
-                  : const Text('Not set'),
-              trailing: const Icon(Icons.calendar_today),
-              onTap: () => _selectDateRange(context),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _selectDateRange(BuildContext context) async {
-    final DateTimeRange? picked = await showDateRangePicker(
-      context: context,
+  Future<void> _selectDateRange(BuildContext ctx) async {
+    final picked = await showDateRangePicker(
+      context: ctx,
       firstDate: DateTime(2000),
       lastDate: DateTime.now().add(const Duration(days: 1)),
       initialDateRange: null,
-      
     );
-
     if (picked != null) {
       setState(() {
         _startDate = picked.start;
@@ -210,4 +113,41 @@ class _DashboardReportScreenState extends State<DashboardReportScreen> {
     }
   }
 
+  @override
+  Widget build(BuildContext context) {
+    final filterRow = _buildFilterToolbar(context);
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: AppColors.brandPrimary,
+        elevation: 0,
+        title: const Text('Reports', style: TextStyle(color: AppColors.surfaceBase, fontWeight: FontWeight.bold)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, color: AppColors.surfaceBase),
+            onPressed: _fetchDebtsAndGenerateReport,
+            tooltip: 'Refresh report',
+          ),
+        ],
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+              ? const Center(child: Text('Error occurred'))
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      filterRow,
+                      const SizedBox(height: 24),
+                      const Text('Debt Report', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      Text('Total rows: ${_reportRows.length}, Total amount: $_totalAmount',
+                          style: const TextStyle(fontSize: 14, color: AppColors.inkSecondary)),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
+    );
+  }
 }

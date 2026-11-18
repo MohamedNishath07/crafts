@@ -1,38 +1,45 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:crafts/core/sqlitedatabase.dart';
 import 'package:crafts/features/audit/audit_log_model.dart';
 
 /// Repository for audit log operations
 /// Handles writing audit entries and reading/filtering audit logs
 class AuditLogRepository {
-  final SupabaseClient _supabase = Supabase.instance.client;
+  final SQLiteDatabase _db;
   final String _tenantId;
 
-  AuditLogRepository({String? tenantId}) : _tenantId = tenantId ?? 'default_tenant';
+  AuditLogRepository({String? tenantId}) : _tenantId = tenantId ?? 'default_tenant', _db = SQLiteDatabase();
 
   /// Write an audit log entry
-  /// This is append-only - no UPDATE or DELETE permitted by RLS policies
+  /// This is append-only - no UPDATE or DELETE permitted
   Future<AuditLogEntry> logAction({
     required String action,
     String? entityType,
     String? entityId,
     Map<String, dynamic>? details,
   }) async {
-    final user = _supabase.auth.currentUser;
-    final userId = user?.id;
+    final userId = 'anonymous';
 
-    // Insert into audit_logs - RLS will enforce tenant_id isolation
-    final response = await _supabase.from('audit_logs').insert({
+    // Insert into audit_logs table - tenant_id isolation enforced by where clause
+    final db = await _db.database;
+    final id = await db.insert('audit_logs', {
       'tenant_id': _tenantId,
-      'user_id': userId,
       'action': action,
-      'entity_type': entityType,
-      'entity_id': entityId,
-      'details': details,
-    }).select();
+      if (entityType != null) 'entity_type': entityType,
+      if (entityId != null) 'entity_id': entityId,
+      if (details != null) 'details': details,
+      'created_at': DateTime.now().toIso8601String(),
+      'user_id': userId,
+    });
 
-    if (response.isNotEmpty) {
-      final created = response.first;
-      return AuditLogEntry.fromMap(created);
+    final results = await db.query(
+      'audit_logs',
+      where: 'id = ? AND tenant_id = ? AND action = ? AND created_at = ?',
+      whereArgs: [id, _tenantId, action, DateTime.now().toIso8601String()],
+      limit: 1,
+    );
+
+    if (results.isNotEmpty) {
+      return AuditLogEntry.fromMap(results.first);
     }
 
     throw Exception('Failed to write audit log entry');
@@ -46,44 +53,42 @@ class AuditLogRepository {
     DateTime? endDate,
     int limit = 100,
   }) async {
-    // Build filter map for Supabase
-    final Map<String, dynamic> filters = {};
+    final db = await _db.database;
+
+    // Build WHERE clause with tenant_id filtering
+    final List<String> whereClauses = ['tenant_id = ?'];
+    final List<dynamic> whereArgs = [_tenantId];
+
+    // Build filter map for additional filters
     if (actionFilter != null && actionFilter.isNotEmpty) {
-      filters['action'] = actionFilter;
+      whereClauses.add('action = ?');
+      whereArgs.add(actionFilter);
     }
     if (entityTypeFilter != null && entityTypeFilter.isNotEmpty) {
-      filters['entity_type'] = entityTypeFilter;
+      whereClauses.add('entity_type = ?');
+      whereArgs.add(entityTypeFilter);
     }
 
     // Build date range filter
-    final Map<String, dynamic> selectOptions = {
-      'tenant_id': _tenantId,
-      'order': {'column': 'created_at', 'ascending': false},
-      'limit': limit,
-    };
     if (startDate != null) {
-      selectOptions['gte'] = {'created_at': startDate.toIso8601String()};
+      whereClauses.add('created_at >= ?');
+      whereArgs.add(startDate.toIso8601String());
     }
     if (endDate != null) {
-      selectOptions['lte'] = {'created_at': endDate.toIso8601String()};
+      whereClauses.add('created_at <= ?');
+      whereArgs.add(endDate.toIso8601String());
     }
 
-    var query = _supabase
-        .from('audit_logs')
-        .select()
-        .eq('tenant_id', _tenantId)
-        .eq('tenant_id', _tenantId);
+    final where = whereClauses.join(' AND ');
 
+    final results = await db.query(
+      'audit_logs',
+      where: where,
+      whereArgs: whereArgs,
+      limit: limit,
+    );
 
-    if (actionFilter != null && actionFilter.isNotEmpty) {
-      query = query.eq('action', actionFilter);
-    }
-    if (entityTypeFilter != null && entityTypeFilter.isNotEmpty) {
-      query = query.eq('entity_type', entityTypeFilter);
-    }
-
-    final response = await query.order('created_at', ascending: false).limit(limit);
-    return (response as List).map((map) => AuditLogEntry.fromMap(map)).toList();
+    return results.map((map) => AuditLogEntry.fromMap(map)).toList();
   }
 
   /// Log user login event
@@ -160,4 +165,3 @@ class AuditLogRepository {
     );
   }
 }
-

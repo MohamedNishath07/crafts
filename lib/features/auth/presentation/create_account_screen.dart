@@ -95,7 +95,6 @@ class _CreateAccountScreenState extends ConsumerState<CreateAccountScreen> {
         password: _passwordController.text,
         firstName: _firstNameController.text.trim(),
         lastName: _lastNameController.text.trim(),
-        idNumber: _idNumberController.text.trim(),
       );
 
       final authState = ref.read(authControllerProvider);
