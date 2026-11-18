@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/sqlitedatabase.dart';
+import '../../core/sqlitedatabase.dart';
+import 'data/dashboard_repository.dart';
 
 /// Async value state for dashboard metrics
 class DashboardMetricsState {
@@ -19,14 +20,15 @@ class DashboardMetricsState {
     required double totalDebt,
     required double overdueBalance,
     required double recoveredAmount,
-  }) => DashboardMetricsState(
-      metrics: DashboardMetrics(
-        totalCustomers: totalCustomers,
-        totalDebt: totalDebt,
-        overdueBalance: overdueBalance,
-        recoveredAmount: recoveredAmount,
-      ),
-    );
+  }) =>
+      DashboardMetricsState(
+        metrics: DashboardMetrics(
+          totalCustomers: totalCustomers,
+          totalDebt: totalDebt,
+          overdueBalance: overdueBalance,
+          recoveredAmount: recoveredAmount,
+        ),
+      );
   factory DashboardMetricsState.error(String message) => DashboardMetricsState(
         error: message,
       );
@@ -50,36 +52,26 @@ class DashboardMetrics {
   });
 }
 
-/// Notifier for dashboard metrics using StateNotifier
+/// Notifier for dashboard metrics using Notifier
 class DashboardMetricsNotifier extends Notifier<DashboardMetricsState> {
   @override
-  DashboardMetricsState build() => DashboardMetricsState.loading();
+  DashboardMetricsState build() {
+    Future.microtask(() => fetchDashboardMetrics());
+    return DashboardMetricsState.loading();
+  }
 
   /// Fetch dashboard metrics from SQLite local database
   Future<void> fetchDashboardMetrics() async {
     state = DashboardMetricsState.loading();
     try {
-      final db = SQLiteDatabase();
-      final user = await _getCurrentUser();
-      final tenantId = user?['tenant_id'] as String? ?? 'default_tenant';
-
-      final customerData = await db.fetchCustomers(tenantId);
-      final totalCustomers = customerData.length;
-
-      final debtData = await db.fetchDebts(tenantId);
-      final totalDebt = debtData.fold(0.0, (sum, d) => sum + (d['remaining_balance_cents'] ?? 0) / 100.0);
-      final overdueBalance = debtData
-          .where((d) => d['status'] == 'active')
-          .fold<double>(0.0, (sum, d) => sum + (d['remaining_balance_cents'] ?? 0) / 100.0);
-
-      final paymentData = await db.fetchPayments(tenantId);
-      final recoveredAmount = paymentData.fold<double>(0.0, (sum, p) => sum + (p['amount_cents'] ?? 0) / 100.0);
+      final repo = DashboardRepository(SQLiteDatabase());
+      final metrics = await repo.fetchOverviewMetrics('a0000000-0000-0000-0000-000000000001');
 
       state = DashboardMetricsState.success(
-        totalCustomers: totalCustomers,
-        totalDebt: totalDebt,
-        overdueBalance: overdueBalance,
-        recoveredAmount: recoveredAmount,
+        totalCustomers: metrics.totalCustomers,
+        totalDebt: metrics.totalCreditAmount,
+        overdueBalance: metrics.overdueBalance,
+        recoveredAmount: metrics.totalCollectedAmount,
       );
     } catch (e) {
       state = DashboardMetricsState.error(e.toString());
@@ -90,15 +82,10 @@ class DashboardMetricsNotifier extends Notifier<DashboardMetricsState> {
   Future<void> refresh() async {
     await fetchDashboardMetrics();
   }
-
-  Future<Map<String, dynamic>?> _getCurrentUser() async {
-    // In a real implementation, this would integrate with auth
-    // For now, return null and use default tenant
-    return null;
-  }
 }
 
 /// Provider for dashboard metrics notifier
-final dashboardMetricsNotifierprovider = NotifierProvider<DashboardMetricsNotifier, DashboardMetricsState>(
+final dashboardMetricsNotifierprovider =
+    NotifierProvider<DashboardMetricsNotifier, DashboardMetricsState>(
   DashboardMetricsNotifier.new,
 );

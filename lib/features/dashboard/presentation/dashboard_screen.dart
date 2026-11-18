@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/constants/app_colors.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/constants/app_colors.dart';
 import '../../auth/data/php_auth_session.dart';
 import '../../auth/domain/user_profile.dart';
+import '../../auth/presentation/auth_controller.dart';
 import '../dashboard_provider.dart';
-import '../dashboard_payment_status_chart.dart';
-import '../dashboard_recovery_trend_chart.dart';
-import '../dashboard_report_screen.dart';
-
+import '../domain/dashboard_models.dart';
+import 'dashboard_controller.dart';
+import 'widgets/dashboard_analytics_section.dart';
+import 'widgets/dashboard_header.dart';
+import 'widgets/dashboard_overview_cards.dart';
+import 'widgets/dashboard_quick_actions.dart';
+import 'widgets/dashboard_recent_activities.dart';
+import 'widgets/role_specific_section.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -15,322 +21,201 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final user = ref.watch(phpAuthSessionProvider);
-    final metricsState = ref.watch(dashboardMetricsNotifierprovider);
-    return _buildBody(context, ref, metricsState, isDark, user);
-  }
 
-  Widget _buildBody(BuildContext context, WidgetRef ref, DashboardMetricsState metricsState, bool isDark, UserProfile? user) {
-    return _buildSuccessScreen(context, ref, metricsState, isDark, user);
-  }
+    // Get current user (either from authController or phpAuthSession)
+    final user = ref.watch(authControllerProvider).value ?? ref.watch(phpAuthSessionProvider);
+    final dashboardState = ref.watch(dashboardControllerProvider);
+    final controller = ref.read(dashboardControllerProvider.notifier);
 
-  Widget _buildSuccessScreen(BuildContext context, WidgetRef ref, DashboardMetricsState metricsState, bool isDark, UserProfile? user) {
+    final primaryNavy = isDark ? const Color(0xFF0F172A) : const Color(0xFF1E293B);
+
     return Scaffold(
+      backgroundColor: isDark ? AppColors.surfaceDark : const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: AppColors.surfaceBase,
-        elevation: 0,
-        title: const Text(
-          'Operations Dashboard',
-          style: TextStyle(color: AppColors.surfaceBase, fontWeight: FontWeight.bold),
+        backgroundColor: isDark ? AppColors.surfaceDarkSecondary : Colors.white,
+        elevation: 0.5,
+        centerTitle: false,
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: AppColors.brandPrimary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.analytics_rounded,
+                color: AppColors.brandPrimary,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              'Operations Dashboard',
+              style: TextStyle(
+                color: isDark ? Colors.white : primaryNavy,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                letterSpacing: -0.3,
+              ),
+            ),
+          ],
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: AppColors.surfaceBase),
-            onPressed: () => ref.read(dashboardMetricsNotifierprovider.notifier).refresh(),
-            tooltip: 'Refresh metrics',
+            icon: Icon(
+              Icons.notifications_none_rounded,
+              color: isDark ? Colors.white70 : const Color(0xFF475569),
+            ),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('All system notifications are up to date.'),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            },
+            tooltip: 'Notifications',
           ),
           IconButton(
-            icon: const Icon(Icons.format_list_bulleted_outlined, color: AppColors.surfaceBase),
-            onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const DashboardReportScreen()));
-            },
-            tooltip: 'Reports',
+            icon: Icon(
+              Icons.manage_accounts_outlined,
+              color: isDark ? Colors.white70 : const Color(0xFF475569),
+            ),
+            onPressed: () => context.go('/profile'),
+            tooltip: 'Profile & Settings',
           ),
+          const SizedBox(width: 8),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Welcome header with admin name and profile picture
-            Row(
-              children: [
-                const CircleAvatar(
-                  radius: 28,
-                  backgroundColor: AppColors.brandPrimary,
-                  child: Icon(Icons.person, color: Colors.white, size: 30),
-                ),
-                const SizedBox(width: 16),
-                Column(
+      body: RefreshIndicator(
+        color: AppColors.brandPrimary,
+        onRefresh: () async {
+          await controller.loadDashboard();
+          ref.read(dashboardMetricsNotifierprovider.notifier).refresh();
+        },
+        child: dashboardState.hasError
+            ? _buildErrorView(context, ref, dashboardState.errorMessage!)
+            : SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Welcome back,', style: TextStyle(fontSize: 14, color: AppColors.inkSecondary)),
-                    Text(user?.fullName ?? 'Admin', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.inkPrimary)),
-                  ],
-                ),
-              ],
-            ),
-
-
-            const SizedBox(height: 24),
-
-            // Metric KPI Cards Grid
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final isWide = constraints.maxWidth >= 900;
-                final crossAxisCount = isWide ? 4 : 2;
-                return GridView.count(
-                  crossAxisCount: crossAxisCount,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                  childAspectRatio: isWide ? 2.0 : 1.6,
-                  children: [
-                    _MetricCard(
-                      title: 'Total Outstanding Debt',
-                      value: metricsState.metrics?.totalDebt.toStringAsFixed(2) ?? '0.00',
-                      icon: Icons.account_balance,
-                      accentColor: AppColors.brandPrimary,
-                      trend: 'across ${metricsState.metrics?.totalCustomers ?? 0} active debts',
+                    // 1. Welcome & Operational Header Banner
+                    DashboardHeader(
+                      user: user,
+                      isRefreshing: dashboardState.isLoading,
+                      isDatabaseEmpty: dashboardState.isDatabaseEmpty,
+                      onRefresh: () => controller.loadDashboard(),
+                      onSeedDemoData: () => controller.seedDemoData(),
                     ),
-                    _MetricCard(
-                      title: 'Overdue Balances',
-                      value: metricsState.metrics?.overdueBalance.toStringAsFixed(2) ?? '0.00',
-                      icon: Icons.warning_amber_rounded,
-                      accentColor: AppColors.accentDanger,
-                      trend: '${((metricsState.metrics?.overdueBalance ?? 0.0) / (metricsState.metrics?.totalDebt ?? 1.0) * 100).toStringAsFixed(1)}% of portfolio',
-                    ),
-                    _MetricCard(
-                      title: 'Recovered This Month',
-                      value: metricsState.metrics?.recoveredAmount.toStringAsFixed(2) ?? '0.00',
-                      icon: Icons.check_circle_outline,
-                      accentColor: AppColors.accentSuccess,
-                      trend: '+14% vs last month',
-                    ),
-                    _MetricCard(
-                      title: 'Active Customers',
-                      value: (metricsState.metrics?.totalCustomers ?? 0).toString(),
-                      icon: Icons.people_outline,
-                      accentColor: AppColors.accentInfo,
-                      trend: '22 registered this week',
-                    ),
-                  ],
-                );
-              },
-            ),
 
-            const SizedBox(height: 32),
+                    const SizedBox(height: 20),
 
-            // Status Breakdown Section with Charts
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceRaised,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.borderSubtle),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Status Breakdown',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.inkPrimary,
-                        ),
-                      ),
-                      Text(
-                        'Total: \$${(metricsState.metrics?.totalDebt ?? 0.0).toStringAsFixed(0)}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppColors.inkSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Divider(height: 24),
-                  Row(
-                    children: [
-                      Expanded(
-                        flex: 3,
-                        child: PaymentStatusChart(
-                          statusData: _buildPaymentStatusData(metricsState.metrics),
-                          colorScheme: _buildPaymentStatusColors(),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        flex: 2,
-                        child: RecoveryTrendChart(
-                          recoveryData: _buildRecoveryData(metricsState.metrics),
-                          monthLabels: _buildMonthLabels(),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 32),
-
-            if (metricsState.isLoading)
-              const Center(child: CircularProgressIndicator()),
-            if (metricsState.hasError)
-              Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.error_outline, color: AppColors.accentDanger, size: 48),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Error loading metrics: ${metricsState.errorMessage}',
-                      style: const TextStyle(color: AppColors.accentDanger),
-                      textAlign: TextAlign.center,
+                    // 2. Financial Overview Cards (6 core metrics from SQLite)
+                    DashboardOverviewCards(
+                      metrics: dashboardState.metrics,
+                      isLoading: dashboardState.isLoading,
                     ),
-                    const SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: () =>
-                          ref.read(dashboardMetricsNotifierprovider.notifier).refresh(),
-                      child: const Text('Retry'),
+
+                    const SizedBox(height: 20),
+
+                    // 3. Role-Tailored Section (Admin / Recovery / Finance)
+                    RoleSpecificSection(
+                      role: user?.role ?? UserRole.admin,
+                      metrics: dashboardState.metrics,
                     ),
+
+                    const SizedBox(height: 20),
+
+                    // 4. Quick Actions Section
+                    DashboardQuickActions(
+                      role: user?.role ?? UserRole.admin,
+                      onActionCompleted: () => controller.loadDashboard(showLoading: false),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // 5. Financial Analytics Section with Interactive Charts & Filters
+                    DashboardAnalyticsSection(
+                      analytics: dashboardState.analytics,
+                      selectedFilter: dashboardState.dateFilter,
+                      onFilterChanged: (DashboardDateFilter filter) => controller.setDateFilter(filter),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // 6. Recent Activities Feed from SQLite
+                    DashboardRecentActivities(
+                      activities: dashboardState.recentActivities,
+                      selectedFilter: dashboardState.activityFilter,
+                      onFilterChanged: (filter) => controller.setActivityFilter(filter),
+                    ),
+
+                    const SizedBox(height: 32),
                   ],
                 ),
               ),
-          ],
-        ),
       ),
     );
   }
-}
 
+  Widget _buildErrorView(BuildContext context, WidgetRef ref, String error) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-Map<String, double> _buildPaymentStatusData(dynamic metrics) {
-  if (metrics == null) {
-    return {'Current': 0, 'Overdue': 0, 'Settled': 0};
-  }
-  final total = metrics.totalDebt;
-  final overdue = metrics.overdueBalance;
-  final current = (total - overdue).clamp(0, total);
-  final settled = (metrics.recoveredAmount * 1.5).clamp(0, total * 2);
-  return {
-    'Current': current > 0 ? current : 0,
-    'Overdue': overdue > 0 ? overdue : 0,
-    'Settled': settled > 0 ? settled : 0,
-  }..removeWhere((_, v) => v == 0);
-}
-
-Map<String, Color> _buildPaymentStatusColors() {
-  return {
-    'Current': AppColors.accentSuccess,
-    'Overdue': AppColors.accentDanger,
-    'Settled': AppColors.brandPrimary,
-  };
-}
-
-List<double> _buildRecoveryData(dynamic metrics) {
-  if (metrics == null) {
-    return [0, 0, 0, 0, 0, 0];
-  }
-  final monthly = metrics.recoveredAmount / 6;
-  return List.generate(6, (index) => monthly * (index + 1) * 0.8);
-}
-
-List<String> _buildMonthLabels() {
-  final now = DateTime.now();
-  return List.generate(6, (index) {
-    final month = now.subtract(Duration(days: index * 30));
-    return '${month.month}/${month.day}';
-    }).reversed.toList();
-}
-
-class _MetricCard extends StatefulWidget {
-  final String title;
-  final String value;
-  final IconData icon;
-  final Color accentColor;
-  final String trend;
-
-  const _MetricCard({
-    required this.title,
-    required this.value,
-    required this.icon,
-    required this.accentColor,
-    required this.trend,
-  });
-
-  @override
-  State<_MetricCard> createState() => _MetricCardState();
-}
-
-class _MetricCardState extends State<_MetricCard> {
-  final bool _hovering = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          color: _hovering ? Colors.black : AppColors.surfaceRaised,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppColors.borderSubtle),
-        ),
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    widget.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: _hovering ? Colors.white : AppColors.inkSecondary,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-                Icon(widget.icon, color: widget.accentColor, size: 18),
-              ],
-            ),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                widget.value,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: _hovering ? Colors.white : AppColors.inkPrimary,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.accentDanger.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.error_outline_rounded,
+                color: AppColors.accentDanger,
+                size: 48,
               ),
             ),
-            Text(
-              widget.trend,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            const SizedBox(height: 16),
+            const Text(
+              'Failed to Load Financial Dashboard',
               style: TextStyle(
-                fontSize: 11,
-                color: _hovering ? Colors.white70 : widget.accentColor,
-                fontWeight: FontWeight.w500,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
               ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              error,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13,
+                color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.brandPrimary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              icon: const Icon(Icons.refresh_rounded, size: 18),
+              label: const Text('Retry'),
+              onPressed: () {
+                ref.read(dashboardControllerProvider.notifier).loadDashboard();
+              },
             ),
           ],
         ),
+      ),
     );
   }
 }

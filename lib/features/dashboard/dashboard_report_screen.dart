@@ -1,8 +1,6 @@
-import 'package:sqflite/sqflite.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:crafts/core/constants/app_colors.dart';
-import 'package:crafts/features/dashboard/dashboard_report_controller.dart';
 import 'package:crafts/core/sqlitedatabase.dart';
 
 enum ReportFilterStatus { all, current, overdue, settled }
@@ -20,7 +18,7 @@ class _DashboardReportScreenState extends State<DashboardReportScreen> {
   double _totalAmount = 0.0;
   String? _error;
   late SQLiteDatabase _sqliteDatabase;
-  String _currentTenantId = 'default_tenant';
+  final String _currentTenantId = 'default_tenant';
   DateTime? _startDate;
   DateTime? _endDate;
 

@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:crafts/features/dashboard/presentation/dashboard_screen.dart';
 
 void main() {
   group('DashboardScreen', () {
     testWidgets('renders DashboardScreen scaffold', (WidgetTester tester) async {
-      await tester.pumpWidget(const MaterialApp(
-        home: DashboardScreen(),
+      await tester.pumpWidget(const ProviderScope(
+        child: MaterialApp(
+          home: DashboardScreen(),
+        ),
       ));
 
       expect(find.text('Operations Dashboard'), findsOneWidget);
@@ -14,8 +17,10 @@ void main() {
     });
 
     testWidgets('metric cards are present', (WidgetTester tester) async {
-      await tester.pumpWidget(const MaterialApp(
-        home: DashboardScreen(),
+      await tester.pumpWidget(const ProviderScope(
+        child: MaterialApp(
+          home: DashboardScreen(),
+        ),
       ));
 
       // Check for metric card titles

@@ -71,8 +71,16 @@ tenantId: 'default_tenant',
       await _repository.updateProfile(
         fullName: fullName,
       );
-tenantId: 'default_tenant',
-      state = const AsyncValue.data(UserProfile(id: '', email: '', fullName: '', role: UserRole.recoveryOfficer, isActive: true));
+      state = AsyncValue.data(
+        UserProfile(
+          id: current.id,
+          tenantId: current.tenantId,
+          email: current.email,
+          fullName: fullName.trim(),
+          role: current.role,
+          isActive: current.isActive,
+        ),
+      );
     } catch (_) {
       // Offline fallback: update local state
       state = AsyncValue.data(
