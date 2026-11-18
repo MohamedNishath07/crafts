@@ -48,21 +48,16 @@ class DashboardHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Top Row: User Avatar, Name & Role, Refresh Button
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Avatar
               Container(
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: LinearGradient(
-                    colors: [
-                      primaryNavy,
-                      AppColors.brandPrimary,
-                    ],
+                    colors: [primaryNavy, AppColors.brandPrimary],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -89,7 +84,6 @@ class DashboardHeader extends StatelessWidget {
               ),
               const SizedBox(width: 14),
 
-              // Title and Subtitle
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -98,18 +92,15 @@ class DashboardHeader extends StatelessWidget {
                       children: [
                         Flexible(
                           child: Text(
-                            user?.fullName ?? 'Administrator',
+                            'Operations Dashboard',
                             style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
                               color: isDark ? Colors.white : primaryNavy,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
                               letterSpacing: -0.3,
                             ),
-                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        _buildRoleBadge(role, isDark),
                       ],
                     ),
                     const SizedBox(height: 4),
@@ -118,51 +109,12 @@ class DashboardHeader extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 13,
                         color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-                        fontWeight: FontWeight.w400,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
-              ),
-
-              // Actions (Seed Data chip & Refresh button)
-              if (isDatabaseEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: Tooltip(
-                    message: 'Initialize sample financial data for demonstration',
-                    child: OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.brandPrimary,
-                        side: const BorderSide(color: AppColors.brandPrimary),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                      ),
-                      icon: const Icon(Icons.auto_fix_high, size: 16),
-                      label: const Text('Load Demo Data', style: TextStyle(fontSize: 12)),
-                      onPressed: onSeedDemoData,
-                    ),
-                  ),
-                ),
-
-              IconButton(
-                style: IconButton.styleFrom(
-                  backgroundColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                icon: Icon(
-                  Icons.refresh_rounded,
-                  color: isDark ? Colors.white : primaryNavy,
-                  size: 20,
-                ),
-                tooltip: 'Refresh Dashboard',
-                onPressed: isRefreshing ? null : onRefresh,
               ),
             ],
           ),
@@ -171,7 +123,6 @@ class DashboardHeader extends StatelessWidget {
           const Divider(height: 1),
           const SizedBox(height: 12),
 
-          // Bottom Info Row: Today's Date & Operations Dashboard badge
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -217,43 +168,6 @@ class DashboardHeader extends StatelessWidget {
             ],
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildRoleBadge(UserRole role, bool isDark) {
-    Color badgeBg;
-    Color badgeTextColor;
-    String label = role.displayName;
-
-    switch (role) {
-      case UserRole.admin:
-        badgeBg = const Color(0xFF0F8D65).withValues(alpha: 0.15);
-        badgeTextColor = const Color(0xFF0F8D65);
-        break;
-      case UserRole.financeOfficer:
-        badgeBg = const Color(0xFF3B82F6).withValues(alpha: 0.15);
-        badgeTextColor = const Color(0xFF2563EB);
-        break;
-      case UserRole.recoveryOfficer:
-        badgeBg = const Color(0xFFF59E0B).withValues(alpha: 0.15);
-        badgeTextColor = const Color(0xFFD97706);
-        break;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: badgeBg,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: badgeTextColor,
-        ),
       ),
     );
   }
