@@ -24,8 +24,6 @@ class DashboardHeader extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final now = DateTime.now();
     final dateString = DateFormat('EEEE, MMM d, yyyy').format(now);
-    final role = user?.role ?? UserRole.admin;
-
     final primaryNavy = isDark ? const Color(0xFF0F172A) : const Color(0xFF1E293B);
     final cardBg = isDark ? AppColors.surfaceDarkRaised : Colors.white;
 

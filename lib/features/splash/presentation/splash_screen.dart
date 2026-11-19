@@ -11,12 +11,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final hasSession = true;
-      if (hasSession) {
-        context.go('/dashboard');
-      } else {
-        context.go('/login');
-      }
+      context.go('/dashboard');
     });
   }
   @override
