@@ -1,25 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:crafts/features/auth/presentation/auth_controller.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerWidget {
   const SplashScreen({super.key});
-  @override State<SplashScreen> createState() => _SplashScreenState();
-}
 
-class _SplashScreenState extends State<SplashScreen> {
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.go('/dashboard');
-    });
-  }
-  @override
-  void dispose() {
-    super.dispose();
-  }
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authControllerProvider);
+    final isLoading = authState.isLoading;
+
     return Scaffold(
       body: Center(
         child: Column(
@@ -40,6 +31,22 @@ class _SplashScreenState extends State<SplashScreen> {
             Icon(Icons.remove_circle_outlined,
                 color: Color(0xFF0F8D65), size: 40),
           ],
+        ),
+      ),
+      bottomSheet: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: ElevatedButton(
+          onPressed: isLoading
+              ? null
+              : () {
+                  final hasSession = authState.value != null;
+                  if (hasSession) {
+                    context.go('/dashboard');
+                  } else {
+                    context.go('/login');
+                  }
+                },
+          child: const Text('Get Started'),
         ),
       ),
     );

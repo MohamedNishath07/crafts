@@ -8,6 +8,7 @@ import '../../features/auth/presentation/auth_controller.dart';
 import '../../features/auth/presentation/create_account_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/profile_screen.dart';
+import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/customers/presentation/customers_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
 import '../../features/debts/presentation/debts_screen.dart';
@@ -21,7 +22,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   final phpUser = ref.watch(phpAuthSessionProvider);
 
   return GoRouter(
-    initialLocation: '/dashboard',
+    initialLocation: '/splash',
     redirect: (context, state) {
       final isLoading = authState.isLoading;
       final supabaseAuthenticated = authState.value != null;
@@ -66,10 +67,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     },
     routes: [
       GoRoute(
+        path: '/splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
+      GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
       ),
-GoRoute(
+      GoRoute(
         path: '/create-account',
         builder: (context, state) => const CreateAccountScreen(),
       ),
