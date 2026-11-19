@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -26,12 +27,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
       ),
     );
-    // Simulate a short delay for splash screen
+    // Simulate a 7-8 second delay for splash screen
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Navigate to login after splash completes
-      if (mounted) {
-        context.go('/login');
-      }
+      Timer(const Duration(seconds: 7), () {
+        // Navigate to login after splash completes
+        if (mounted) {
+          context.go('/login');
+        }
+      });
     });
   }
 
