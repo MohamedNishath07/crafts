@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:crafts/core/constants/app_colors.dart';
-import 'package:crafts/features/auth/presentation/auth_controller.dart';
-import 'package:crafts/features/customers/presentation/customer_controller.dart';
-import 'package:crafts/features/customers/domain/customer.dart';
-import 'package:crafts/features/customers/presentation/widgets/add_customer_dialog.dart';
-import 'package:crafts/features/debts/presentation/debt_controller.dart';
-import 'package:crafts/features/debts/presentation/widgets/add_debt_dialog.dart';
+import 'package:credit_recovery_system/core/constants/app_colors.dart';
+import 'package:credit_recovery_system/features/auth/presentation/auth_controller.dart';
+import 'package:credit_recovery_system/features/customers/presentation/customer_controller.dart';
+import 'package:credit_recovery_system/features/customers/domain/customer.dart';
+import 'package:credit_recovery_system/features/customers/presentation/widgets/add_customer_dialog.dart';
+import 'package:credit_recovery_system/features/debts/presentation/debt_controller.dart';
+import 'package:credit_recovery_system/features/debts/presentation/widgets/add_debt_dialog.dart';
 import 'interaction_controller.dart';
 import 'widgets/log_action_dialog.dart';
-import 'package:crafts/core/theming/glassmorphism_widgets.dart';
+import 'package:credit_recovery_system/core/theming/glassmorphism_widgets.dart';
 
 class RecoveryScreen extends ConsumerWidget {
   const RecoveryScreen({super.key});

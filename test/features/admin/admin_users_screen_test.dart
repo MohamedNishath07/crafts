@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:crafts/features/admin/data/staff_repository.dart';
-import 'package:crafts/features/admin/presentation/admin_users_screen.dart';
-import 'package:crafts/features/admin/presentation/widgets/add_staff_dialog.dart';
+import 'package:credit_recovery_system/features/admin/data/staff_repository.dart';
+import 'package:credit_recovery_system/features/admin/presentation/admin_users_screen.dart';
+import 'package:credit_recovery_system/features/admin/presentation/widgets/add_staff_dialog.dart';
 import '../../test_helpers/mock_staff_repository.dart';
 
 void main() {
@@ -82,3 +82,4 @@ void main() {
     expect(find.text('Please enter email address'), findsNothing);
   });
 }
+

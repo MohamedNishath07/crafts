@@ -2,10 +2,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:crafts/core/router/app_router.dart';
-import 'package:crafts/features/admin/data/staff_repository.dart';
-import 'package:crafts/features/auth/domain/user_profile.dart';
-import 'package:crafts/features/auth/presentation/auth_controller.dart';
+import 'package:credit_recovery_system/core/router/app_router.dart';
+import 'package:credit_recovery_system/features/admin/data/staff_repository.dart';
+import 'package:credit_recovery_system/features/auth/domain/user_profile.dart';
+import 'package:credit_recovery_system/features/auth/presentation/auth_controller.dart';
 import '../../test_helpers/mock_staff_repository.dart';
 
 class _MockAuthController extends AuthController {
@@ -125,3 +125,4 @@ void main() {
     expect(router.state.matchedLocation, '/admin/users');
   });
 }
+

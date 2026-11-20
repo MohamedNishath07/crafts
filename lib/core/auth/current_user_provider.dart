@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:crafts/core/auth/user_model.dart';
+import 'package:credit_recovery_system/core/auth/user_model.dart';
 
 /// Notifier that manages the current user authentication state using SQLite
 class CurrentUserNotifier extends StateNotifier<User?> {
@@ -40,3 +40,4 @@ extension CurrentUserExtension on Ref {
 final currentUserProvider = StateNotifierProvider<CurrentUserNotifier, User?>((ref) {
   return CurrentUserNotifier();
 });
+

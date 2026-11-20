@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:crafts/features/audit/audit_log_model.dart';
-import 'package:crafts/features/audit/audit_log_repository.dart';
+import 'package:credit_recovery_system/features/audit/audit_log_model.dart';
+import 'package:credit_recovery_system/features/audit/audit_log_repository.dart';
 
 /// Notifier for audit log operations
 class AuditLogNotifier extends StateNotifier<AuditLogFilterState> {

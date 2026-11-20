@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:crafts/features/dashboard/presentation/dashboard_screen.dart';
+import 'package:credit_recovery_system/features/dashboard/presentation/dashboard_screen.dart';
 
 void main() {
   group('DashboardScreen', () {
@@ -31,3 +31,4 @@ void main() {
     });
   });
 }
+

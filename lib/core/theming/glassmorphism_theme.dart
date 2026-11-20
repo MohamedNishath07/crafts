@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:crafts/core/constants/app_colors.dart';
+import 'package:credit_recovery_system/core/constants/app_colors.dart';
 
 /// Custom ThemeData with glassmorphism and dark/light mode support
 class GlassmorphismTheme {

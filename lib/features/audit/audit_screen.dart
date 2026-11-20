@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:crafts/features/audit/audit_model.dart';
-import 'package:crafts/features/audit/audit_provider.dart';
+import 'package:credit_recovery_system/features/audit/audit_model.dart';
+import 'package:credit_recovery_system/features/audit/audit_provider.dart';
 
-import 'package:crafts/core/constants/app_colors.dart';
+import 'package:credit_recovery_system/core/constants/app_colors.dart';
 import 'package:intl/intl.dart';
 
 /// Widget that displays the audit log viewer screen
@@ -313,3 +313,4 @@ class _StatCard extends StatelessWidget {
     );
   }
 }
+

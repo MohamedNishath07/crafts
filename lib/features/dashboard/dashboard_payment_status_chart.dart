@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:crafts/core/constants/app_colors.dart';
+import 'package:credit_recovery_system/core/constants/app_colors.dart';
 
 /// Widget that displays payment status breakdown donut chart
 /// Shows proportion of Current, Overdue, and Settled debts

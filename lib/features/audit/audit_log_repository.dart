@@ -1,5 +1,5 @@
-import 'package:crafts/core/sqlitedatabase.dart';
-import 'package:crafts/features/audit/audit_log_model.dart';
+import 'package:credit_recovery_system/core/sqlitedatabase.dart';
+import 'package:credit_recovery_system/features/audit/audit_log_model.dart';
 
 /// Repository for audit log operations
 /// Handles writing audit entries and reading/filtering audit logs

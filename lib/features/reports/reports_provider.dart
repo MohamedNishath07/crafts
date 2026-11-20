@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:crafts/core/sqlitedatabase.dart';
-import 'package:crafts/features/reports/reports_model.dart';
+import 'package:credit_recovery_system/core/sqlitedatabase.dart';
+import 'package:credit_recovery_system/features/reports/reports_model.dart';
 
 final reportsProvider = StateNotifierProvider<ReportsNotifier, ReportsModel>((ref) {
   return ReportsNotifier();
@@ -85,3 +85,4 @@ class ReportsNotifier extends StateNotifier<ReportsModel> {
     return 'default_tenant';
   }
 }
+

@@ -1,5 +1,5 @@
-import 'package:crafts/features/auth/domain/user_profile.dart';
-import 'package:crafts/features/admin/data/staff_repository.dart';
+import 'package:credit_recovery_system/features/auth/domain/user_profile.dart';
+import 'package:credit_recovery_system/features/admin/data/staff_repository.dart';
 
 class MockStaffRepository extends StaffRepository {
   final List<UserProfile> _store;
@@ -100,3 +100,4 @@ class MockStaffRepository extends StaffRepository {
     return updated;
   }
 }
+

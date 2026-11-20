@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:crafts/features/customers/data/customer_repository.dart';
-import 'package:crafts/features/customers/domain/customer.dart';
-import 'package:crafts/features/customers/presentation/customers_screen.dart';
+import 'package:credit_recovery_system/features/customers/data/customer_repository.dart';
+import 'package:credit_recovery_system/features/customers/domain/customer.dart';
+import 'package:credit_recovery_system/features/customers/presentation/customers_screen.dart';
 
 class _MockCustomerRepo extends CustomerRepository {
   final List<Customer> _list;
@@ -185,3 +185,4 @@ void main() {
     expect(find.text('Diana Prince'), findsOneWidget);
   });
 }
+

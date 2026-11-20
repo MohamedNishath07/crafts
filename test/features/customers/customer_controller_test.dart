@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:crafts/features/customers/data/customer_repository.dart';
-import 'package:crafts/features/customers/domain/customer.dart';
-import 'package:crafts/features/customers/presentation/customer_controller.dart';
+import 'package:credit_recovery_system/features/customers/data/customer_repository.dart';
+import 'package:credit_recovery_system/features/customers/domain/customer.dart';
+import 'package:credit_recovery_system/features/customers/presentation/customer_controller.dart';
 
 class _MockCustomerRepository extends CustomerRepository {
   final List<Customer> _customers;
@@ -171,3 +171,4 @@ void main() {
     expect(page1[0].fullName, 'Robert Chen');
   });
 }
+

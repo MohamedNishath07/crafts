@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:crafts/features/audit/audit_log_model.dart';
-import 'package:crafts/features/audit/audit_log_notifier.dart';
-import 'package:crafts/features/audit/audit_log_repository.dart';
+import 'package:credit_recovery_system/features/audit/audit_log_model.dart';
+import 'package:credit_recovery_system/features/audit/audit_log_notifier.dart';
+import 'package:credit_recovery_system/features/audit/audit_log_repository.dart';
 
 /// Provider for the audit log repository
 final auditLogRepositoryProvider = Provider<AuditLogRepository>((ref) => AuditLogRepository());

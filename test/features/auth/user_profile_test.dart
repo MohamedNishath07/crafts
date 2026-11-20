@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:crafts/features/auth/domain/user_profile.dart';
+import 'package:credit_recovery_system/features/auth/domain/user_profile.dart';
 
 void main() {
   group('UserRole', () {
@@ -53,3 +53,4 @@ void main() {
     });
   });
 }
+

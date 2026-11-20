@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:crafts/features/auth/domain/user_profile.dart';
-import 'package:crafts/features/admin/data/staff_repository.dart';
-import 'package:crafts/features/admin/presentation/staff_controller.dart';
+import 'package:credit_recovery_system/features/auth/domain/user_profile.dart';
+import 'package:credit_recovery_system/features/admin/data/staff_repository.dart';
+import 'package:credit_recovery_system/features/admin/presentation/staff_controller.dart';
 
 class MockStaffRepository extends StaffRepository {
   final List<UserProfile> _store;
@@ -209,3 +209,4 @@ void main() {
     });
   });
 }
+

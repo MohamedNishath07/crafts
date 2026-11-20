@@ -1,8 +1,10 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart' show SystemChrome, SystemUiOverlayStyle;
+
 import '../../../core/constants/app_colors.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -17,7 +19,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   void initState() {
     super.initState();
     // Get platform brightness (available before context is built)
-    final platformBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
+    final platformBrightness =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness;
     final isDark = platformBrightness == Brightness.dark;
     // Set system UI overlay style
     SystemChrome.setSystemUIOverlayStyle(
@@ -51,27 +54,38 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             children: [
               const Spacer(),
               // App logo/title
-              const Icon(
-                Icons.bookmark_outlined,
-                size: 80,
-                color: AppColors.inkPrimary,
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: AppColors.brandPrimary.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppColors.brandPrimary.withValues(alpha: 0.35),
+                    width: 1.5,
+                  ),
+                ),
+                child: const Icon(
+                  Icons.account_balance_wallet_outlined,
+                  size: 42,
+                  color: AppColors.brandPrimary,
+                ),
               ),
               const SizedBox(height: 24),
               const Text(
-                'Crafts Management',
+                'CREDIT RECOVERY SYSTEM',
                 style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
                   color: AppColors.inkPrimary,
+                  letterSpacing: 0.6,
                 ),
+                textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
               const Text(
                 'Version 1.0.0',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppColors.inkSecondary,
-                ),
+                style: TextStyle(fontSize: 14, color: AppColors.inkSecondary),
               ),
               const Spacer(),
               const SizedBox(height: 48),

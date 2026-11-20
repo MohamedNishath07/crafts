@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:crafts/features/payments/data/payment_repository.dart';
-import 'package:crafts/features/payments/domain/payment.dart';
-import 'package:crafts/features/payments/presentation/payment_controller.dart';
+import 'package:credit_recovery_system/features/payments/data/payment_repository.dart';
+import 'package:credit_recovery_system/features/payments/domain/payment.dart';
+import 'package:credit_recovery_system/features/payments/presentation/payment_controller.dart';
 
 class _MockPaymentRepository extends PaymentRepository {
   final List<Payment> _payments;

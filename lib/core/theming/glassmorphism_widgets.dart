@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:crafts/core/constants/app_colors.dart';
+import 'package:credit_recovery_system/core/constants/app_colors.dart';
 
 /// Glassmorphism text field decorator with frosted glass effect
 class GlassTextField extends StatelessWidget {

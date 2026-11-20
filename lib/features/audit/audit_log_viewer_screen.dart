@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:crafts/core/constants/app_colors.dart';
-import 'package:crafts/features/audit/audit_log_notifier.dart';
-import 'package:crafts/features/audit/audit_log_provider.dart';
+import 'package:credit_recovery_system/core/constants/app_colors.dart';
+import 'package:credit_recovery_system/features/audit/audit_log_notifier.dart';
+import 'package:credit_recovery_system/features/audit/audit_log_provider.dart';
 
 /// Screen for viewing and filtering audit logs (Admin only)
 class AuditLogViewerScreen extends ConsumerWidget {
@@ -213,3 +213,4 @@ class AuditLogViewerScreen extends ConsumerWidget {
     );
   }
 }
+

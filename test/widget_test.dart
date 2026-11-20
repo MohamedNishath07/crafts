@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:crafts/main.dart';
+import 'package:credit_recovery_system/main.dart';
 
 void main() {
   testWidgets('DebitRecoveryApp smoke test: displays brand and login form', (WidgetTester tester) async {
@@ -17,3 +17,4 @@ void main() {
     expect(find.text('Sign In'), findsOneWidget);
   });
 }
+

@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:crafts/core/constants/app_colors.dart';
+import 'package:credit_recovery_system/core/constants/app_colors.dart';
 
 /// Widget that displays monthly recovery trend chart (line chart)
 /// Shows recovery volume over the past 6 months

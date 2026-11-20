@@ -6,9 +6,9 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:crafts/core/constants/app_colors.dart';
-import 'package:crafts/features/reports/reports_provider.dart';
-import 'package:crafts/features/reports/reports_model.dart';
+import 'package:credit_recovery_system/core/constants/app_colors.dart';
+import 'package:credit_recovery_system/features/reports/reports_provider.dart';
+import 'package:credit_recovery_system/features/reports/reports_model.dart';
 
 /// Widget that displays the financial reports screen
 class ReportsScreen extends ConsumerWidget {
@@ -258,3 +258,4 @@ class PdfReportPreview {
     return await pdfDoc.save();
   }
 }
+

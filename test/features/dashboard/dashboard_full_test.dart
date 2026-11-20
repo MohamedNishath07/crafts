@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:crafts/features/auth/domain/user_profile.dart';
-import 'package:crafts/features/dashboard/domain/dashboard_models.dart';
-import 'package:crafts/features/dashboard/presentation/widgets/dashboard_header.dart';
-import 'package:crafts/features/dashboard/presentation/widgets/dashboard_overview_cards.dart';
-import 'package:crafts/features/dashboard/presentation/widgets/dashboard_quick_actions.dart';
-import 'package:crafts/features/dashboard/presentation/widgets/role_specific_section.dart';
+import 'package:credit_recovery_system/features/auth/domain/user_profile.dart';
+import 'package:credit_recovery_system/features/dashboard/domain/dashboard_models.dart';
+import 'package:credit_recovery_system/features/dashboard/presentation/widgets/dashboard_header.dart';
+import 'package:credit_recovery_system/features/dashboard/presentation/widgets/dashboard_overview_cards.dart';
+import 'package:credit_recovery_system/features/dashboard/presentation/widgets/dashboard_quick_actions.dart';
+import 'package:credit_recovery_system/features/dashboard/presentation/widgets/role_specific_section.dart';
 
 void main() {
   group('Dashboard Components Tests', () {
@@ -200,3 +200,4 @@ void main() {
     });
   });
 }
+

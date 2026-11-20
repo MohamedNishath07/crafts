@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:crafts/features/debts/data/debt_repository.dart';
-import 'package:crafts/features/debts/domain/debt.dart';
-import 'package:crafts/features/debts/presentation/debts_screen.dart';
+import 'package:credit_recovery_system/features/debts/data/debt_repository.dart';
+import 'package:credit_recovery_system/features/debts/domain/debt.dart';
+import 'package:credit_recovery_system/features/debts/presentation/debts_screen.dart';
 
 class _MockDebtRepo extends DebtRepository {
   final List<Debt> _list;

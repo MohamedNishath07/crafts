@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:crafts/features/auth/presentation/login_screen.dart';
+import 'package:credit_recovery_system/features/auth/presentation/login_screen.dart';
 
 Finder _signInButton() => find.ancestor(
   of: find.text('Sign In'),
@@ -50,3 +50,4 @@ void main() {
     expect(find.text('Enter a valid email'), findsOneWidget);
   });
 }
+

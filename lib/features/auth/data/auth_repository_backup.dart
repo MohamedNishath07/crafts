@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:crafts/core/sqlitedatabase.dart';
-import 'package:crafts/core/auth/user_model.dart';
-import 'package:crafts/core/auth/password_hasher.dart';
+import 'package:credit_recovery_system/core/sqlitedatabase.dart';
+import 'package:credit_recovery_system/core/auth/user_model.dart';
+import 'package:credit_recovery_system/core/auth/password_hasher.dart';
 
 // Authentication repository that manages auth state using SQLite.
 // Filters all operations by tenant_id for multi-user isolation.
@@ -243,3 +243,4 @@ final authRepositoryProvider = StateNotifierProvider<AuthRepository, User>((
 ) {
   return AuthRepository();
 });
+

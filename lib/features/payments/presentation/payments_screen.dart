@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import 'payment_controller.dart';
 import 'widgets/record_payment_dialog.dart';
-import 'package:crafts/core/theming/glassmorphism_widgets.dart';
+import 'package:credit_recovery_system/core/theming/glassmorphism_widgets.dart';
 
 class PaymentsScreen extends ConsumerWidget {
   const PaymentsScreen({super.key});
@@ -193,3 +193,4 @@ class PaymentsScreen extends ConsumerWidget {
     }
   }
 }
+
