@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../customer_controller.dart';
 
@@ -39,7 +40,9 @@ class _AddCustomerDialogState extends ConsumerState<AddCustomerDialog> {
     setState(() => _isSubmitting = true);
 
     try {
-      await ref.read(customerControllerProvider.notifier).createCustomer(
+      await ref
+          .read(customerControllerProvider.notifier)
+          .createCustomer(
             fullName: _nameController.text,
             phoneNumber: _phoneController.text,
             secondaryPhone: _secondaryPhoneController.text,
@@ -52,7 +55,9 @@ class _AddCustomerDialogState extends ConsumerState<AddCustomerDialog> {
         Navigator.of(context).pop(true);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Customer "${_nameController.text}" registered successfully'),
+            content: Text(
+              'Customer "${_nameController.text}" registered successfully',
+            ),
             backgroundColor: AppColors.accentSuccess,
             behavior: SnackBarBehavior.floating,
           ),
@@ -74,13 +79,21 @@ class _AddCustomerDialogState extends ConsumerState<AddCustomerDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surfaceColor = isDark
+        ? AppColors.surfaceDarkCard
+        : AppColors.surfaceCard;
+    final borderColor = isDark ? AppColors.borderDark : AppColors.borderSubtle;
+    final textPrimary = isDark ? AppColors.inkDark : AppColors.inkPrimary;
+    final textSecondary = isDark ? AppColors.inkMuted : AppColors.inkSecondary;
+
     return AlertDialog(
-      backgroundColor: AppColors.surfaceRaised,
+      backgroundColor: surfaceColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: AppColors.borderSubtle),
+        side: BorderSide(color: borderColor),
       ),
-      title: const Row(
+      title: Row(
         children: [
           Icon(Icons.person_add_alt_1_outlined, color: AppColors.brandPrimary),
           SizedBox(width: 10),
@@ -91,7 +104,7 @@ class _AddCustomerDialogState extends ConsumerState<AddCustomerDialog> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: AppColors.inkPrimary,
+                color: textPrimary,
               ),
             ),
           ),
@@ -115,7 +128,7 @@ class _AddCustomerDialogState extends ConsumerState<AddCustomerDialog> {
                     prefixIcon: const Icon(Icons.person_outline, size: 20),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: AppColors.borderSubtle),
+                      borderSide: BorderSide(color: borderColor),
                     ),
                   ),
                   validator: (val) {
@@ -137,7 +150,7 @@ class _AddCustomerDialogState extends ConsumerState<AddCustomerDialog> {
                     prefixIcon: const Icon(Icons.phone_outlined, size: 20),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: AppColors.borderSubtle),
+                      borderSide: BorderSide(color: borderColor),
                     ),
                   ),
                   validator: (val) {
@@ -156,10 +169,13 @@ class _AddCustomerDialogState extends ConsumerState<AddCustomerDialog> {
                   decoration: InputDecoration(
                     labelText: 'Secondary Phone (Optional)',
                     hintText: 'e.g. +1-555-0102',
-                    prefixIcon: const Icon(Icons.phone_iphone_outlined, size: 20),
+                    prefixIcon: const Icon(
+                      Icons.phone_iphone_outlined,
+                      size: 20,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: AppColors.borderSubtle),
+                      borderSide: BorderSide(color: borderColor),
                     ),
                   ),
                 ),
@@ -175,11 +191,13 @@ class _AddCustomerDialogState extends ConsumerState<AddCustomerDialog> {
                     prefixIcon: const Icon(Icons.email_outlined, size: 20),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: AppColors.borderSubtle),
+                      borderSide: BorderSide(color: borderColor),
                     ),
                   ),
                   validator: (val) {
-                    if (val != null && val.trim().isNotEmpty && !val.contains('@')) {
+                    if (val != null &&
+                        val.trim().isNotEmpty &&
+                        !val.contains('@')) {
                       return 'Please enter a valid email address';
                     }
                     return null;
@@ -196,7 +214,7 @@ class _AddCustomerDialogState extends ConsumerState<AddCustomerDialog> {
                     prefixIcon: const Icon(Icons.badge_outlined, size: 20),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: AppColors.borderSubtle),
+                      borderSide: BorderSide(color: borderColor),
                     ),
                   ),
                 ),
@@ -209,10 +227,13 @@ class _AddCustomerDialogState extends ConsumerState<AddCustomerDialog> {
                   decoration: InputDecoration(
                     labelText: 'Physical Address (Optional)',
                     hintText: 'e.g. 742 Evergreen Terrace, Springfield',
-                    prefixIcon: const Icon(Icons.location_on_outlined, size: 20),
+                    prefixIcon: const Icon(
+                      Icons.location_on_outlined,
+                      size: 20,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: AppColors.borderSubtle),
+                      borderSide: BorderSide(color: borderColor),
                     ),
                   ),
                 ),
@@ -224,7 +245,7 @@ class _AddCustomerDialogState extends ConsumerState<AddCustomerDialog> {
       actions: [
         TextButton(
           onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
-          child: const Text('Cancel', style: TextStyle(color: AppColors.inkSecondary)),
+          child: Text('Cancel', style: TextStyle(color: textSecondary)),
         ),
         ElevatedButton(
           onPressed: _isSubmitting ? null : _submit,
@@ -239,7 +260,10 @@ class _AddCustomerDialogState extends ConsumerState<AddCustomerDialog> {
               ? const SizedBox(
                   width: 16,
                   height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.inkWhite),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.inkWhite,
+                  ),
                 )
               : const Text('Register Customer'),
         ),

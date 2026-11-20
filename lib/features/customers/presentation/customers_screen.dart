@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../core/constants/app_colors.dart';
 import '../domain/customer.dart';
 import 'customer_controller.dart';
@@ -26,11 +27,22 @@ class CustomersScreen extends ConsumerWidget {
 
     final totalCount = filteredCustomers.length;
     final startRecord = totalCount == 0 ? 0 : (pageIndex * pageSize) + 1;
-    final endRecord = ((pageIndex + 1) * pageSize) > totalCount ? totalCount : (pageIndex + 1) * pageSize;
+    final endRecord = ((pageIndex + 1) * pageSize) > totalCount
+        ? totalCount
+        : (pageIndex + 1) * pageSize;
     final maxPage = totalCount == 0 ? 0 : ((totalCount - 1) ~/ pageSize);
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surfaceColor = isDark ? AppColors.surfaceDark : AppColors.surfaceBase;
+    final cardColor = isDark
+        ? AppColors.surfaceDarkCard
+        : AppColors.surfaceCard;
+    final borderColor = isDark ? AppColors.borderDark : AppColors.borderSubtle;
+    final textPrimary = isDark ? AppColors.inkDark : AppColors.inkPrimary;
+    final textSecondary = isDark ? AppColors.inkMuted : AppColors.inkSecondary;
+
     return Scaffold(
-      backgroundColor: AppColors.surfaceBase,
+      backgroundColor: surfaceColor,
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -40,7 +52,7 @@ class CustomersScreen extends ConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -49,17 +61,14 @@ class CustomersScreen extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.inkPrimary,
+                          color: textPrimary,
                         ),
                       ),
                       SizedBox(height: 4),
                       Text(
                         'Search, filter, and register borrower and customer accounts',
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: AppColors.inkSecondary,
-                        ),
+                        style: TextStyle(fontSize: 13, color: textSecondary),
                       ),
                     ],
                   ),
@@ -72,7 +81,10 @@ class CustomersScreen extends ConsumerWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.brandPrimary,
                     foregroundColor: AppColors.inkWhite,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -84,31 +96,58 @@ class CustomersScreen extends ConsumerWidget {
 
             // Search Toolbar
             Card(
+              color: cardColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: borderColor),
+              ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 child: Row(
                   children: [
                     Expanded(
                       child: TextField(
                         decoration: InputDecoration(
                           hintText: 'Search by customer name, phone number, email, or national ID...',
-                          prefixIcon: const Icon(Icons.search, size: 20, color: AppColors.inkSecondary),
+                          prefixIcon: Icon(
+                            Icons.search,
+                            size: 20,
+                            color: textSecondary,
+                          ),
                           border: InputBorder.none,
                           isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 8),
-                          suffixIcon: ref.watch(customerSearchQueryProvider).isNotEmpty
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 8,
+                          ),
+                          suffixIcon:
+                              ref.watch(customerSearchQueryProvider).isNotEmpty
                               ? IconButton(
                                   icon: const Icon(Icons.clear, size: 18),
                                   onPressed: () {
-                                    ref.read(customerSearchQueryProvider.notifier).setQuery('');
-                                    ref.read(customerPageIndexProvider.notifier).setPage(0);
+                                    ref
+                                        .read(
+                                          customerSearchQueryProvider.notifier,
+                                        )
+                                        .setQuery('');
+                                    ref
+                                        .read(
+                                          customerPageIndexProvider.notifier,
+                                        )
+                                        .setPage(0);
                                   },
                                 )
                               : null,
                         ),
                         onChanged: (val) {
-                          ref.read(customerSearchQueryProvider.notifier).setQuery(val);
-                          ref.read(customerPageIndexProvider.notifier).setPage(0);
+                          ref
+                              .read(customerSearchQueryProvider.notifier)
+                              .setQuery(val);
+                          ref
+                              .read(customerPageIndexProvider.notifier)
+                              .setPage(0);
                         },
                       ),
                     ),
@@ -121,88 +160,137 @@ class CustomersScreen extends ConsumerWidget {
             // Main Data Table Card
             Expanded(
               child: Card(
+                color: cardColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(color: borderColor),
+                ),
                 child: customerAsync.isLoading
-                    ? const Center(
-                        child: CircularProgressIndicator(),
-                      )
+                    ? const Center(child: CircularProgressIndicator())
                     : customerAsync.hasError
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.error_outline, size: 40, color: AppColors.accentDanger),
-                                const SizedBox(height: 12),
-                                Text(
-                                  'Failed to load customer directory: ${customerAsync.error}',
-                                  style: const TextStyle(color: AppColors.inkSecondary),
-                                ),
-                                const SizedBox(height: 12),
-                                ElevatedButton(
-                                  onPressed: () => ref.read(customerControllerProvider.notifier).refresh(),
-                                  child: const Text('Retry'),
-                                ),
-                              ],
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.error_outline,
+                              size: 40,
+                              color: AppColors.accentDanger,
                             ),
-                          )
-                        : paginatedCustomers.isEmpty
-                            ? const Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.person_search_outlined, size: 48, color: AppColors.inkMuted),
-                                    SizedBox(height: 12),
-                                    Text(
-                                      'No customers found matching your search',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                        color: AppColors.inkSecondary,
-                                      ),
-                                    ),
-                                  ],
+                            const SizedBox(height: 12),
+                            Text(
+                              'Failed to load customer directory: ${customerAsync.error}',
+                              style: TextStyle(color: textSecondary),
+                            ),
+                            const SizedBox(height: 12),
+                            ElevatedButton(
+                              onPressed: () => ref
+                                  .read(customerControllerProvider.notifier)
+                                  .refresh(),
+                              child: const Text('Retry'),
+                            ),
+                          ],
+                        ),
+                      )
+                    : paginatedCustomers.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.person_search_outlined,
+                              size: 48,
+                              color: textSecondary,
+                            ),
+                            SizedBox(height: 12),
+                            Text(
+                              'No customers found matching your search',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : LayoutBuilder(
+                        builder: (context, constraints) {
+                          return SingleChildScrollView(
+                            scrollDirection: Axis.vertical,
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minWidth: constraints.maxWidth,
                                 ),
-                              )
-                            : LayoutBuilder(
-                                builder: (context, constraints) {
-                                  return SingleChildScrollView(
-                                    scrollDirection: Axis.vertical,
-                                    child: SingleChildScrollView(
-                                      scrollDirection: Axis.horizontal,
-                                      child: ConstrainedBox(
-                                        constraints: BoxConstraints(minWidth: constraints.maxWidth),
-                                        child: DataTable(
-                                          headingRowColor: WidgetStateProperty.all(const Color(0xFFF8FAFC)),
-                                          dataRowMinHeight: 52,
-                                          dataRowMaxHeight: 56,
-                                          columns: const [
-                                            DataColumn(
-                                              label: Text('Customer Name', style: TextStyle(fontWeight: FontWeight.w600)),
-                                            ),
-                                            DataColumn(
-                                              label: Text('Phone Number', style: TextStyle(fontWeight: FontWeight.w600)),
-                                            ),
-                                            DataColumn(
-                                              label: Text('Email Address', style: TextStyle(fontWeight: FontWeight.w600)),
-                                            ),
-                                            DataColumn(
-                                              label: Text('National ID', style: TextStyle(fontWeight: FontWeight.w600)),
-                                            ),
-                                            DataColumn(
-                                              label: Text('Address', style: TextStyle(fontWeight: FontWeight.w600)),
-                                            ),
-                                            DataColumn(
-                                              label: Text('Registered', style: TextStyle(fontWeight: FontWeight.w600)),
-                                            ),
-                                          ],
-                                          rows: paginatedCustomers.map((customer) {
-                                            return _buildCustomerRow(customer);
-                                          }).toList(),
+                                child: DataTable(
+                                  headingRowColor: WidgetStateProperty.all(
+                                    isDark
+                                        ? const Color(0xFF16213E)
+                                        : const Color(0xFFF8FAFC),
+                                  ),
+                                  dataRowMinHeight: 52,
+                                  dataRowMaxHeight: 56,
+                                  columns: const [
+                                    DataColumn(
+                                      label: Text(
+                                        'Customer Name',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
                                         ),
                                       ),
                                     ),
-                                  );
-                                },
+                                    DataColumn(
+                                      label: Text(
+                                        'Phone Number',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                    DataColumn(
+                                      label: Text(
+                                        'Email Address',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                    DataColumn(
+                                      label: Text(
+                                        'National ID',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                    DataColumn(
+                                      label: Text(
+                                        'Address',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                    DataColumn(
+                                      label: Text(
+                                        'Registered',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                  rows: paginatedCustomers.map((customer) {
+                                    return _buildCustomerRow(customer, isDark);
+                                  }).toList(),
+                                ),
                               ),
+                            ),
+                          );
+                        },
+                      ),
               ),
             ),
             const SizedBox(height: 12),
@@ -214,10 +302,13 @@ class CustomersScreen extends ConsumerWidget {
                 children: [
                   Text(
                     'Showing $startRecord-$endRecord of $totalCount records',
-                    style: const TextStyle(fontSize: 13, color: AppColors.inkSecondary),
+                    style: TextStyle(fontSize: 13, color: textSecondary),
                   ),
                   const Spacer(),
-                  const Text('Rows per page: ', style: TextStyle(fontSize: 13, color: AppColors.inkSecondary)),
+                  Text(
+                    'Rows per page: ',
+                    style: TextStyle(fontSize: 13, color: textSecondary),
+                  ),
                   DropdownButton<int>(
                     value: pageSize,
                     underline: const SizedBox.shrink(),
@@ -228,7 +319,9 @@ class CustomersScreen extends ConsumerWidget {
                     ],
                     onChanged: (newSize) {
                       if (newSize != null) {
-                        ref.read(customerPageSizeProvider.notifier).setPageSize(newSize);
+                        ref
+                            .read(customerPageSizeProvider.notifier)
+                            .setPageSize(newSize);
                         ref.read(customerPageIndexProvider.notifier).setPage(0);
                       }
                     },
@@ -238,18 +331,22 @@ class CustomersScreen extends ConsumerWidget {
                     icon: const Icon(Icons.chevron_left, size: 20),
                     tooltip: 'Previous Page',
                     onPressed: pageIndex > 0
-                        ? () => ref.read(customerPageIndexProvider.notifier).previousPage()
+                        ? () => ref
+                              .read(customerPageIndexProvider.notifier)
+                              .previousPage()
                         : null,
                   ),
                   Text(
                     'Page ${pageIndex + 1} of ${maxPage + 1}',
-                    style: const TextStyle(fontSize: 13, color: AppColors.inkPrimary),
+                    style: TextStyle(fontSize: 13, color: textPrimary),
                   ),
                   IconButton(
                     icon: const Icon(Icons.chevron_right, size: 20),
                     tooltip: 'Next Page',
                     onPressed: pageIndex < maxPage
-                        ? () => ref.read(customerPageIndexProvider.notifier).nextPage()
+                        ? () => ref
+                              .read(customerPageIndexProvider.notifier)
+                              .nextPage()
                         : null,
                   ),
                 ],
@@ -261,8 +358,12 @@ class CustomersScreen extends ConsumerWidget {
     );
   }
 
-  DataRow _buildCustomerRow(Customer customer) {
-    final dateStr = '${customer.createdAt.year}-${customer.createdAt.month.toString().padLeft(2, '0')}-${customer.createdAt.day.toString().padLeft(2, '0')}';
+  DataRow _buildCustomerRow(Customer customer, bool isDark) {
+    final avatarBg = AppColors.brandPrimary.withValues(
+      alpha: isDark ? 0.25 : 0.1,
+    );
+    final dateStr =
+        '${customer.createdAt.year}-${customer.createdAt.month.toString().padLeft(2, '0')}-${customer.createdAt.day.toString().padLeft(2, '0')}';
 
     return DataRow(
       cells: [
@@ -272,16 +373,27 @@ class CustomersScreen extends ConsumerWidget {
             children: [
               CircleAvatar(
                 radius: 14,
-                backgroundColor: AppColors.brandPrimary.withValues(alpha: 0.1),
+                backgroundColor: avatarBg,
                 child: Text(
-                  customer.fullName.isNotEmpty ? customer.fullName[0].toUpperCase() : 'C',
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.brandPrimary),
+                  customer.fullName.isNotEmpty
+                      ? customer.fullName[0].toUpperCase()
+                      : 'C',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: isDark
+                        ? AppColors.brandAccent
+                        : AppColors.brandPrimary,
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
               Text(
                 customer.fullName,
-                style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.inkPrimary),
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? AppColors.inkDark : AppColors.inkPrimary,
+                ),
               ),
             ],
           ),
@@ -291,20 +403,39 @@ class CustomersScreen extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(customer.phoneNumber, style: const TextStyle(color: AppColors.inkPrimary)),
-              if (customer.secondaryPhone != null && customer.secondaryPhone!.isNotEmpty)
+              Text(
+                customer.phoneNumber,
+                style: TextStyle(
+                  color: isDark ? AppColors.inkDark : AppColors.inkPrimary,
+                ),
+              ),
+              if (customer.secondaryPhone != null &&
+                  customer.secondaryPhone!.isNotEmpty)
                 Text(
                   customer.secondaryPhone!,
-                  style: const TextStyle(fontSize: 11, color: AppColors.inkSecondary),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: isDark ? AppColors.inkMuted : AppColors.inkSecondary,
+                  ),
                 ),
             ],
           ),
         ),
         DataCell(
-          Text(customer.email ?? '—', style: const TextStyle(color: AppColors.inkPrimary)),
+          Text(
+            customer.email ?? '—',
+            style: TextStyle(
+              color: isDark ? AppColors.inkDark : AppColors.inkPrimary,
+            ),
+          ),
         ),
         DataCell(
-          Text(customer.nationalId ?? '—', style: const TextStyle(color: AppColors.inkSecondary)),
+          Text(
+            customer.nationalId ?? '—',
+            style: TextStyle(
+              color: isDark ? AppColors.inkMuted : AppColors.inkSecondary,
+            ),
+          ),
         ),
         DataCell(
           ConstrainedBox(
@@ -312,12 +443,19 @@ class CustomersScreen extends ConsumerWidget {
             child: Text(
               customer.address ?? '—',
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: AppColors.inkSecondary),
+              style: TextStyle(
+                color: isDark ? AppColors.inkMuted : AppColors.inkSecondary,
+              ),
             ),
           ),
         ),
         DataCell(
-          Text(dateStr, style: const TextStyle(color: AppColors.inkSecondary)),
+          Text(
+            dateStr,
+            style: TextStyle(
+              color: isDark ? AppColors.inkMuted : AppColors.inkSecondary,
+            ),
+          ),
         ),
       ],
     );

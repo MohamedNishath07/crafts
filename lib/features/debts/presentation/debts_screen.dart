@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../core/constants/app_colors.dart';
 import 'debt_controller.dart';
 import 'widgets/add_debt_dialog.dart';
@@ -8,10 +9,7 @@ class DebtsScreen extends ConsumerWidget {
   const DebtsScreen({super.key});
 
   void _showAddDebtDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => const AddDebtDialog(),
-    );
+    showDialog(context: context, builder: (context) => const AddDebtDialog());
   }
 
   @override
@@ -26,6 +24,13 @@ class DebtsScreen extends ConsumerWidget {
     final totalCount = paginatedDebts.length;
     final maxPage = totalCount == 0 ? 0 : ((totalCount - 1) ~/ pageSize);
 
+    final cardColor = isDark
+        ? AppColors.surfaceDarkCard
+        : AppColors.surfaceCard;
+    final borderColor = isDark ? AppColors.borderDark : AppColors.borderSubtle;
+    final textPrimary = isDark ? AppColors.inkDark : AppColors.inkPrimary;
+    final textSecondary = isDark ? AppColors.inkMuted : AppColors.inkSecondary;
+
     return Scaffold(
       backgroundColor: isDark ? AppColors.surfaceDark : AppColors.surfaceBase,
       body: Padding(
@@ -36,7 +41,7 @@ class DebtsScreen extends ConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -45,17 +50,14 @@ class DebtsScreen extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.inkPrimary,
+                          color: textPrimary,
                         ),
                       ),
                       SizedBox(height: 4),
                       Text(
                         'Track principal balances, DPD aging, and overdue obligations',
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: AppColors.inkSecondary,
-                        ),
+                        style: TextStyle(fontSize: 13, color: textSecondary),
                       ),
                     ],
                   ),
@@ -68,7 +70,10 @@ class DebtsScreen extends ConsumerWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.brandPrimary,
                     foregroundColor: AppColors.inkWhite,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -79,17 +84,17 @@ class DebtsScreen extends ConsumerWidget {
             const SizedBox(height: 20),
 
             // Aging / Status Filter Bar
-            _buildFilterBar(ref),
+            _buildFilterBar(ref, isDark),
 
             const SizedBox(height: 12),
 
             debtAsync.when(
               data: (debts) => Expanded(
                 child: Card(
-                  color: AppColors.surfaceRaised,
+                  color: cardColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
-                    side: const BorderSide(color: AppColors.borderSubtle),
+                    side: BorderSide(color: borderColor),
                   ),
                   child: Column(
                     children: [
@@ -106,18 +111,46 @@ class DebtsScreen extends ConsumerWidget {
                           final statusColor = _statusColor(debt.status);
                           return DataRow(
                             cells: [
-                              DataCell(Text(debt.referenceNumber)),
-                              DataCell(Text('\$${debt.principalAmount.toStringAsFixed(2)}')),
-                              DataCell(Text('\$${debt.remainingBalance.toStringAsFixed(2)}')),
-                              DataCell(Text(
-                                '${debt.dueDate.year}-${debt.dueDate.month.toString().padLeft(2, '0')}-${debt.dueDate.day.toString().padLeft(2, '0')}',
-                              )),
-                              DataCell(Text('${debt.daysPastDue}')),
+                              DataCell(
+                                Text(
+                                  debt.referenceNumber,
+                                  style: TextStyle(color: textPrimary),
+                                ),
+                              ),
+                              DataCell(
+                                Text(
+                                  '\$${debt.principalAmount.toStringAsFixed(2)}',
+                                  style: TextStyle(color: textPrimary),
+                                ),
+                              ),
+                              DataCell(
+                                Text(
+                                  '\$${debt.remainingBalance.toStringAsFixed(2)}',
+                                  style: TextStyle(color: textPrimary),
+                                ),
+                              ),
+                              DataCell(
+                                Text(
+                                  '${debt.dueDate.year}-${debt.dueDate.month.toString().padLeft(2, '0')}-${debt.dueDate.day.toString().padLeft(2, '0')}',
+                                  style: TextStyle(color: textSecondary),
+                                ),
+                              ),
+                              DataCell(
+                                Text(
+                                  '${debt.daysPastDue}',
+                                  style: TextStyle(color: textPrimary),
+                                ),
+                              ),
                               DataCell(
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
                                   decoration: BoxDecoration(
-                                    color: statusColor.withValues(alpha: 0.1),
+                                    color: statusColor.withValues(
+                                      alpha: isDark ? 0.22 : 0.1,
+                                    ),
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
@@ -134,7 +167,7 @@ class DebtsScreen extends ConsumerWidget {
                           );
                         }).toList(),
                       ),
-                      const Divider(height: 1),
+                      Divider(height: 1, color: borderColor),
                       Padding(
                         padding: const EdgeInsets.all(16),
                         child: Row(
@@ -142,26 +175,46 @@ class DebtsScreen extends ConsumerWidget {
                           children: [
                             Text(
                               'Showing $totalCount records',
-                              style: const TextStyle(fontSize: 13, color: AppColors.inkSecondary),
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: textSecondary,
+                              ),
                             ),
                             Row(
                               children: [
                                 IconButton(
-                                  icon: const Icon(Icons.chevron_left, size: 20),
+                                  icon: const Icon(
+                                    Icons.chevron_left,
+                                    size: 20,
+                                  ),
                                   tooltip: 'Previous Page',
                                   onPressed: pageIndex > 0
-                                      ? () => ref.read(debtPageIndexProvider.notifier).previousPage()
+                                      ? () => ref
+                                            .read(
+                                              debtPageIndexProvider.notifier,
+                                            )
+                                            .previousPage()
                                       : null,
                                 ),
                                 Text(
                                   'Page ${pageIndex + 1} of ${maxPage + 1}',
-                                  style: const TextStyle(fontSize: 13, color: AppColors.inkPrimary),
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: textPrimary,
+                                  ),
                                 ),
                                 IconButton(
-                                  icon: const Icon(Icons.chevron_right, size: 20),
+                                  icon: const Icon(
+                                    Icons.chevron_right,
+                                    size: 20,
+                                  ),
                                   tooltip: 'Next Page',
                                   onPressed: pageIndex < maxPage
-                                      ? () => ref.read(debtPageIndexProvider.notifier).nextPage()
+                                      ? () => ref
+                                            .read(
+                                              debtPageIndexProvider.notifier,
+                                            )
+                                            .nextPage()
                                       : null,
                                 ),
                               ],
@@ -191,18 +244,51 @@ class DebtsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildFilterBar(WidgetRef ref) {
+  Widget _buildFilterBar(WidgetRef ref, bool isDark) {
     final currentFilter = ref.watch(debtAgingFilterProvider);
+    final cardColor = isDark
+        ? AppColors.surfaceDarkCard
+        : AppColors.surfaceCard;
+    final borderColor = isDark ? AppColors.borderDark : AppColors.borderSubtle;
+    final textSecondary = isDark ? AppColors.inkMuted : AppColors.inkSecondary;
 
     final filters = const [
       _AgingFilterItem(key: 'all', label: 'All'),
-      _AgingFilterItem(key: 'overdue', label: 'Overdue', color: AppColors.accentDanger),
-      _AgingFilterItem(key: 'current', label: 'Current', color: AppColors.accentSuccess),
-      _AgingFilterItem(key: '1-30', label: '1-30 DPD', color: AppColors.accentWarning),
-      _AgingFilterItem(key: '31-60', label: '31-60 DPD', color: AppColors.accentWarning),
-      _AgingFilterItem(key: '61-90', label: '61-90 DPD', color: AppColors.accentDanger),
-      _AgingFilterItem(key: '90+', label: '90+ DPD', color: AppColors.accentDanger),
-      _AgingFilterItem(key: 'settled', label: 'Settled', color: AppColors.inkMuted),
+      _AgingFilterItem(
+        key: 'overdue',
+        label: 'Overdue',
+        color: AppColors.accentDanger,
+      ),
+      _AgingFilterItem(
+        key: 'current',
+        label: 'Current',
+        color: AppColors.accentSuccess,
+      ),
+      _AgingFilterItem(
+        key: '1-30',
+        label: '1-30 DPD',
+        color: AppColors.accentWarning,
+      ),
+      _AgingFilterItem(
+        key: '31-60',
+        label: '31-60 DPD',
+        color: AppColors.accentWarning,
+      ),
+      _AgingFilterItem(
+        key: '61-90',
+        label: '61-90 DPD',
+        color: AppColors.accentDanger,
+      ),
+      _AgingFilterItem(
+        key: '90+',
+        label: '90+ DPD',
+        color: AppColors.accentDanger,
+      ),
+      _AgingFilterItem(
+        key: 'settled',
+        label: 'Settled',
+        color: AppColors.inkMuted,
+      ),
     ];
 
     return SingleChildScrollView(
@@ -216,22 +302,26 @@ class DebtsScreen extends ConsumerWidget {
               label: Text(
                 item.label,
                 style: TextStyle(
-                  color: isSelected ? AppColors.inkWhite : AppColors.inkSecondary,
+                  color: isSelected ? AppColors.inkWhite : textSecondary,
                   fontSize: 12,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                 ),
               ),
               selected: isSelected,
-              onSelected: (_) => ref.read(debtAgingFilterProvider.notifier).setFilter(item.key),
-              backgroundColor: AppColors.surfaceRaised,
+              onSelected: (_) => ref
+                  .read(debtAgingFilterProvider.notifier)
+                  .setFilter(item.key),
+              backgroundColor: cardColor,
               selectedColor: item.color ?? AppColors.brandPrimary,
               checkmarkColor: AppColors.inkWhite,
               side: BorderSide(
                 color: isSelected
                     ? (item.color ?? AppColors.brandPrimary)
-                    : AppColors.borderSubtle,
+                    : borderColor,
               ),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
             ),
           );
         }).toList(),
@@ -259,9 +349,5 @@ class _AgingFilterItem {
   final String label;
   final Color? color;
 
-  const _AgingFilterItem({
-    required this.key,
-    required this.label,
-    this.color,
-  });
+  const _AgingFilterItem({required this.key, required this.label, this.color});
 }

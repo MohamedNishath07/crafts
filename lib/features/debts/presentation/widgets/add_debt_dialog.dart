@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../customers/domain/customer.dart';
 import '../../../customers/data/customer_repository.dart';
@@ -38,7 +39,8 @@ class _AddDebtDialogState extends ConsumerState<AddDebtDialog> {
     final repo = ref.read(customerRepositoryProvider);
     try {
       final authProfile = ref.read(authControllerProvider).value;
-      final tenantId = authProfile?.tenantId ?? 'a0000000-0000-0000-0000-000000000001';
+      final tenantId =
+          authProfile?.tenantId ?? 'a0000000-0000-0000-0000-000000000001';
       final customers = await repo.fetchCustomers(tenantId);
       if (mounted) {
         setState(() {
@@ -88,9 +90,15 @@ class _AddDebtDialogState extends ConsumerState<AddDebtDialog> {
     setState(() => _isSubmitting = true);
 
     try {
-      final principal = int.tryParse(_principalAmountController.text.replaceAll(RegExp(r'[^\d]'), '')) ?? 0;
+      final principal =
+          int.tryParse(
+            _principalAmountController.text.replaceAll(RegExp(r'[^\d]'), ''),
+          ) ??
+          0;
 
-      await ref.read(debtControllerProvider.notifier).createDebt(
+      await ref
+          .read(debtControllerProvider.notifier)
+          .createDebt(
             customerId: _selectedCustomerIdController.text,
             referenceNumber: _referenceNumberController.text,
             principalAmountCents: principal,
@@ -102,7 +110,9 @@ class _AddDebtDialogState extends ConsumerState<AddDebtDialog> {
         Navigator.of(context).pop(true);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Debt record "${_referenceNumberController.text}" created successfully'),
+            content: Text(
+              'Debt record "${_referenceNumberController.text}" created successfully',
+            ),
             backgroundColor: AppColors.accentSuccess,
             behavior: SnackBarBehavior.floating,
           ),
@@ -124,13 +134,21 @@ class _AddDebtDialogState extends ConsumerState<AddDebtDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surfaceColor = isDark
+        ? AppColors.surfaceDarkCard
+        : AppColors.surfaceCard;
+    final borderColor = isDark ? AppColors.borderDark : AppColors.borderSubtle;
+    final textPrimary = isDark ? AppColors.inkDark : AppColors.inkPrimary;
+    final textSecondary = isDark ? AppColors.inkMuted : AppColors.inkSecondary;
+
     return AlertDialog(
-      backgroundColor: AppColors.surfaceRaised,
+      backgroundColor: surfaceColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: AppColors.borderSubtle),
+        side: BorderSide(color: borderColor),
       ),
-      title: const Row(
+      title: Row(
         children: [
           Icon(Icons.add_circle_outline, color: AppColors.brandPrimary),
           SizedBox(width: 10),
@@ -141,7 +159,7 @@ class _AddDebtDialogState extends ConsumerState<AddDebtDialog> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: AppColors.inkPrimary,
+                color: textPrimary,
               ),
             ),
           ),
@@ -178,10 +196,13 @@ class _AddDebtDialogState extends ConsumerState<AddDebtDialog> {
                     onChanged: (value) {
                       if (value == null) return;
                       final selectedId = value;
-                      final customer = _customers.firstWhere((c) => c.id == selectedId);
+                      final customer = _customers.firstWhere(
+                        (c) => c.id == selectedId,
+                      );
                       setState(() {
                         _selectedCustomerIdController.text = selectedId;
-                        _selectedCustomerNameController.text = customer.fullName;
+                        _selectedCustomerNameController.text =
+                            customer.fullName;
                       });
                     },
                     decoration: InputDecoration(
@@ -190,7 +211,7 @@ class _AddDebtDialogState extends ConsumerState<AddDebtDialog> {
                       prefixIcon: const Icon(Icons.person_outlined, size: 20),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: AppColors.borderSubtle),
+                        borderSide: BorderSide(color: borderColor),
                       ),
                     ),
                     validator: (val) {
@@ -210,7 +231,7 @@ class _AddDebtDialogState extends ConsumerState<AddDebtDialog> {
                     prefixIcon: const Icon(Icons.label_outlined, size: 20),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: AppColors.borderSubtle),
+                      borderSide: BorderSide(color: borderColor),
                     ),
                   ),
                   validator: (val) {
@@ -231,7 +252,7 @@ class _AddDebtDialogState extends ConsumerState<AddDebtDialog> {
                     prefixIcon: const Icon(Icons.attach_money, size: 20),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: AppColors.borderSubtle),
+                      borderSide: BorderSide(color: borderColor),
                     ),
                   ),
                   validator: (val) {
@@ -255,7 +276,7 @@ class _AddDebtDialogState extends ConsumerState<AddDebtDialog> {
                         ? '${_originDate!.year}-${_originDate!.month.toString().padLeft(2, '0')}-${_originDate!.day.toString().padLeft(2, '0')}'
                         : 'Select origin date',
                     style: TextStyle(
-                      color: _originDate == null ? AppColors.inkSecondary : AppColors.inkPrimary,
+                      color: _originDate == null ? textSecondary : textPrimary,
                     ),
                   ),
                   trailing: const Icon(Icons.chevron_right, size: 18),
@@ -271,7 +292,7 @@ class _AddDebtDialogState extends ConsumerState<AddDebtDialog> {
                         ? '${_dueDate!.year}-${_dueDate!.month.toString().padLeft(2, '0')}-${_dueDate!.day.toString().padLeft(2, '0')}'
                         : 'Select due date',
                     style: TextStyle(
-                      color: _dueDate == null ? AppColors.inkSecondary : AppColors.inkPrimary,
+                      color: _dueDate == null ? textSecondary : textPrimary,
                     ),
                   ),
                   trailing: const Icon(Icons.chevron_right, size: 18),
@@ -285,7 +306,7 @@ class _AddDebtDialogState extends ConsumerState<AddDebtDialog> {
       actions: [
         TextButton(
           onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
-          child: const Text('Cancel', style: TextStyle(color: AppColors.inkSecondary)),
+          child: Text('Cancel', style: TextStyle(color: textSecondary)),
         ),
         ElevatedButton(
           onPressed: _isSubmitting ? null : _submit,
@@ -300,7 +321,10 @@ class _AddDebtDialogState extends ConsumerState<AddDebtDialog> {
               ? const SizedBox(
                   width: 16,
                   height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.inkWhite),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.inkWhite,
+                  ),
                 )
               : const Text('Create Debt Record'),
         ),
