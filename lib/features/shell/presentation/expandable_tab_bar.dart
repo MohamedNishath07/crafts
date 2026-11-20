@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/constants/app_colors.dart';
 
 class ExpandableTabBar extends ConsumerStatefulWidget {
   final List<TabBarItem> items;
@@ -74,13 +75,13 @@ class _ExpandableTabBarState extends ConsumerState<ExpandableTabBar>
     final rest = widget.items.skip(_primaryCount).toList();
 
     final surfaceColor = isDark
-        ? const Color(0xFF1D2638).withValues(alpha: 0.94)
-        : Colors.white.withValues(alpha: 0.94);
+        ? AppColors.surfaceDarkCard
+        : AppColors.surfaceCard;
     final borderColor = isDark
-        ? const Color(0xFF4A4A60).withValues(alpha: 0.4)
+        ? const Color(0xFF4A4A60).withValues(alpha: 0.5)
         : const Color(0xFFC1C7D0).withValues(alpha: 0.5);
     final shadowColor = isDark
-        ? Colors.black.withValues(alpha: 0.45)
+        ? Colors.black.withValues(alpha: 0.5)
         : Colors.black.withValues(alpha: 0.10);
     final selectedColor = colorScheme.primary;
     final unselectedColor = isDark

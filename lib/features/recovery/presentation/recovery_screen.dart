@@ -7,75 +7,104 @@ import 'package:credit_recovery_system/features/customers/domain/customer.dart';
 import 'package:credit_recovery_system/features/customers/presentation/widgets/add_customer_dialog.dart';
 import 'package:credit_recovery_system/features/debts/presentation/debt_controller.dart';
 import 'package:credit_recovery_system/features/debts/presentation/widgets/add_debt_dialog.dart';
+
 import 'interaction_controller.dart';
 import 'widgets/log_action_dialog.dart';
+
 import 'package:credit_recovery_system/core/theming/glassmorphism_widgets.dart';
 
 class RecoveryScreen extends ConsumerWidget {
   const RecoveryScreen({super.key});
 
-@override
+  @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       backgroundColor: isDark ? AppColors.surfaceDark : AppColors.surfaceBase,
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                GlassmorphismContainer(
-                  isDark: isDark,
-                  child: const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Recovery Activities & Follow-ups',
-                          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.inkPrimary)),
-                      SizedBox(height: 4),
-                      Text('Track customer calls, field visits, and promised payment dates',
-                          style: TextStyle(fontSize: 13, color: AppColors.inkSecondary)),
-                    ],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(
+            24.0,
+            24.0,
+            24.0,
+            24.0 + MediaQuery.of(context).padding.bottom,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  GlassmorphismContainer(
+                    isDark: isDark,
+                    child: const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Recovery Activities & Follow-ups',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.inkPrimary,
+                          ),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          'Track customer calls, field visits, and promised payment dates',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: AppColors.inkSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                GlassmorphismContainer(
-                  isDark: isDark,
-                  child: ElevatedButton.icon(
-                    onPressed: () => _showLogActionDialog(context, ref),
-                    icon: const Icon(Icons.add_call, size: 18),
-                    label: const Text('Log Action'),
-                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.brandPrimary, foregroundColor: AppColors.inkWhite),
+                  GlassmorphismContainer(
+                    isDark: isDark,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _showLogActionDialog(context, ref),
+                      icon: const Icon(Icons.add_call, size: 18),
+                      label: const Text('Log Action'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.brandPrimary,
+                        foregroundColor: AppColors.inkWhite,
+                      ),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                GlassmorphismContainer(
-                  isDark: isDark,
-                  child: ElevatedButton.icon(
-                    onPressed: () => _showAddCustomerDialog(context, ref),
-                    icon: const Icon(Icons.person_add, size: 18),
-                    label: const Text('Create Customer'),
-                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.brandPrimary, foregroundColor: AppColors.inkWhite),
+                  const SizedBox(width: 16),
+                  GlassmorphismContainer(
+                    isDark: isDark,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _showAddCustomerDialog(context, ref),
+                      icon: const Icon(Icons.person_add, size: 18),
+                      label: const Text('Create Customer'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.brandPrimary,
+                        foregroundColor: AppColors.inkWhite,
+                      ),
+                    ),
                   ),
-                ),
-                GlassmorphismContainer(
-                  isDark: isDark,
-                  child: ElevatedButton.icon(
-                    onPressed: () => _showAddDebtDialog(context, ref),
-                    icon: const Icon(Icons.add_circle_outline, size: 18),
-                    label: const Text('Create Debt'),
-                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.brandPrimary, foregroundColor: AppColors.inkWhite),
+                  GlassmorphismContainer(
+                    isDark: isDark,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _showAddDebtDialog(context, ref),
+                      icon: const Icon(Icons.add_circle_outline, size: 18),
+                      label: const Text('Create Debt'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.brandPrimary,
+                        foregroundColor: AppColors.inkWhite,
+                      ),
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            _buildCustomerSelector(ref),
-            const SizedBox(width: 16),
-            _buildDebtSelector(ref),
-            const SizedBox(height: 20),
-          ],
+                ],
+              ),
+              const SizedBox(height: 20),
+              _buildCustomerSelector(ref),
+              const SizedBox(height: 16),
+              _buildDebtSelector(ref),
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );
@@ -91,7 +120,18 @@ class RecoveryScreen extends ConsumerWidget {
     final customers = ref.watch(filteredCustomersProvider);
     final selectedCustomer = customers.firstWhere(
       (c) => c.id == customerId,
-      orElse: () => Customer(id: customerId, fullName: 'Unknown Customer', tenantId: '', createdAt: DateTime.now(), updatedAt: DateTime.now(), phoneNumber: '', secondaryPhone: null, email: null, nationalId: null, address: null),
+      orElse: () => Customer(
+        id: customerId,
+        fullName: 'Unknown Customer',
+        tenantId: '',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        phoneNumber: '',
+        secondaryPhone: null,
+        email: null,
+        nationalId: null,
+        address: null,
+      ),
     );
     final customerName = selectedCustomer.fullName;
 
@@ -111,16 +151,18 @@ class RecoveryScreen extends ConsumerWidget {
       final promisedAmountCents = result['promisedAmountCents'] as int?;
       final notes = result['notes'] ?? '';
 
-      await ref.read(interactionControllerProvider.notifier).saveInteraction(
-        debtId: selectedDebt?.id ?? '',
-        debtCustomerId: customerId,
-        officerId: officerId,
-        actionType: selectedChannel,
-        outcome: outcome,
-        followUpDate: followUpDate,
-        promisedAmountCents: promisedAmountCents,
-        notes: notes,
-      );
+      await ref
+          .read(interactionControllerProvider.notifier)
+          .saveInteraction(
+            debtId: selectedDebt?.id ?? '',
+            debtCustomerId: customerId,
+            officerId: officerId,
+            actionType: selectedChannel,
+            outcome: outcome,
+            followUpDate: followUpDate,
+            promisedAmountCents: promisedAmountCents,
+            notes: notes,
+          );
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Recovery action logged successfully')),
@@ -128,7 +170,11 @@ class RecoveryScreen extends ConsumerWidget {
       ref.read(interactionControllerProvider.notifier).refresh();
     }
   }
-Future<void> _showAddCustomerDialog(BuildContext context, WidgetRef ref) async {
+
+  Future<void> _showAddCustomerDialog(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => const AddCustomerDialog(),
@@ -162,10 +208,14 @@ Future<void> _showAddCustomerDialog(BuildContext context, WidgetRef ref) async {
         labelText: 'Customer',
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
       ),
-      items: customers.map((customer) => DropdownMenuItem(
-        value: customer.id,
-        child: Text(customer.fullName),
-      )).toList(),
+      items: customers
+          .map(
+            (customer) => DropdownMenuItem(
+              value: customer.id,
+              child: Text(customer.fullName),
+            ),
+          )
+          .toList(),
       onChanged: (value) {},
       hint: const Text('Select Customer'),
     );
@@ -179,10 +229,16 @@ Future<void> _showAddCustomerDialog(BuildContext context, WidgetRef ref) async {
         labelText: 'Debt',
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
       ),
-      items: debts.map((debt) => DropdownMenuItem(
-        value: debt,
-        child: Text('${debt.referenceNumber} - \$${debt.remainingBalance.toStringAsFixed(2)}'),
-      )).toList(),
+      items: debts
+          .map(
+            (debt) => DropdownMenuItem(
+              value: debt,
+              child: Text(
+                '${debt.referenceNumber} - \$${debt.remainingBalance.toStringAsFixed(2)}',
+              ),
+            ),
+          )
+          .toList(),
       onChanged: (value) {},
       hint: const Text('Select Debt'),
     );

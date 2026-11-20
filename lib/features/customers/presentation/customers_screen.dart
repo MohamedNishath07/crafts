@@ -43,123 +43,131 @@ class CustomersScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: surfaceColor,
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Top Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Customer Directory',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: textPrimary,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(
+            24.0,
+            24.0,
+            24.0,
+            24.0 + MediaQuery.of(context).padding.bottom,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Top Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Customer Directory',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: textPrimary,
+                          ),
                         ),
+                        SizedBox(height: 4),
+                        Text(
+                          'Search, filter, and register borrower and customer accounts',
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 13, color: textSecondary),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  ElevatedButton.icon(
+                    onPressed: () => _showAddCustomerDialog(context),
+                    icon: const Icon(Icons.add, size: 18),
+                    label: const Text('Add Customer'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.brandPrimary,
+                      foregroundColor: AppColors.inkWhite,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
                       ),
-                      SizedBox(height: 4),
-                      Text(
-                        'Search, filter, and register borrower and customer accounts',
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 13, color: textSecondary),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              // Search Toolbar
+              Card(
+                color: cardColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(color: borderColor),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          decoration: InputDecoration(
+                            hintText: 'Search by customer name, phone number, email, or national ID...',
+                            prefixIcon: Icon(
+                              Icons.search,
+                              size: 20,
+                              color: textSecondary,
+                            ),
+                            border: InputBorder.none,
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 8,
+                            ),
+                            suffixIcon:
+                                ref
+                                    .watch(customerSearchQueryProvider)
+                                    .isNotEmpty
+                                ? IconButton(
+                                    icon: const Icon(Icons.clear, size: 18),
+                                    onPressed: () {
+                                      ref
+                                          .read(
+                                            customerSearchQueryProvider
+                                                .notifier,
+                                          )
+                                          .setQuery('');
+                                      ref
+                                          .read(
+                                            customerPageIndexProvider.notifier,
+                                          )
+                                          .setPage(0);
+                                    },
+                                  )
+                                : null,
+                          ),
+                          onChanged: (val) {
+                            ref
+                                .read(customerSearchQueryProvider.notifier)
+                                .setQuery(val);
+                            ref
+                                .read(customerPageIndexProvider.notifier)
+                                .setPage(0);
+                          },
+                        ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 16),
-                ElevatedButton.icon(
-                  onPressed: () => _showAddCustomerDialog(context),
-                  icon: const Icon(Icons.add, size: 18),
-                  label: const Text('Add Customer'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.brandPrimary,
-                    foregroundColor: AppColors.inkWhite,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Search Toolbar
-            Card(
-              color: cardColor,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: borderColor),
               ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        decoration: InputDecoration(
-                          hintText: 'Search by customer name, phone number, email, or national ID...',
-                          prefixIcon: Icon(
-                            Icons.search,
-                            size: 20,
-                            color: textSecondary,
-                          ),
-                          border: InputBorder.none,
-                          isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 8,
-                          ),
-                          suffixIcon:
-                              ref.watch(customerSearchQueryProvider).isNotEmpty
-                              ? IconButton(
-                                  icon: const Icon(Icons.clear, size: 18),
-                                  onPressed: () {
-                                    ref
-                                        .read(
-                                          customerSearchQueryProvider.notifier,
-                                        )
-                                        .setQuery('');
-                                    ref
-                                        .read(
-                                          customerPageIndexProvider.notifier,
-                                        )
-                                        .setPage(0);
-                                  },
-                                )
-                              : null,
-                        ),
-                        onChanged: (val) {
-                          ref
-                              .read(customerSearchQueryProvider.notifier)
-                              .setQuery(val);
-                          ref
-                              .read(customerPageIndexProvider.notifier)
-                              .setPage(0);
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            // Main Data Table Card
-            Expanded(
-              child: Card(
+              // Main Data Table Card
+              Card(
                 color: cardColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -217,142 +225,141 @@ class CustomersScreen extends ConsumerWidget {
                     : LayoutBuilder(
                         builder: (context, constraints) {
                           return SingleChildScrollView(
-                            scrollDirection: Axis.vertical,
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  minWidth: constraints.maxWidth,
+                            scrollDirection: Axis.horizontal,
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                minWidth: constraints.maxWidth,
+                              ),
+                              child: DataTable(
+                                headingRowColor: WidgetStateProperty.all(
+                                  isDark
+                                      ? const Color(0xFF16213E)
+                                      : const Color(0xFFF8FAFC),
                                 ),
-                                child: DataTable(
-                                  headingRowColor: WidgetStateProperty.all(
-                                    isDark
-                                        ? const Color(0xFF16213E)
-                                        : const Color(0xFFF8FAFC),
+                                dataRowMinHeight: 52,
+                                dataRowMaxHeight: 56,
+                                columns: const [
+                                  DataColumn(
+                                    label: Text(
+                                      'Customer Name',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
                                   ),
-                                  dataRowMinHeight: 52,
-                                  dataRowMaxHeight: 56,
-                                  columns: const [
-                                    DataColumn(
-                                      label: Text(
-                                        'Customer Name',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                  DataColumn(
+                                    label: Text(
+                                      'Phone Number',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
-                                    DataColumn(
-                                      label: Text(
-                                        'Phone Number',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                  ),
+                                  DataColumn(
+                                    label: Text(
+                                      'Email Address',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
-                                    DataColumn(
-                                      label: Text(
-                                        'Email Address',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                  ),
+                                  DataColumn(
+                                    label: Text(
+                                      'National ID',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
-                                    DataColumn(
-                                      label: Text(
-                                        'National ID',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                  ),
+                                  DataColumn(
+                                    label: Text(
+                                      'Address',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
-                                    DataColumn(
-                                      label: Text(
-                                        'Address',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                  ),
+                                  DataColumn(
+                                    label: Text(
+                                      'Registered',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
-                                    DataColumn(
-                                      label: Text(
-                                        'Registered',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                  rows: paginatedCustomers.map((customer) {
-                                    return _buildCustomerRow(customer, isDark);
-                                  }).toList(),
-                                ),
+                                  ),
+                                ],
+                                rows: paginatedCustomers.map((customer) {
+                                  return _buildCustomerRow(customer, isDark);
+                                }).toList(),
                               ),
                             ),
                           );
                         },
                       ),
               ),
-            ),
-            const SizedBox(height: 12),
+              const SizedBox(height: 12),
 
-            // Pagination Footer Toolbar
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Row(
-                children: [
-                  Text(
-                    'Showing $startRecord-$endRecord of $totalCount records',
-                    style: TextStyle(fontSize: 13, color: textSecondary),
-                  ),
-                  const Spacer(),
-                  Text(
-                    'Rows per page: ',
-                    style: TextStyle(fontSize: 13, color: textSecondary),
-                  ),
-                  DropdownButton<int>(
-                    value: pageSize,
-                    underline: const SizedBox.shrink(),
-                    items: const [
-                      DropdownMenuItem(value: 25, child: Text('25')),
-                      DropdownMenuItem(value: 50, child: Text('50')),
-                      DropdownMenuItem(value: 100, child: Text('100')),
-                    ],
-                    onChanged: (newSize) {
-                      if (newSize != null) {
-                        ref
-                            .read(customerPageSizeProvider.notifier)
-                            .setPageSize(newSize);
-                        ref.read(customerPageIndexProvider.notifier).setPage(0);
-                      }
-                    },
-                  ),
-                  const SizedBox(width: 16),
-                  IconButton(
-                    icon: const Icon(Icons.chevron_left, size: 20),
-                    tooltip: 'Previous Page',
-                    onPressed: pageIndex > 0
-                        ? () => ref
+              // Pagination Footer Toolbar
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Row(
+                  children: [
+                    Text(
+                      'Showing $startRecord-$endRecord of $totalCount records',
+                      style: TextStyle(fontSize: 13, color: textSecondary),
+                    ),
+                    const Spacer(),
+                    Text(
+                      'Rows per page: ',
+                      style: TextStyle(fontSize: 13, color: textSecondary),
+                    ),
+                    DropdownButton<int>(
+                      value: pageSize,
+                      underline: const SizedBox.shrink(),
+                      items: const [
+                        DropdownMenuItem(value: 25, child: Text('25')),
+                        DropdownMenuItem(value: 50, child: Text('50')),
+                        DropdownMenuItem(value: 100, child: Text('100')),
+                      ],
+                      onChanged: (newSize) {
+                        if (newSize != null) {
+                          ref
+                              .read(customerPageSizeProvider.notifier)
+                              .setPageSize(newSize);
+                          ref
                               .read(customerPageIndexProvider.notifier)
-                              .previousPage()
-                        : null,
-                  ),
-                  Text(
-                    'Page ${pageIndex + 1} of ${maxPage + 1}',
-                    style: TextStyle(fontSize: 13, color: textPrimary),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.chevron_right, size: 20),
-                    tooltip: 'Next Page',
-                    onPressed: pageIndex < maxPage
-                        ? () => ref
-                              .read(customerPageIndexProvider.notifier)
-                              .nextPage()
-                        : null,
-                  ),
-                ],
+                              .setPage(0);
+                        }
+                      },
+                    ),
+                    const SizedBox(width: 16),
+                    IconButton(
+                      icon: const Icon(Icons.chevron_left, size: 20),
+                      tooltip: 'Previous Page',
+                      onPressed: pageIndex > 0
+                          ? () => ref
+                                .read(customerPageIndexProvider.notifier)
+                                .previousPage()
+                          : null,
+                    ),
+                    Text(
+                      'Page ${pageIndex + 1} of ${maxPage + 1}',
+                      style: TextStyle(fontSize: 13, color: textPrimary),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.chevron_right, size: 20),
+                      tooltip: 'Next Page',
+                      onPressed: pageIndex < maxPage
+                          ? () => ref
+                                .read(customerPageIndexProvider.notifier)
+                                .nextPage()
+                          : null,
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -54,35 +54,17 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             children: [
               const Spacer(),
               // App logo/title
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: AppColors.brandPrimary.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppColors.brandPrimary.withValues(alpha: 0.35),
-                    width: 1.5,
-                  ),
+              SizedBox.square(
+                dimension: (MediaQuery.of(context).size.width * 0.70).clamp(
+                  240.0,
+                  440.0,
                 ),
-                child: const Icon(
-                  Icons.account_balance_wallet_outlined,
-                  size: 42,
-                  color: AppColors.brandPrimary,
+                child: Image.asset(
+                  'assets/images/app_logo.png',
+                  fit: BoxFit.contain,
                 ),
               ),
-              const SizedBox(height: 24),
-              const Text(
-                'CREDIT RECOVERY SYSTEM',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.inkPrimary,
-                  letterSpacing: 0.6,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 5),
               const Text(
                 'Version 1.0.0',
                 style: TextStyle(fontSize: 14, color: AppColors.inkSecondary),

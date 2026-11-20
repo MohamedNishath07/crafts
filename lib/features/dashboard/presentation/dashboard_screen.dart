@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../auth/data/php_auth_session.dart';
 import '../../auth/domain/user_profile.dart';
@@ -23,11 +24,15 @@ class DashboardScreen extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // Get current user (either from authController or phpAuthSession)
-    final user = ref.watch(authControllerProvider).value ?? ref.watch(phpAuthSessionProvider);
+    final user =
+        ref.watch(authControllerProvider).value ??
+        ref.watch(phpAuthSessionProvider);
     final dashboardState = ref.watch(dashboardControllerProvider);
     final controller = ref.read(dashboardControllerProvider.notifier);
 
-    final primaryNavy = isDark ? const Color(0xFF0F172A) : const Color(0xFF1E293B);
+    final primaryNavy = isDark
+        ? const Color(0xFF0F172A)
+        : const Color(0xFF1E293B);
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.surfaceDark : const Color(0xFFF8FAFC),
@@ -98,7 +103,12 @@ class DashboardScreen extends ConsumerWidget {
             ? _buildErrorView(context, ref, dashboardState.errorMessage!)
             : SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+                padding: EdgeInsets.fromLTRB(
+                  16.0,
+                  20.0,
+                  16.0,
+                  20.0 + MediaQuery.of(context).padding.bottom,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -132,7 +142,8 @@ class DashboardScreen extends ConsumerWidget {
                     // 4. Quick Actions Section
                     DashboardQuickActions(
                       role: user?.role ?? UserRole.admin,
-                      onActionCompleted: () => controller.loadDashboard(showLoading: false),
+                      onActionCompleted: () =>
+                          controller.loadDashboard(showLoading: false),
                     ),
 
                     const SizedBox(height: 20),
@@ -141,7 +152,8 @@ class DashboardScreen extends ConsumerWidget {
                     DashboardAnalyticsSection(
                       analytics: dashboardState.analytics,
                       selectedFilter: dashboardState.dateFilter,
-                      onFilterChanged: (DashboardDateFilter filter) => controller.setDateFilter(filter),
+                      onFilterChanged: (DashboardDateFilter filter) =>
+                          controller.setDateFilter(filter),
                     ),
 
                     const SizedBox(height: 20),
@@ -150,7 +162,8 @@ class DashboardScreen extends ConsumerWidget {
                     DashboardRecentActivities(
                       activities: dashboardState.recentActivities,
                       selectedFilter: dashboardState.activityFilter,
-                      onFilterChanged: (filter) => controller.setActivityFilter(filter),
+                      onFilterChanged: (filter) =>
+                          controller.setActivityFilter(filter),
                     ),
 
                     const SizedBox(height: 32),
@@ -185,10 +198,7 @@ class DashboardScreen extends ConsumerWidget {
             const SizedBox(height: 16),
             const Text(
               'Failed to Load Financial Dashboard',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
@@ -196,7 +206,9 @@ class DashboardScreen extends ConsumerWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 13,
-                color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                color: isDark
+                    ? const Color(0xFF94A3B8)
+                    : const Color(0xFF64748B),
               ),
             ),
             const SizedBox(height: 20),
@@ -204,8 +216,13 @@ class DashboardScreen extends ConsumerWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.brandPrimary,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               icon: const Icon(Icons.refresh_rounded, size: 18),
               label: const Text('Retry'),
