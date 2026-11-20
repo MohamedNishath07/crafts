@@ -166,13 +166,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   hintText: 'Email address',
                                   prefixIcon: Icon(Icons.email_outlined),
                                 ),
-                                validator: (v) {
-                                  if (v == null || v.trim().isEmpty)
-                                    return 'Email is required';
-                                  if (!v.contains('@'))
-                                    return 'Enter a valid email';
-                                  return null;
-                                },
+                                  validator: (v) {
+                                    if (v == null || v.trim().isEmpty) {
+                                      return 'Email is required';
+                                    }
+                                    if (!v.contains('@')) {
+                                      return 'Enter a valid email';
+                                    }
+                                    return null;
+                                  },
                               ),
                             ),
                             const SizedBox(height: 16),
@@ -199,13 +201,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     ),
                                   ),
                                 ),
-                                validator: (v) {
-                                  if (v == null || v.isEmpty)
-                                    return 'Password is required';
-                                  if (v.length < 6)
-                                    return 'Minimum 6 characters';
-                                  return null;
-                                },
+                                  validator: (v) {
+                                    if (v == null || v.isEmpty) {
+                                      return 'Password is required';
+                                    }
+                                    if (v.length < 6) {
+                                      return 'Minimum 6 characters';
+                                    }
+                                    return null;
+                                  },
                               ),
                             ),
                             const SizedBox(height: 24),
