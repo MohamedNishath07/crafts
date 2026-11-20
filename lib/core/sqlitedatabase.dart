@@ -25,7 +25,7 @@ class SQLiteDatabase {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -33,17 +33,25 @@ class SQLiteDatabase {
 
   /// Create all tables
   Future<void> _onCreate(Database db, int version) async {
-// Users table for authentication and profile names
+    // Users table for authentication and profile names
     await db.execute('''CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
       tenant_id TEXT NOT NULL,
       email TEXT NOT NULL,
       full_name TEXT NOT NULL,
+      phone TEXT,
       role TEXT NOT NULL DEFAULT 'recovery_officer',
       is_active INTEGER NOT NULL DEFAULT 1,
       password_hash TEXT,
+      profile_photo TEXT,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
+    )''');
+
+    // App settings key-value store (theme mode, notification preferences, ...)
+    await db.execute('''CREATE TABLE IF NOT EXISTS app_settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
     )''');
 
     // Audit logs table
@@ -176,7 +184,67 @@ class SQLiteDatabase {
 
   /// Database upgrade handler
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // Handle schema migrations if needed
+    // Migration from version 1 to 2: add profile columns to users and
+    // create the app_settings key-value store. Kept idempotent so it is safe
+    // to run on databases that were already partially migrated.
+    if (oldVersion < 2) {
+      await _addColumnIfMissing(db, 'users', 'phone', 'TEXT');
+      await _addColumnIfMissing(db, 'users', 'profile_photo', 'TEXT');
+      await db.execute('''CREATE TABLE IF NOT EXISTS app_settings (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+      )''');
+    }
+  }
+
+  /// Adds a column to a table only when it does not already exist.
+  Future<void> _addColumnIfMissing(
+    Database db,
+    String table,
+    String column,
+    String definition,
+  ) async {
+    final existing = await db.rawQuery('PRAGMA table_info($table)');
+    final hasColumn = existing.any((row) => (row['name'] as String?) == column);
+    if (!hasColumn) {
+      await db.execute('ALTER TABLE $table ADD COLUMN $column $definition');
+    }
+  }
+
+  /// Reads a string setting from the app_settings store.
+  Future<String?> getSetting(String key) async {
+    final db = await database;
+    final result = await db.query(
+      'app_settings',
+      where: 'key = ?',
+      whereArgs: [key],
+      limit: 1,
+    );
+    if (result.isEmpty) return null;
+    return result.first['value'] as String?;
+  }
+
+  /// Persists a string setting to the app_settings store.
+  Future<void> setSetting(String key, String value) async {
+    final db = await database;
+    final existing = await db.query(
+      'app_settings',
+      where: 'key = ?',
+      whereArgs: [key],
+      limit: 1,
+    );
+    final data = {'key': key, 'value': value};
+    if (existing.isNotEmpty) {
+      await db.update('app_settings', data, where: 'key = ?', whereArgs: [key]);
+    } else {
+      await db.insert('app_settings', data);
+    }
+  }
+
+  /// Updates arbitrary columns on the users table for the given user id.
+  Future<void> updateUser(String id, Map<String, dynamic> data) async {
+    final db = await database;
+    await db.update('users', data, where: 'id = ?', whereArgs: [id]);
   }
 
   /// Close the database connection
@@ -204,7 +272,9 @@ class SQLiteDatabase {
 
   /// Fetch a single customer by id, tenant-scoped.
   Future<Map<String, dynamic>?> fetchCustomerById(
-      String id, String tenantId) async {
+    String id,
+    String tenantId,
+  ) async {
     final db = await database;
     final result = await db.query(
       'customers',
@@ -225,7 +295,10 @@ class SQLiteDatabase {
   }
 
   /// Fetch a single debt by id, tenant-scoped.
-  Future<Map<String, dynamic>?> fetchDebtById(String id, String tenantId) async {
+  Future<Map<String, dynamic>?> fetchDebtById(
+    String id,
+    String tenantId,
+  ) async {
     final db = await database;
     final result = await db.query(
       'debts',
@@ -245,12 +318,7 @@ class SQLiteDatabase {
   Future<void> updateDebt(Map<String, dynamic> data) async {
     final db = await database;
     final id = data['id'] as String;
-    await db.update(
-      'debts',
-      data,
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    await db.update('debts', data, where: 'id = ?', whereArgs: [id]);
   }
 
   /// Fetch all payments for a tenant.
@@ -283,7 +351,8 @@ class SQLiteDatabase {
 
   /// Insert or update reminder settings for a tenant.
   Future<Map<String, dynamic>> upsertReminderSettings(
-      Map<String, dynamic> data) async {
+    Map<String, dynamic> data,
+  ) async {
     final db = await database;
     final tenantId = data['tenant_id'] as String;
     final existing = await fetchReminderSettings(tenantId);
@@ -302,7 +371,8 @@ class SQLiteDatabase {
 
   /// Fetch all reminder dispatches for a tenant.
   Future<List<Map<String, dynamic>>> fetchReminderDispatches(
-      String tenantId) async {
+    String tenantId,
+  ) async {
     final db = await database;
     return await db.query(
       'reminder_dispatches',
@@ -313,7 +383,8 @@ class SQLiteDatabase {
 
   /// Insert a reminder dispatch and return the row with its generated id.
   Future<Map<String, dynamic>> insertReminderDispatch(
-      Map<String, dynamic> data) async {
+    Map<String, dynamic> data,
+  ) async {
     final db = await database;
     final id = await db.insert('reminder_dispatches', data);
     return {...data, 'id': id};
@@ -331,7 +402,8 @@ class SQLiteDatabase {
 
   /// Insert an interaction log and return the row with its generated id.
   Future<Map<String, dynamic>> insertInteractionLog(
-      Map<String, dynamic> data) async {
+    Map<String, dynamic> data,
+  ) async {
     final db = await database;
     final id = await db.insert('interaction_logs', data);
     return {...data, 'id': id};
@@ -358,11 +430,6 @@ class SQLiteDatabase {
   Future<void> updateProfile(Map<String, dynamic> data) async {
     final db = await database;
     final id = data['id'] as String;
-    await db.update(
-      'profiles',
-      data,
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    await db.update('profiles', data, where: 'id = ?', whereArgs: [id]);
   }
 }

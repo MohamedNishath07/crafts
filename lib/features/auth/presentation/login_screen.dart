@@ -33,10 +33,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoggingIn = true);
     try {
-      await ref.read(authControllerProvider.notifier).signIn(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-      );
+      await ref
+          .read(authControllerProvider.notifier)
+          .signIn(
+            email: _emailController.text.trim(),
+            password: _passwordController.text,
+          );
 
       final authState = ref.read(authControllerProvider);
       if (authState.hasError) {
@@ -97,12 +99,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   children: [
                     Container(
                       padding: const EdgeInsets.all(16),
-                      decoration: _neumorphicDecoration(isDark, card, radius: 20),
+                      decoration: _neumorphicDecoration(
+                        isDark,
+                        card,
+                        radius: 20,
+                      ),
                       child: Column(
                         children: [
                           Container(
                             padding: const EdgeInsets.all(14),
-                            decoration: _neumorphicDecoration(isDark, card, radius: 16, inset: true),
+                            decoration: _neumorphicDecoration(
+                              isDark,
+                              card,
+                              radius: 16,
+                              inset: true,
+                            ),
                             child: Icon(
                               Icons.account_balance_wallet,
                               color: AppColors.brandPrimary,
@@ -131,10 +142,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     const SizedBox(height: 24),
 
-
                     Container(
                       padding: const EdgeInsets.all(24),
-                      decoration: _neumorphicDecoration(isDark, card, radius: 24),
+                      decoration: _neumorphicDecoration(
+                        isDark,
+                        card,
+                        radius: 24,
+                      ),
                       child: Form(
                         key: _formKey,
                         child: Column(
@@ -144,6 +158,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               isDark: isDark,
                               card: card,
                               child: TextFormField(
+                                key: const Key('login_email_field'),
                                 controller: _emailController,
                                 keyboardType: TextInputType.emailAddress,
                                 decoration: const InputDecoration(
@@ -152,8 +167,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   prefixIcon: Icon(Icons.email_outlined),
                                 ),
                                 validator: (v) {
-                                  if (v == null || v.trim().isEmpty) return 'Email is required';
-                                  if (!v.contains('@')) return 'Enter a valid email';
+                                  if (v == null || v.trim().isEmpty)
+                                    return 'Email is required';
+                                  if (!v.contains('@'))
+                                    return 'Enter a valid email';
                                   return null;
                                 },
                               ),
@@ -163,6 +180,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               isDark: isDark,
                               card: card,
                               child: TextFormField(
+                                key: const Key('login_password_field'),
                                 controller: _passwordController,
                                 obscureText: _obscurePassword,
                                 decoration: InputDecoration(
@@ -170,13 +188,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   hintText: 'Password',
                                   prefixIcon: const Icon(Icons.lock_outline),
                                   suffixIcon: IconButton(
-                                    icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                                    icon: Icon(
+                                      _obscurePassword
+                                          ? Icons.visibility_off
+                                          : Icons.visibility,
+                                    ),
+                                    onPressed: () => setState(
+                                      () =>
+                                          _obscurePassword = !_obscurePassword,
+                                    ),
                                   ),
                                 ),
                                 validator: (v) {
-                                  if (v == null || v.isEmpty) return 'Password is required';
-                                  if (v.length < 6) return 'Minimum 6 characters';
+                                  if (v == null || v.isEmpty)
+                                    return 'Password is required';
+                                  if (v.length < 6)
+                                    return 'Minimum 6 characters';
                                   return null;
                                 },
                               ),
@@ -189,21 +216,34 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.brandPrimary,
                                   foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
                                   elevation: 0,
                                 ),
                                 child: _isLoggingIn
                                     ? const SizedBox(
                                         width: 22,
                                         height: 22,
-                                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white,
+                                        ),
                                       )
-                                    : const Text('Sign In', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                                    : const Text(
+                                        'Sign In',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
                               ),
                             ),
                             const SizedBox(height: 12),
                             TextButton(
-                              onPressed: isLoading ? null : () => context.push('/create-account'),
+                              onPressed: isLoading
+                                  ? null
+                                  : () => context.push('/create-account'),
                               child: const Text('Create Account'),
                             ),
                           ],
@@ -214,19 +254,44 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       const SizedBox(height: 24),
                       Container(
                         padding: const EdgeInsets.all(16),
-                        decoration: _neumorphicDecoration(isDark, card, radius: 16),
+                        decoration: _neumorphicDecoration(
+                          isDark,
+                          card,
+                          radius: 16,
+                        ),
                         child: Column(
                           children: [
-                            const Text('Demo Persona Access (dev only)',
-                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.inkSecondary)),
+                            const Text(
+                              'Demo Persona Access (dev only)',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.inkSecondary,
+                              ),
+                            ),
                             const SizedBox(height: 8),
                             Wrap(
                               alignment: WrapAlignment.center,
                               spacing: 8,
                               children: [
-                                _demoChip(context, ref, 'Admin', UserRole.admin),
-                                _demoChip(context, ref, 'Recovery', UserRole.recoveryOfficer),
-                                _demoChip(context, ref, 'Finance', UserRole.financeOfficer),
+                                _demoChip(
+                                  context,
+                                  ref,
+                                  'Admin',
+                                  UserRole.admin,
+                                ),
+                                _demoChip(
+                                  context,
+                                  ref,
+                                  'Recovery',
+                                  UserRole.recoveryOfficer,
+                                ),
+                                _demoChip(
+                                  context,
+                                  ref,
+                                  'Finance',
+                                  UserRole.financeOfficer,
+                                ),
                               ],
                             ),
                           ],
@@ -243,7 +308,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  Widget _demoChip(BuildContext context, WidgetRef ref, String label, UserRole role) {
+  Widget _demoChip(
+    BuildContext context,
+    WidgetRef ref,
+    String label,
+    UserRole role,
+  ) {
     return ActionChip(
       label: Text(label, style: const TextStyle(fontSize: 12)),
       avatar: const Icon(Icons.person, size: 16),
@@ -254,14 +324,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  BoxDecoration _neumorphicDecoration(bool isDark, Color card, {double radius = 16, bool inset = false}) {
+  BoxDecoration _neumorphicDecoration(
+    bool isDark,
+    Color card, {
+    double radius = 16,
+    bool inset = false,
+  }) {
     if (isDark) {
       return BoxDecoration(
         color: card,
         borderRadius: BorderRadius.circular(radius),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.4), offset: const Offset(4, 4), blurRadius: 8),
-          BoxShadow(color: Colors.white.withValues(alpha: 0.05), offset: const Offset(-4, -4), blurRadius: 8),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.4),
+            offset: const Offset(4, 4),
+            blurRadius: 8,
+          ),
+          BoxShadow(
+            color: Colors.white.withValues(alpha: 0.05),
+            offset: const Offset(-4, -4),
+            blurRadius: 8,
+          ),
         ],
       );
     }
@@ -270,17 +353,39 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       borderRadius: BorderRadius.circular(radius),
       boxShadow: inset
           ? [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.08), offset: const Offset(2, 2), blurRadius: 4, spreadRadius: -2),
-              BoxShadow(color: Colors.white.withValues(alpha: 0.9), offset: const Offset(-2, -2), blurRadius: 4, spreadRadius: -2),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                offset: const Offset(2, 2),
+                blurRadius: 4,
+                spreadRadius: -2,
+              ),
+              BoxShadow(
+                color: Colors.white.withValues(alpha: 0.9),
+                offset: const Offset(-2, -2),
+                blurRadius: 4,
+                spreadRadius: -2,
+              ),
             ]
           : [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.12), offset: const Offset(6, 6), blurRadius: 12),
-              BoxShadow(color: Colors.white.withValues(alpha: 0.9), offset: const Offset(-6, -6), blurRadius: 12),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.12),
+                offset: const Offset(6, 6),
+                blurRadius: 12,
+              ),
+              BoxShadow(
+                color: Colors.white.withValues(alpha: 0.9),
+                offset: const Offset(-6, -6),
+                blurRadius: 12,
+              ),
             ],
     );
   }
 
-  Widget _neumorphicField({required bool isDark, required Color card, required Widget child}) {
+  Widget _neumorphicField({
+    required bool isDark,
+    required Color card,
+    required Widget child,
+  }) {
     return Container(
       decoration: _neumorphicDecoration(isDark, card, radius: 14, inset: true),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

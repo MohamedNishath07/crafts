@@ -1,12 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../data/auth_repository_backup.dart';
 import '../domain/user_profile.dart';
 
-final authControllerProvider = AsyncNotifierProvider<AuthController, UserProfile?>(() {
-  return AuthController();
-});
+final authControllerProvider =
+    AsyncNotifierProvider<AuthController, UserProfile?>(() {
+      return AuthController();
+    });
 
 class AuthController extends AsyncNotifier<UserProfile?> {
   final AuthRepository _repository = AuthRepository();
@@ -24,21 +26,24 @@ class AuthController extends AsyncNotifier<UserProfile?> {
     );
   }
 
-  Future<void> signIn({
-    required String email,
-    required String password,
-  }) async {
+  Future<void> signIn({required String email, required String password}) async {
     state = const AsyncValue.loading();
-    await _repository.signIn(email: email, password: password, tenantId: 'default_tenant');
+    await _repository.signIn(
+      email: email,
+      password: password,
+      tenantId: 'default_tenant',
+    );
     final user = await _repository.getCurrentProfile();
-    state = AsyncValue.data(UserProfile(
-            id: user.id,
-            email: user.email,
-            fullName: user.name ?? 'Staff Member',
-            role: UserRole.recoveryOfficer,
-            isActive: user.isActive,
-            tenantId: 'default_tenant',
-          ));
+    state = AsyncValue.data(
+      UserProfile(
+        id: user.id,
+        email: user.email,
+        fullName: user.name ?? 'Staff Member',
+        role: UserRole.recoveryOfficer,
+        isActive: user.isActive,
+        tenantId: 'default_tenant',
+      ),
+    );
   }
 
   Future<void> signOut() async {
@@ -61,14 +66,12 @@ class AuthController extends AsyncNotifier<UserProfile?> {
   }
 
   /// Update the current authenticated user's profile display name
-  Future<void> updateProfile({required String fullName}) async {
+  Future<void> updateProfile({required String fullName, String? phone}) async {
     final current = state.value;
     if (current == null) return;
 
     try {
-      await _repository.updateProfile(
-        fullName: fullName,
-      );
+      await _repository.updateProfile(fullName: fullName, phone: phone);
       state = AsyncValue.data(
         UserProfile(
           id: current.id,
@@ -94,10 +97,27 @@ class AuthController extends AsyncNotifier<UserProfile?> {
     }
   }
 
-  /// Change the current user's password
-  Future<void> changePassword({required String newPassword}) async {
-    await _repository.updatePassword(newPassword: newPassword);
+  /// Change the current user's password after validating the current password.
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    await _repository.changePassword(
+      currentPassword: currentPassword,
+      newPassword: newPassword,
+    );
   }
+
+  /// Returns the stored phone number for the current user, if any.
+  Future<String?> getCurrentPhone() async => _repository.getCurrentPhone();
+
+  /// Returns the stored profile photo path for the current user, if any.
+  Future<String?> getCurrentProfilePhoto() async =>
+      _repository.getCurrentProfilePhoto();
+
+  /// Updates the current user's profile photo path.
+  Future<void> updateProfilePhoto({required String photoPath}) async =>
+      _repository.updateProfilePhoto(photoPath: photoPath);
 
   /// Create a new account with email and password
   Future<void> createAccount({
@@ -105,7 +125,7 @@ class AuthController extends AsyncNotifier<UserProfile?> {
     required String password,
     required String firstName,
     required String lastName,
-    }) async {
+  }) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
       final user = await _repository.signUp(
@@ -121,9 +141,8 @@ class AuthController extends AsyncNotifier<UserProfile?> {
         fullName: user.name ?? 'Staff Member',
         role: UserRole.recoveryOfficer,
         isActive: user.isActive,
-tenantId: 'default_tenant',
+        tenantId: 'default_tenant',
       );
     });
   }
 }
-

@@ -1,13 +1,15 @@
-import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
+
 import '../../../core/constants/app_colors.dart';
-import '../../../api_config.dart';
+import '../../../core/theming/theme_settings_provider.dart';
+import '../data/php_auth_session.dart';
 import '../domain/user_profile.dart';
 import 'auth_controller.dart';
-import '../data/php_auth_session.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -21,87 +23,115 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final _passwordFormKey = GlobalKey<FormState>();
 
   late final TextEditingController _nameController;
+  late final TextEditingController _phoneController;
+  final _currentPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
-  bool _isSavingProfile = false;
-  bool _isSavingPassword = false;
-  bool _isLoadingProfile = false;
-  bool _obscureNewPassword = true;
-  bool _obscureConfirmPassword = true;
+  String _phone = '';
+  String? _photoPath;
+  File? _pickedImage;
 
-  String _displayPhone = '';
-  String _displayUsername = '';
+  bool _isLoading = true;
+  bool _isSavingProfile = false;
+  bool _isChangingPassword = false;
+  bool _obscureCurrent = true;
+  bool _obscureNew = true;
+  bool _obscureConfirm = true;
 
   @override
   void initState() {
     super.initState();
-    final user = ref.read(phpAuthSessionProvider.notifier).currentUser;
-    _nameController = TextEditingController(text: user?.fullName ?? '');
-    _displayPhone = user?.email ?? ''; // placeholder, will be updated from API
-    _displayUsername = user == null ? '' : (user.email.split('@').firstOrNull ?? '');
-    _loadProfileFromBackend();
+    _loadAccount();
   }
 
-  Future<void> _loadProfileFromBackend() async {
-    final notifier = ref.read(phpAuthSessionProvider.notifier);
-    final user = notifier.currentUser;
-    if (user == null || user.id.isEmpty) return;
-
-    setState(() => _isLoadingProfile = true);
-    try {
-      final response = await http.post(
-        Uri.parse(ApiConfig.getProfileUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'user_id': user.id}),
-      );
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      if (response.statusCode >= 200 && response.statusCode < 300 && data['success'] == true) {
-        final userData = data['user'] as Map<String, dynamic>;
-        if (mounted) {
-          setState(() {
-            _displayPhone = userData['phone']?.toString() ?? '';
-            _displayUsername = userData['username']?.toString() ?? '';
-            // Update name from backend too
-            _nameController.text = userData['full_name']?.toString() ?? user.fullName;
-          });
-        }
+  Future<void> _loadAccount() async {
+    final user = ref.read(authControllerProvider).value;
+    if (user == null) {
+      if (mounted) {
+        setState(() => _isLoading = false);
       }
-    } catch (_) {
-      // Silently ignore - profile will show session data
-    } finally {
-      if (mounted) setState(() => _isLoadingProfile = false);
+      return;
+    }
+    _nameController = TextEditingController(text: user.fullName);
+    final repo = ref.read(authControllerProvider.notifier);
+    final phone = await repo.getCurrentPhone() ?? '';
+    final photo = await repo.getCurrentProfilePhoto();
+    if (mounted) {
+      setState(() {
+        _phone = phone;
+        _photoPath = photo;
+        _phoneController = TextEditingController(text: phone);
+        _isLoading = false;
+      });
     }
   }
 
   @override
   void dispose() {
     _nameController.dispose();
+    _phoneController.dispose();
+    _currentPasswordController.dispose();
     _newPasswordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  Color _getRoleColor(UserRole role) {
-    switch (role) {
-      case UserRole.admin:
-        return AppColors.accentDanger;
-      case UserRole.financeOfficer:
-        return AppColors.accentSuccess;
-      case UserRole.recoveryOfficer:
-        return AppColors.accentWarning;
+  Future<void> _pickImage() async {
+    try {
+      final picked = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+      if (picked == null) {
+        return; // user cancelled
+      }
+      final file = File(picked.path);
+      final repo = ref.read(authControllerProvider.notifier);
+      await repo.updateProfilePhoto(photoPath: picked.path);
+      if (mounted) {
+        setState(() {
+          _photoPath = picked.path;
+          _pickedImage = file;
+        });
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Profile photo updated'),
+            backgroundColor: AppColors.accentSuccess,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update photo: $e'),
+            backgroundColor: AppColors.accentDanger,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 
   Future<void> _saveProfile() async {
-    if (!_profileFormKey.currentState!.validate()) return;
-
+    if (!_profileFormKey.currentState!.validate()) {
+      return;
+    }
     setState(() => _isSavingProfile = true);
     try {
-      await ref.read(authControllerProvider.notifier).updateProfile(
+      await ref
+          .read(authControllerProvider.notifier)
+          .updateProfile(
             fullName: _nameController.text.trim(),
+            phone: _phoneController.text.trim(),
           );
-
+      _phone = _phoneController.text.trim();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -129,17 +159,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Future<void> _changePassword() async {
-    if (!_passwordFormKey.currentState!.validate()) return;
-
-    setState(() => _isSavingPassword = true);
+    if (!_passwordFormKey.currentState!.validate()) {
+      return;
+    }
+    setState(() => _isChangingPassword = true);
     try {
-      await ref.read(authControllerProvider.notifier).changePassword(
+      await ref
+          .read(authControllerProvider.notifier)
+          .changePassword(
+            currentPassword: _currentPasswordController.text,
             newPassword: _newPasswordController.text,
           );
-
+      _currentPasswordController.clear();
+      _newPasswordController.clear();
+      _confirmPasswordController.clear();
       if (mounted) {
-        _newPasswordController.clear();
-        _confirmPasswordController.clear();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Password changed successfully'),
@@ -160,51 +194,979 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       }
     } finally {
       if (mounted) {
-        setState(() => _isSavingPassword = false);
+        setState(() => _isChangingPassword = false);
       }
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final user = ref.watch(authControllerProvider).value;
+  Future<void> _signOut() async {
+    await ref.read(authControllerProvider.notifier).signOut();
+    ref.read(phpAuthSessionProvider.notifier).clear();
+    if (!mounted) {
+      return;
+    }
+    context.go('/login');
+  }
 
-    return Scaffold(
-      backgroundColor: AppColors.surfaceBase,
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 640),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+  Widget _buildHeader(UserProfile user) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final imageProvider = _pickedImage != null
+        ? FileImage(_pickedImage!)
+        : (_photoPath != null ? FileImage(File(_photoPath!)) : null);
+
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(
+          color: isDark
+              ? AppColors.borderGlassDark
+              : AppColors.borderGlassLight,
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            Stack(
+              alignment: Alignment.center,
               children: [
-                // Header
-                const Text(
-                  'Profile & Security Settings',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.inkPrimary,
+                Container(
+                  width: 110,
+                  height: 110,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isDark
+                        ? AppColors.surfaceDarkCard
+                        : AppColors.surfaceCard,
+                    border: Border.all(
+                      color: AppColors.brandPrimary.withValues(alpha: 0.35),
+                      width: 2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.brandPrimary.withValues(alpha: 0.18),
+                        blurRadius: 24,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                    image: imageProvider != null
+                        ? DecorationImage(
+                            image: imageProvider,
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                  ),
+                  child: imageProvider == null
+                      ? const Icon(
+                          Icons.person_outline,
+                          size: 48,
+                          color: AppColors.brandPrimary,
+                        )
+                      : null,
+                ),
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: const BoxDecoration(
+                      color: AppColors.brandPrimary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.camera_alt_outlined,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                      onPressed: _isLoading ? null : _pickImage,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      splashRadius: 20,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 6),
-                const Text(
-                  'Manage your account display identity and authentication credentials.',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: AppColors.inkSecondary,
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // Card 1: Profile Information
-                _buildProfileCard(user, _displayPhone, _displayUsername, _isLoadingProfile),
-                const SizedBox(height: 24),
-
-                // Card 2: Security & Password
-                _buildPasswordCard(),
               ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              user.fullName.isNotEmpty ? user.fullName : 'Staff Member',
+              style: const TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.4,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              user.email,
+              style: TextStyle(
+                fontSize: 14,
+                color: isDark ? Colors.white70 : AppColors.inkSecondary,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _roleColor(user.role).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: _roleColor(user.role).withValues(alpha: 0.45),
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    user.role.displayName,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: _roleColor(user.role),
+                      letterSpacing: 0.4,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                _detailRow(
+                  Icons.phone_outlined,
+                  _phone.isNotEmpty ? _phone : 'No phone number',
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color _roleColor(UserRole role) {
+    switch (role) {
+      case UserRole.admin:
+        return AppColors.accentDanger;
+      case UserRole.financeOfficer:
+        return AppColors.accentSuccess;
+      case UserRole.recoveryOfficer:
+        return AppColors.brandPrimary;
+    }
+  }
+
+  Widget _detailRow(IconData icon, String text) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          icon,
+          size: 16,
+          color: isDark ? Colors.white60 : AppColors.inkMuted,
+        ),
+        const SizedBox(width: 8),
+        Flexible(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 13,
+              color: isDark ? Colors.white70 : AppColors.inkSecondary,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _sectionTitle(BuildContext context, String text) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 10),
+      child: Row(
+        children: [
+          Container(
+            width: 4,
+            height: 18,
+            decoration: BoxDecoration(
+              color: AppColors.brandPrimary,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            text,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.2,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEditProfileCard(UserProfile user) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(
+          color: isDark
+              ? AppColors.borderGlassDark
+              : AppColors.borderGlassLight,
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Form(
+          key: _profileFormKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Edit Profile',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                key: const Key('profile_full_name_field'),
+                controller: _nameController,
+                textInputAction: TextInputAction.next,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) {
+                    return 'Please enter your full name';
+                  }
+                  if (v.trim().length < 2) {
+                    return 'Name must be at least 2 characters';
+                  }
+                  return null;
+                },
+                decoration: InputDecoration(
+                  labelText: 'Full Name',
+                  hintText: 'e.g. Sarah Officer',
+                  prefixIcon: const Icon(Icons.person_outlined, size: 20),
+                  filled: true,
+                  fillColor: isDark
+                      ? AppColors.surfaceDarkCard
+                      : AppColors.surfaceCard,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              TextFormField(
+                key: const Key('profile_phone_field'),
+                controller: _phoneController,
+                keyboardType: TextInputType.phone,
+                textInputAction: TextInputAction.done,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) {
+                    return 'Please enter your phone number';
+                  }
+                  final digits = v.replaceAll(RegExp(r'\D'), '');
+                  if (digits.length < 7) {
+                    return 'Enter a valid phone number';
+                  }
+                  return null;
+                },
+                decoration: InputDecoration(
+                  labelText: 'Phone Number',
+                  hintText: 'e.g. +1 555 000 0000',
+                  prefixIcon: const Icon(Icons.phone_outlined, size: 20),
+                  filled: true,
+                  fillColor: isDark
+                      ? AppColors.surfaceDarkCard
+                      : AppColors.surfaceCard,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton.icon(
+                  onPressed: _isSavingProfile ? null : _saveProfile,
+                  icon: _isSavingProfile
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.save_outlined, size: 18),
+                  label: const Text(
+                    'Save Changes',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.brandPrimary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAccountCard(UserProfile user) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(
+          color: isDark
+              ? AppColors.borderGlassDark
+              : AppColors.borderGlassLight,
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Account Information',
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 16),
+            _accountRow(Icons.email_outlined, 'Email Address', user.email),
+            const SizedBox(height: 12),
+            _accountRow(
+              Icons.person_outlined,
+              'Username',
+              user.email.split('@').first,
+            ),
+            const SizedBox(height: 12),
+            _accountRow(
+              Icons.phone_outlined,
+              'Phone Number',
+              _phone.isNotEmpty ? _phone : 'Not provided',
+            ),
+            const SizedBox(height: 12),
+            _accountRow(
+              Icons.security_outlined,
+              'User Role',
+              user.role.displayName,
+            ),
+            const SizedBox(height: 12),
+            _accountRow(
+              Icons.lock_outline,
+              'Account Status',
+              user.isActive ? 'Active' : 'Inactive',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _accountRow(IconData icon, String label, String value) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 20, color: AppColors.brandPrimary),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white70 : AppColors.inkSecondary,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: isDark ? Colors.white : AppColors.inkPrimary,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSecurityCard() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(
+          color: isDark
+              ? AppColors.borderGlassDark
+              : AppColors.borderGlassLight,
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Form(
+          key: _passwordFormKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    Icons.lock_outline,
+                    color: AppColors.accentDanger,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 10),
+                  const Text(
+                    'Change Password',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Your current password is required to confirm your identity.',
+                style: TextStyle(
+                  fontSize: 12.5,
+                  color: isDark ? Colors.white60 : AppColors.inkSecondary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                key: const Key('profile_current_password_field'),
+                controller: _currentPasswordController,
+                obscureText: _obscureCurrent,
+                textInputAction: TextInputAction.next,
+                validator: (v) {
+                  if (v == null || v.isEmpty) {
+                    return 'Please enter your current password';
+                  }
+                  return null;
+                },
+                decoration: InputDecoration(
+                  labelText: 'Current Password',
+                  prefixIcon: const Icon(Icons.lock_outlined, size: 20),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscureCurrent ? Icons.visibility_off : Icons.visibility,
+                      size: 20,
+                    ),
+                    onPressed: () =>
+                        setState(() => _obscureCurrent = !_obscureCurrent),
+                  ),
+                  filled: true,
+                  fillColor: isDark
+                      ? AppColors.surfaceDarkCard
+                      : AppColors.surfaceCard,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              TextFormField(
+                key: const Key('profile_new_password_field'),
+                controller: _newPasswordController,
+                obscureText: _obscureNew,
+                textInputAction: TextInputAction.next,
+                validator: (v) {
+                  if (v == null || v.isEmpty) {
+                    return 'Please enter a new password';
+                  }
+                  if (v.length < 6) {
+                    return 'Password must be at least 6 characters';
+                  }
+                  return null;
+                },
+                decoration: InputDecoration(
+                  labelText: 'New Password',
+                  prefixIcon: const Icon(Icons.key_outlined, size: 20),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscureNew ? Icons.visibility_off : Icons.visibility,
+                      size: 20,
+                    ),
+                    onPressed: () => setState(() => _obscureNew = !_obscureNew),
+                  ),
+                  filled: true,
+                  fillColor: isDark
+                      ? AppColors.surfaceDarkCard
+                      : AppColors.surfaceCard,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              TextFormField(
+                key: const Key('profile_confirm_password_field'),
+                controller: _confirmPasswordController,
+                obscureText: _obscureConfirm,
+                textInputAction: TextInputAction.done,
+                validator: (v) {
+                  if (v == null || v.isEmpty) {
+                    return 'Please confirm your new password';
+                  }
+                  if (v != _newPasswordController.text) {
+                    return 'Passwords do not match';
+                  }
+                  return null;
+                },
+                decoration: InputDecoration(
+                  labelText: 'Confirm New Password',
+                  prefixIcon: const Icon(Icons.check_circle_outline, size: 20),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscureConfirm ? Icons.visibility_off : Icons.visibility,
+                      size: 20,
+                    ),
+                    onPressed: () =>
+                        setState(() => _obscureConfirm = !_obscureConfirm),
+                  ),
+                  filled: true,
+                  fillColor: isDark
+                      ? AppColors.surfaceDarkCard
+                      : AppColors.surfaceCard,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton.icon(
+                  onPressed: _isChangingPassword ? null : _changePassword,
+                  icon: _isChangingPassword
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.security, size: 18),
+                  label: const Text(
+                    'Change Password',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.accentDanger,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNotificationsCard() {
+    final settings = ref.watch(notificationSettingsProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(
+          color: isDark
+              ? AppColors.borderGlassDark
+              : AppColors.borderGlassLight,
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Notification Preferences',
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Choose which notifications you would like to receive.',
+              style: TextStyle(
+                fontSize: 12.5,
+                color: isDark ? Colors.white60 : AppColors.inkSecondary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            _switchTile(
+              icon: Icons.email_outlined,
+              title: 'Email notifications',
+              subtitle: 'Receive account and recovery updates by email.',
+              value: settings.email,
+              onChanged: (v) =>
+                  ref.read(notificationSettingsProvider.notifier).setEmail(v),
+            ),
+            const SizedBox(height: 12),
+            _switchTile(
+              icon: Icons.sms_outlined,
+              title: 'SMS notifications',
+              subtitle: 'Receive payment reminders by text message.',
+              value: settings.sms,
+              onChanged: (v) =>
+                  ref.read(notificationSettingsProvider.notifier).setSms(v),
+            ),
+            const SizedBox(height: 12),
+            _switchTile(
+              icon: Icons.notifications_outlined,
+              title: 'Push notifications',
+              subtitle: 'Receive real-time alerts on your device.',
+              value: settings.push,
+              onChanged: (v) =>
+                  ref.read(notificationSettingsProvider.notifier).setPush(v),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _switchTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Card(
+      color: isDark ? AppColors.surfaceDarkCard : AppColors.surfaceCard,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: isDark
+              ? AppColors.borderGlassDark
+              : AppColors.borderGlassLight,
+          width: 1,
+        ),
+      ),
+      child: SwitchListTile(
+        title: Text(
+          title,
+          style: TextStyle(
+            fontSize: 14.5,
+            fontWeight: FontWeight.w600,
+            color: isDark ? Colors.white : AppColors.inkPrimary,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: TextStyle(
+            fontSize: 12.5,
+            color: isDark ? Colors.white60 : AppColors.inkSecondary,
+          ),
+        ),
+        secondary: Icon(icon, color: AppColors.brandPrimary, size: 22),
+        value: value,
+        onChanged: onChanged,
+        activeThumbColor: AppColors.brandPrimary,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        controlAffinity: ListTileControlAffinity.trailing,
+      ),
+    );
+  }
+
+  Widget _buildAppearanceCard() {
+    final themeMode = ref.watch(themeModeProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(
+          color: isDark
+              ? AppColors.borderGlassDark
+              : AppColors.borderGlassLight,
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Appearance & Theme',
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Choose how the app looks. Your choice is saved and applied across the app.',
+              style: TextStyle(
+                fontSize: 12.5,
+                color: isDark ? Colors.white60 : AppColors.inkSecondary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ...AppThemeMode.values.map((mode) {
+              final selected = themeMode == mode;
+              return _themeTile(
+                icon: mode.icon,
+                title: mode.label,
+                selected: selected,
+                onTap: () =>
+                    ref.read(themeModeProvider.notifier).setThemeMode(mode),
+              );
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _themeTile({
+    required IconData icon,
+    required String title,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: (selected
+              ? AppColors.brandPrimary
+              : (isDark ? AppColors.surfaceDarkCard : AppColors.surfaceCard)),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(
+          icon,
+          color: selected ? Colors.white : AppColors.brandPrimary,
+          size: 20,
+        ),
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontSize: 14.5,
+          fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+          color: selected
+              ? AppColors.brandPrimary
+              : (isDark ? Colors.white : AppColors.inkPrimary),
+        ),
+      ),
+      trailing: selected
+          ? const Icon(
+              Icons.check_circle,
+              color: AppColors.brandPrimary,
+              size: 20,
+            )
+          : null,
+      onTap: onTap,
+      selected: selected,
+      selectedTileColor: AppColors.brandPrimary.withValues(alpha: 0.10),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    );
+  }
+
+  Widget _buildHelpCard() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(
+          color: isDark
+              ? AppColors.borderGlassDark
+              : AppColors.borderGlassLight,
+          width: 1,
+        ),
+      ),
+      child: Column(
+        children: [
+          _menuTile(
+            icon: Icons.help_center_outlined,
+            title: 'Help & Support',
+            subtitle: 'Get assistance with your account.',
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Opening Help & Support...')),
+              );
+            },
+          ),
+          const Divider(height: 1),
+          _menuTile(
+            icon: Icons.description_outlined,
+            title: 'Terms of Service',
+            subtitle: 'Review the terms of use.',
+            onTap: () {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text('Terms of Service')));
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAboutCard() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(
+          color: isDark
+              ? AppColors.borderGlassDark
+              : AppColors.borderGlassLight,
+          width: 1,
+        ),
+      ),
+      child: Column(
+        children: [
+          _menuTile(
+            icon: Icons.info_outline,
+            title: 'About Debit Recovery',
+            subtitle: 'Version 1.0.0 &bull; Financial management',
+            onTap: () {
+              showAboutDialog(
+                context: context,
+                applicationName: 'Debit Recovery',
+                applicationVersion: '1.0.0',
+                applicationIcon: const Icon(
+                  Icons.account_balance_wallet,
+                  color: AppColors.brandPrimary,
+                  size: 32,
+                ),
+              );
+            },
+          ),
+          const Divider(height: 1),
+          _menuTile(
+            icon: Icons.privacy_tip_outlined,
+            title: 'Privacy Policy',
+            subtitle: 'How we handle your data.',
+            onTap: () {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text('Privacy Policy')));
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _menuTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      leading: Icon(icon, color: AppColors.brandPrimary, size: 22),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontSize: 14.5,
+          fontWeight: FontWeight.w600,
+          color: isDark ? Colors.white : AppColors.inkPrimary,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: TextStyle(
+          fontSize: 12.5,
+          color: isDark ? Colors.white60 : AppColors.inkSecondary,
+        ),
+      ),
+      trailing: const Icon(
+        Icons.chevron_right,
+        size: 20,
+        color: AppColors.inkMuted,
+      ),
+      onTap: onTap,
+    );
+  }
+
+  Widget _buildLogoutButton() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+      child: SizedBox(
+        width: double.infinity,
+        height: 52,
+        child: OutlinedButton.icon(
+          onPressed: _signOut,
+          icon: const Icon(Icons.logout, size: 20),
+          label: const Text(
+            'Logout',
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+          ),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: AppColors.accentDanger,
+            side: BorderSide(
+              color: AppColors.accentDanger.withValues(alpha: 0.5),
+              width: 1.5,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
             ),
           ),
         ),
@@ -212,311 +1174,68 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Widget _buildProfileCard(UserProfile? user, String phone, String username, bool isLoading) {
-    final role = user?.role ?? UserRole.recoveryOfficer;
-    final roleColor = _getRoleColor(role);
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _profileFormKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.person_outline, color: AppColors.brandPrimary, size: 22),
-                  const SizedBox(width: 8),
-                  const Expanded(
-                    child: Text(
-                      'Profile Information',
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.inkPrimary,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: roleColor.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: roleColor.withValues(alpha: 0.4)),
-                    ),
-                    child: Text(
-                      role.displayName,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: roleColor,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
+    final user = ref.watch(authControllerProvider).value;
+    if (user == null) {
+      return const Scaffold(body: Center(child: Text('Not authenticated')));
+    }
 
-              // Loading indicator
-              if (isLoading)
-                const Center(
-                  child: CircularProgressIndicator(),
-                ),
-
-              // Full Name Field (Editable)
-              TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: 'Full Name',
-                  hintText: 'e.g. John Doe',
-                  prefixIcon: const Icon(Icons.badge_outlined, size: 20),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.borderSubtle),
-                  ),
-                ),
-                validator: (val) {
-                  if (val == null || val.trim().isEmpty) {
-                    return 'Please enter your full name';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Email Field (Read-only)
-              TextFormField(
-                initialValue: user?.email ?? '',
-                readOnly: true,
-                decoration: InputDecoration(
-                  labelText: 'Email Address',
-                  prefixIcon: const Icon(Icons.email_outlined, size: 20),
-                  helperText: 'Email address cannot be modified',
-                  filled: true,
-                  fillColor: const Color(0xFFF1F5F9),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.borderSubtle),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Phone Field
-              TextFormField(
-                initialValue: phone.isNotEmpty ? phone : '',
-                readOnly: true,
-                decoration: InputDecoration(
-                  labelText: 'Phone Number',
-                  prefixIcon: const Icon(Icons.phone_outlined, size: 20),
-                  helperText: 'Phone number from your account',
-                  filled: true,
-                  fillColor: const Color(0xFFF1F5F9),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.borderSubtle),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Username Field
-              TextFormField(
-                initialValue: username.isNotEmpty ? username : '',
-                readOnly: true,
-                decoration: InputDecoration(
-                  labelText: 'Username',
-                  prefixIcon: const Icon(Icons.account_circle_outlined, size: 20),
-                  helperText: 'Your account username',
-                  filled: true,
-                  fillColor: const Color(0xFFF1F5F9),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.borderSubtle),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              Align(
-                alignment: Alignment.centerRight,
-                child: ElevatedButton.icon(
-                  onPressed: _isSavingProfile ? null : _saveProfile,
-                  icon: _isSavingProfile
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.inkWhite),
-                        )
-                      : const Icon(Icons.check, size: 18),
-                  label: const Text('Save Changes'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.brandPrimary,
-                    foregroundColor: AppColors.inkWhite,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Profile'),
+        centerTitle: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/dashboard');
+            }
+          },
+        ),
+        elevation: 0,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 700),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildHeader(user),
+                const SizedBox(height: 24),
+                _sectionTitle(context, 'Account'),
+                _buildEditProfileCard(user),
+                const SizedBox(height: 20),
+                _buildAccountCard(user),
+                const SizedBox(height: 20),
+                _sectionTitle(context, 'Security'),
+                _buildSecurityCard(),
+                const SizedBox(height: 20),
+                _sectionTitle(context, 'Preferences'),
+                _buildNotificationsCard(),
+                const SizedBox(height: 20),
+                _buildAppearanceCard(),
+                const SizedBox(height: 20),
+                _sectionTitle(context, 'Support'),
+                _buildHelpCard(),
+                const SizedBox(height: 16),
+                _buildAboutCard(),
+                const SizedBox(height: 26),
+                _buildLogoutButton(),
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),
     );
-  }
-
-  Widget _buildPasswordCard() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _passwordFormKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Row(
-                children: [
-                  Icon(Icons.lock_outline, color: AppColors.brandPrimary, size: 22),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Security & Password',
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.inkPrimary,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Ensure your account uses a secure password with at least 8 characters, numbers, and mixed case letters.',
-                style: TextStyle(fontSize: 13, color: AppColors.inkSecondary),
-              ),
-              const SizedBox(height: 20),
-
-              // New Password Field
-              TextFormField(
-                controller: _newPasswordController,
-                obscureText: _obscureNewPassword,
-                decoration: InputDecoration(
-                  labelText: 'New Password',
-                  prefixIcon: const Icon(Icons.key_outlined, size: 20),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscureNewPassword ? Icons.visibility_off : Icons.visibility,
-                      size: 20,
-                    ),
-                    onPressed: () => setState(() => _obscureNewPassword = !_obscureNewPassword),
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.borderSubtle),
-                  ),
-                ),
-                validator: (val) {
-                  if (val == null || val.isEmpty) {
-                    return 'Please enter a new password';
-                  }
-                  if (val.length < 8) {
-                    return 'Password must be at least 8 characters long';
-                  }
-                  if (!val.contains(RegExp(r'[0-9]'))) {
-                    return 'Password must contain at least one number';
-                  }
-                  if (!val.contains(RegExp(r'[A-Za-z]'))) {
-                    return 'Password must contain letters';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Confirm Password Field
-              TextFormField(
-                controller: _confirmPasswordController,
-                obscureText: _obscureConfirmPassword,
-                decoration: InputDecoration(
-                  labelText: 'Confirm New Password',
-                  prefixIcon: const Icon(Icons.check_circle_outline, size: 20),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
-                      size: 20,
-                    ),
-                    onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.borderSubtle),
-                  ),
-                ),
-                validator: (val) {
-                  if (val == null || val.isEmpty) {
-                    return 'Please confirm your new password';
-                  }
-                  if (val != _newPasswordController.text) {
-                    return 'Passwords do not match';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 20),
-
-              Align(
-                alignment: Alignment.centerRight,
-                child: ElevatedButton.icon(
-                  onPressed: _isSavingPassword ? null : _changePassword,
-                  icon: _isSavingPassword
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.inkWhite),
-                        )
-                      : const Icon(Icons.security, size: 18),
-                  label: const Text('Change Password'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.brandPrimary,
-                    foregroundColor: AppColors.inkWhite,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Tooltip(
-                    message: 'Sign out',
-                    child: TextButton(
-                      onPressed: _signOut,
-                      child: const Text('Sign out', style: TextStyle(color: AppColors.accentDanger)),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _signOut() async {
-    await ref.read(authControllerProvider.notifier).signOut();
-    ref.read(phpAuthSessionProvider.notifier).clear();
-    if (!mounted) return;
-    context.go('/login');
   }
 }

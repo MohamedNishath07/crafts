@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:crafts/core/sqlitedatabase.dart';
 import 'package:crafts/core/auth/user_model.dart';
+import 'package:crafts/core/auth/password_hasher.dart';
 
 // Authentication repository that manages auth state using SQLite.
 // Filters all operations by tenant_id for multi-user isolation.
@@ -21,7 +22,11 @@ class AuthRepository extends StateNotifier<User> {
   bool get isAuthenticated => _currentUser.isActive;
 
   /// Signs in a user with email and password
-  Future<void> signIn({required String email, required String password, required String tenantId}) async {
+  Future<void> signIn({
+    required String email,
+    required String password,
+    required String tenantId,
+  }) async {
     final db = await database.database;
     final users = await db.query(
       'users',
@@ -71,6 +76,36 @@ class AuthRepository extends StateNotifier<User> {
     return _currentUser;
   }
 
+  /// Returns the stored phone number for the current user, if any.
+  Future<String?> getCurrentPhone() async {
+    if (!_currentUser.isActive) return null;
+    final db = await database.database;
+    final rows = await db.query(
+      'users',
+      columns: ['phone'],
+      where: 'id = ?',
+      whereArgs: [_currentUser.id],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return rows.first['phone'] as String?;
+  }
+
+  /// Returns the stored profile photo path for the current user, if any.
+  Future<String?> getCurrentProfilePhoto() async {
+    if (!_currentUser.isActive) return null;
+    final db = await database.database;
+    final rows = await db.query(
+      'users',
+      columns: ['profile_photo'],
+      where: 'id = ?',
+      whereArgs: [_currentUser.id],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return rows.first['profile_photo'] as String?;
+  }
+
   /// Signs up a new user
   Future<User> signUp({
     required String email,
@@ -95,20 +130,19 @@ class AuthRepository extends StateNotifier<User> {
     final fullName = '${firstName.trim()} ${lastName.trim()}'.trim();
     final now = DateTime.now().toIso8601String();
 
-    await db.insert(
-      'users',
-      {
-        'id': userId,
-        'tenant_id': tenantId,
-        'email': email,
-        'full_name': fullName,
-        'role': 'recovery_officer',
-        'is_active': 1,
-        'password_hash': password, // Placeholder - use bcrypt in production
-        'created_at': now,
-        'updated_at': now,
-      },
-    );
+    await db.insert('users', {
+      'id': userId,
+      'tenant_id': tenantId,
+      'email': email,
+      'full_name': fullName,
+      'role': 'recovery_officer',
+      'is_active': 1,
+      'password_hash': PasswordHasher.hashPassword(password),
+      'phone': '',
+      'profile_photo': null,
+      'created_at': now,
+      'updated_at': now,
+    });
 
     final newUser = User(
       id: userId,
@@ -122,9 +156,7 @@ class AuthRepository extends StateNotifier<User> {
   }
 
   /// Updates the current user's profile
-  Future<void> updateProfile({
-    required String fullName,
-  }) async {
+  Future<void> updateProfile({required String fullName, String? phone}) async {
     if (!_currentUser.isActive) return;
 
     final db = await database.database;
@@ -132,6 +164,7 @@ class AuthRepository extends StateNotifier<User> {
       'users',
       {
         'full_name': fullName.trim(),
+        if (phone != null) 'phone': phone.trim(),
         'updated_at': DateTime.now().toIso8601String(),
       },
       where: 'id = ?',
@@ -146,16 +179,67 @@ class AuthRepository extends StateNotifier<User> {
     );
   }
 
-  /// Updates the current user's password
-  Future<void> updatePassword({required String newPassword}) async {
-    // In a real implementation, this would update the password hash in the database
-    // For now, we'll just update the local state
-    // The password_hash is stored as a placeholder - use bcrypt in production
+  /// Updates the current user's profile photo path.
+  Future<void> updateProfilePhoto({required String photoPath}) async {
     if (!_currentUser.isActive) return;
+    final db = await database.database;
+    await db.update(
+      'users',
+      {
+        'profile_photo': photoPath,
+        'updated_at': DateTime.now().toIso8601String(),
+      },
+      where: 'id = ?',
+      whereArgs: [_currentUser.id],
+    );
+  }
+
+  /// Changes the current user's password after validating the current one.
+  ///
+  /// Throws an Exception when the current password is incorrect or the new
+  /// password is too short. The new password is stored as a PBKDF2 hash, never
+  /// in plain text.
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    if (!_currentUser.isActive) return;
+    if (newPassword.trim().length < 6) {
+      throw Exception('New password must be at least 6 characters');
+    }
+
+    final db = await database.database;
+    final rows = await db.query(
+      'users',
+      columns: ['password_hash'],
+      where: 'id = ?',
+      whereArgs: [_currentUser.id],
+      limit: 1,
+    );
+    if (rows.isEmpty) {
+      throw Exception('Authentication failed: user not found');
+    }
+
+    final storedHash = rows.first['password_hash'] as String?;
+    if (!PasswordHasher.verifyPassword(currentPassword, storedHash)) {
+      throw Exception('Current password is incorrect');
+    }
+
+    await db.update(
+      'users',
+      {
+        'password_hash': PasswordHasher.hashPassword(newPassword.trim()),
+        'updated_at': DateTime.now().toIso8601String(),
+      },
+      where: 'id = ?',
+      whereArgs: [_currentUser.id],
+    );
   }
 }
 
 /// Provider for the auth repository
-final authRepositoryProvider = StateNotifierProvider<AuthRepository, User>((ref) {
+final authRepositoryProvider = StateNotifierProvider<AuthRepository, User>((
+  ref,
+) {
   return AuthRepository();
 });
