@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart' show SystemChrome, SystemUiOverlayStyle;
 import '../../../core/constants/app_colors.dart';
@@ -27,9 +26,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
       ),
     );
-    // Simulate a 7-8 second delay for splash screen
+    // Simulate a 3 second delay for splash screen
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Timer(const Duration(seconds: 7), () {
+      Timer(const Duration(seconds: 3), () {
         // Navigate to login after splash completes
         if (mounted) {
           context.go('/login');
@@ -75,18 +74,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                 ),
               ),
               const Spacer(),
-              // Version info
-              if (kDebugMode) ...[
-                const SizedBox(height: 24),
-                const Text(
-                  'Development Mode',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.inkSecondary,
-                  ),
-                ),
-              ],
               const SizedBox(height: 48),
             ],
           ),

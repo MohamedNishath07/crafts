@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/legacy.dart';
 
 import '../../core/sqlitedatabase.dart';
 
-/// Persisted theme preference (light / dark / system default).
-enum AppThemeMode { light, dark, system }
+/// Persisted theme preference (light / dark).
+enum AppThemeMode { light, dark }
 
 extension AppThemeModeExtension on AppThemeMode {
   ThemeMode toThemeMode() {
@@ -13,8 +13,6 @@ extension AppThemeModeExtension on AppThemeMode {
         return ThemeMode.light;
       case AppThemeMode.dark:
         return ThemeMode.dark;
-      case AppThemeMode.system:
-        return ThemeMode.system;
     }
   }
 
@@ -25,7 +23,7 @@ extension AppThemeModeExtension on AppThemeMode {
       case ThemeMode.dark:
         return AppThemeMode.dark;
       case ThemeMode.system:
-        return AppThemeMode.system;
+        return AppThemeMode.light;
     }
   }
 
@@ -35,8 +33,6 @@ extension AppThemeModeExtension on AppThemeMode {
         return 'Light Mode';
       case AppThemeMode.dark:
         return 'Dark Mode';
-      case AppThemeMode.system:
-        return 'System Default';
     }
   }
 
@@ -46,8 +42,6 @@ extension AppThemeModeExtension on AppThemeMode {
         return Icons.light_mode_outlined;
       case AppThemeMode.dark:
         return Icons.dark_mode_outlined;
-      case AppThemeMode.system:
-        return Icons.display_settings_outlined;
     }
   }
 }
@@ -80,9 +74,9 @@ class NotificationSettings {
       );
 }
 
-/// Theme mode persisted in SQLite (app_settings). Defaults to system.
+/// Theme mode persisted in SQLite (app_settings). Defaults to light.
 class ThemeModeNotifier extends StateNotifier<AppThemeMode> {
-  ThemeModeNotifier() : super(AppThemeMode.system) {
+  ThemeModeNotifier() : super(AppThemeMode.light) {
     _load();
   }
 
@@ -93,9 +87,9 @@ class ThemeModeNotifier extends StateNotifier<AppThemeMode> {
     final mode = value != null
         ? AppThemeMode.values.firstWhere(
             (e) => e.name == value,
-            orElse: () => AppThemeMode.system,
+            orElse: () => AppThemeMode.light,
           )
-        : AppThemeMode.system;
+        : AppThemeMode.light;
     state = mode;
   }
 
