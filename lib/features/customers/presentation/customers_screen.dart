@@ -556,20 +556,12 @@ class CustomersPaginationBar extends ConsumerWidget {
     final pageSize = ref.watch(customerPageSizeProvider);
     final pageIndex = ref.watch(customerPageIndexProvider);
 
-    final startRecord = totalCount == 0 ? 0 : (pageIndex * pageSize) + 1;
-    final endRecord = ((pageIndex + 1) * pageSize) > totalCount
-        ? totalCount
-        : (pageIndex + 1) * pageSize;
     final maxPage = totalCount == 0 ? 0 : ((totalCount - 1) ~/ pageSize);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Row(
         children: [
-          Text(
-            'Showing $startRecord-$endRecord of $totalCount records',
-            style: TextStyle(fontSize: 13, color: textSecondary),
-          ),
           const Spacer(),
           Text(
             'Rows per page: ',
