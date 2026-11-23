@@ -27,8 +27,14 @@ class PaymentsScreen extends ConsumerWidget {
     final totalCount = paginatedPayments.length;
     final maxPage = totalCount == 0 ? 0 : ((totalCount - 1) ~/ pageSize);
 
+    final surfaceBase = AppColors.surfaceBaseColor(isDark);
+    final surfaceRaised = AppColors.surfaceRaisedColor(isDark);
+    final inkPrimary = AppColors.inkPrimaryColor(isDark);
+    final inkSecondary = AppColors.inkSecondaryColor(isDark);
+    final borderSubtle = AppColors.borderSubtleColor(isDark);
+
     return Scaffold(
-      backgroundColor: isDark ? AppColors.surfaceDark : AppColors.surfaceBase,
+      backgroundColor: surfaceBase,
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -39,7 +45,7 @@ class PaymentsScreen extends ConsumerWidget {
               children: [
                 GlassmorphismContainer(
                   isDark: isDark,
-                  child: const Expanded(
+                  child: Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -48,16 +54,16 @@ class PaymentsScreen extends ConsumerWidget {
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.inkPrimary,
+                            color: inkPrimary,
                           ),
                         ),
-                        SizedBox(height: 4),
+                        const SizedBox(height: 4),
                         Text(
                           'Record settlements, verify bank transfers, and generate receipts',
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 13,
-                            color: AppColors.inkSecondary,
+                            color: inkSecondary,
                           ),
                         ),
                       ],
@@ -72,7 +78,7 @@ class PaymentsScreen extends ConsumerWidget {
                     label: const Text('Record Payment'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.accentSuccess,
-                      foregroundColor: AppColors.inkWhite,
+                      foregroundColor: Colors.black,
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -89,33 +95,34 @@ class PaymentsScreen extends ConsumerWidget {
                 child: GlassmorphismContainer(
                   isDark: isDark,
                   child: Card(
-                    color: AppColors.surfaceRaised,
+                    color: surfaceRaised,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
-                      side: const BorderSide(color: AppColors.borderSubtle),
+                      side: BorderSide(color: borderSubtle),
                     ),
                     child: Column(
                       children: [
                         DataTable(
-                          columns: const [
-                            DataColumn(label: Text('Date')),
-                            DataColumn(label: Text('Debt Ref')),
-                            DataColumn(label: Text('Amount')),
-                            DataColumn(label: Text('Method')),
-                            DataColumn(label: Text('Txn Reference')),
-                            DataColumn(label: Text('Receipt')),
+                          columns: [
+                            DataColumn(label: Text('Date', style: TextStyle(color: inkPrimary))),
+                            DataColumn(label: Text('Debt Ref', style: TextStyle(color: inkPrimary))),
+                            DataColumn(label: Text('Amount', style: TextStyle(color: inkPrimary))),
+                            DataColumn(label: Text('Method', style: TextStyle(color: inkPrimary))),
+                            DataColumn(label: Text('Txn Reference', style: TextStyle(color: inkPrimary))),
+                            DataColumn(label: Text('Receipt', style: TextStyle(color: inkPrimary))),
                           ],
                           rows: paginatedPayments.map((payment) {
                             return DataRow(
                               cells: [
                                 DataCell(Text(
                                   '${payment.createdAt.year}-${payment.createdAt.month.toString().padLeft(2, '0')}-${payment.createdAt.day.toString().padLeft(2, '0')}',
+                                  style: TextStyle(color: inkPrimary),
                                 )),
-                                DataCell(Text(payment.debtId)),
-                                DataCell(Text('\$${payment.amount.toStringAsFixed(2)}')),
-                                DataCell(Text(_methodLabel(payment.paymentMethod))),
-                                DataCell(Text(payment.transactionReference)),
-                                DataCell(Text(payment.receiptNumber)),
+                                DataCell(Text(payment.debtId, style: TextStyle(color: inkPrimary))),
+                                DataCell(Text('\$${payment.amount.toStringAsFixed(2)}', style: TextStyle(color: inkPrimary))),
+                                DataCell(Text(_methodLabel(payment.paymentMethod), style: TextStyle(color: inkPrimary))),
+                                DataCell(Text(payment.transactionReference, style: TextStyle(color: inkPrimary))),
+                                DataCell(Text(payment.receiptNumber, style: TextStyle(color: inkPrimary))),
                               ],
                             );
                           }).toList(),
@@ -128,7 +135,7 @@ class PaymentsScreen extends ConsumerWidget {
                             children: [
                               Text(
                                 'Showing $totalCount records',
-                                style: const TextStyle(fontSize: 13, color: AppColors.inkSecondary),
+                                style: TextStyle(fontSize: 13, color: inkSecondary),
                               ),
                               Row(
                                 children: [
@@ -141,7 +148,7 @@ class PaymentsScreen extends ConsumerWidget {
                                   ),
                                   Text(
                                     'Page ${pageIndex + 1} of ${maxPage + 1}',
-                                    style: const TextStyle(fontSize: 13, color: AppColors.inkPrimary),
+                                    style: TextStyle(fontSize: 13, color: inkPrimary),
                                   ),
                                   IconButton(
                                     icon: const Icon(Icons.chevron_right, size: 20),

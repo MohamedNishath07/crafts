@@ -137,13 +137,18 @@ class _RecordPaymentDialogState extends ConsumerState<RecordPaymentDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surfaceRaised = AppColors.surfaceRaisedColor(isDark);
+    final borderSubtle = AppColors.borderSubtleColor(isDark);
+    final inkPrimary = AppColors.inkPrimaryColor(isDark);
+    final inkSecondary = AppColors.inkSecondaryColor(isDark);
     return AlertDialog(
-      backgroundColor: AppColors.surfaceRaised,
+      backgroundColor: surfaceRaised,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: AppColors.borderSubtle),
+        side: BorderSide(color: borderSubtle),
       ),
-      title: const Row(
+      title: Row(
         children: [
           Icon(Icons.payment_outlined, color: AppColors.accentSuccess),
           SizedBox(width: 10),
@@ -154,7 +159,7 @@ class _RecordPaymentDialogState extends ConsumerState<RecordPaymentDialog> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: AppColors.inkPrimary,
+                color: inkPrimary,
               ),
             ),
           ),
@@ -199,7 +204,7 @@ class _RecordPaymentDialogState extends ConsumerState<RecordPaymentDialog> {
                       prefixIcon: const Icon(Icons.receipt_long_outlined, size: 20),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: AppColors.borderSubtle),
+                        borderSide: BorderSide(color: borderSubtle),
                       ),
                     ),
                     validator: (val) {
@@ -226,7 +231,7 @@ class _RecordPaymentDialogState extends ConsumerState<RecordPaymentDialog> {
                           Expanded(
                             child: Text(
                               'Outstanding balance: \$${(_selectedDebt!.remainingBalanceCents / 100).toStringAsFixed(2)}',
-                              style: const TextStyle(fontSize: 13, color: AppColors.inkPrimary),
+                              style: TextStyle(fontSize: 13, color: inkPrimary),
                             ),
                           ),
                         ],
@@ -242,7 +247,7 @@ class _RecordPaymentDialogState extends ConsumerState<RecordPaymentDialog> {
                       prefixIcon: const Icon(Icons.attach_money, size: 20),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: AppColors.borderSubtle),
+                        borderSide: BorderSide(color: borderSubtle),
                       ),
                     ),
                     validator: (val) {
@@ -275,7 +280,7 @@ class _RecordPaymentDialogState extends ConsumerState<RecordPaymentDialog> {
                       prefixIcon: const Icon(Icons.account_balance_outlined, size: 20),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: AppColors.borderSubtle),
+                        borderSide: BorderSide(color: borderSubtle),
                       ),
                     ),
                   ),
@@ -288,7 +293,7 @@ class _RecordPaymentDialogState extends ConsumerState<RecordPaymentDialog> {
                       prefixIcon: const Icon(Icons.tag_outlined, size: 20),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: AppColors.borderSubtle),
+                        borderSide: BorderSide(color: borderSubtle),
                       ),
                     ),
                     validator: (val) {
@@ -309,7 +314,7 @@ class _RecordPaymentDialogState extends ConsumerState<RecordPaymentDialog> {
                       prefixIcon: const Icon(Icons.notes_outlined, size: 20),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: AppColors.borderSubtle),
+                        borderSide: BorderSide(color: borderSubtle),
                       ),
                     ),
                   ),
@@ -322,7 +327,7 @@ class _RecordPaymentDialogState extends ConsumerState<RecordPaymentDialog> {
       actions: [
         TextButton(
           onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
-          child: const Text('Cancel', style: TextStyle(color: AppColors.inkSecondary)),
+          child: Text('Cancel', style: TextStyle(color: inkSecondary)),
         ),
         ElevatedButton(
           onPressed: _isSubmitting ? null : _submit,

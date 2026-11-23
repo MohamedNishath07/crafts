@@ -9,21 +9,22 @@ class GlassmorphismTheme {
   static ThemeData get light => ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
-    scaffoldBackgroundColor: AppColors.surfaceBase,
+    scaffoldBackgroundColor: AppColors.lightSurfaceBase,
     colorScheme: ColorScheme.fromSeed(
       seedColor: AppColors.brandPrimary,
       brightness: Brightness.light,
       primary: AppColors.brandPrimary,
-      surface: AppColors.surfaceRaised,
+      surface: AppColors.lightSurfaceRaised,
+      onSurface: AppColors.lightInkPrimary,
     ),
     appBarTheme: const AppBarTheme(
-      backgroundColor: AppColors.surfaceSidebar,
-      foregroundColor: AppColors.inkPrimary,
+      backgroundColor: AppColors.lightSurfaceSidebar,
+      foregroundColor: AppColors.lightInkPrimary,
       elevation: 0,
       centerTitle: true,
     ),
     cardTheme: CardThemeData(
-      color: AppColors.surfaceCard,
+      color: AppColors.lightSurfaceCard,
       elevation: 1,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
@@ -31,7 +32,7 @@ class GlassmorphismTheme {
       ),
     ),
     dividerTheme: const DividerThemeData(
-      color: AppColors.borderSubtle,
+      color: AppColors.lightBorderSubtle,
       thickness: 1,
     ),
   );

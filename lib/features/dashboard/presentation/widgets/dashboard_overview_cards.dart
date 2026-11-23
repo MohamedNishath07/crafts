@@ -39,7 +39,7 @@ class DashboardOverviewCards extends StatelessWidget {
             value: NumberFormat.decimalPattern().format(metrics.totalCustomers),
             subtitle: '${metrics.totalCustomers} registered in system',
             icon: Icons.people_alt_rounded,
-            accentColor: const Color(0xFF0D9488), // Teal
+            accentColor: AppColors.brandPrimary,
             badgeText: 'Active',
           ),
 
@@ -50,7 +50,7 @@ class DashboardOverviewCards extends StatelessWidget {
             value: currencyFmt.format(metrics.totalCreditAmount),
             subtitle: 'Principal billed across all ledgers',
             icon: Icons.account_balance_wallet_rounded,
-            accentColor: const Color(0xFF1E293B), // Navy blue
+            accentColor: AppColors.brandPrimary,
             badgeText: 'Credit Issued',
           ),
 
@@ -61,7 +61,7 @@ class DashboardOverviewCards extends StatelessWidget {
             value: currencyFmt.format(metrics.totalCollectedAmount),
             subtitle: 'Recovery rate: ${metrics.recoveryRate.toStringAsFixed(1)}%',
             icon: Icons.check_circle_rounded,
-            accentColor: const Color(0xFF10B981), // Emerald green
+            accentColor: AppColors.brandPrimary,
             badgeText: '+${metrics.recoveryRate.toStringAsFixed(0)}% Settled',
           ),
 
@@ -72,7 +72,7 @@ class DashboardOverviewCards extends StatelessWidget {
             value: currencyFmt.format(metrics.outstandingBalance),
             subtitle: '${metrics.activeBillsCount} active pending bills',
             icon: Icons.timelapse_rounded,
-            accentColor: const Color(0xFF3B82F6), // Blue
+            accentColor: AppColors.brandPrimary,
             badgeText: 'Pending',
           ),
 
@@ -83,7 +83,7 @@ class DashboardOverviewCards extends StatelessWidget {
             value: currencyFmt.format(metrics.todayCollections),
             subtitle: 'Recorded in today\'s transactions',
             icon: Icons.payments_rounded,
-            accentColor: const Color(0xFF0F8D65), // Brand primary teal
+            accentColor: AppColors.brandPrimary,
             badgeText: 'Today',
           ),
 
@@ -94,7 +94,7 @@ class DashboardOverviewCards extends StatelessWidget {
             value: currencyFmt.format(metrics.overdueBalance),
             subtitle: '${metrics.overdueCount} accounts past due date',
             icon: Icons.warning_amber_rounded,
-            accentColor: const Color(0xFFEF4444), // Danger Red
+            accentColor: AppColors.brandPrimary,
             badgeText: metrics.overdueCount > 0 ? '${metrics.overdueCount} Overdue' : 'Clear',
           ),
         ];
@@ -157,9 +157,11 @@ class _StatCardState extends State<_StatCard> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? AppColors.surfaceDarkRaised : Colors.white;
-    final primaryTextColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final secondaryTextColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final cardBg = AppColors.cardBgColor(isDark);
+    final primaryTextColor = AppColors.textPrimaryColor(isDark);
+    final secondaryTextColor = AppColors.textSecondaryColor(isDark);
+    final borderSubtle = AppColors.borderSubtleColor(isDark);
+    final borderDark = AppColors.borderDarkColor(isDark);
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
@@ -171,17 +173,17 @@ class _StatCardState extends State<_StatCard> {
         decoration: BoxDecoration(
           color: cardBg,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: _isHovered
-                ? widget.data.accentColor.withValues(alpha: 0.5)
-                : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
-            width: _isHovered ? 1.5 : 1.0,
-          ),
-          boxShadow: [
-            BoxShadow(
+            border: Border.all(
               color: _isHovered
-                  ? widget.data.accentColor.withValues(alpha: isDark ? 0.2 : 0.1)
-                  : Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+                  ? widget.data.accentColor.withValues(alpha: 0.5)
+                  : (isDark ? borderDark : borderSubtle),
+              width: _isHovered ? 1.5 : 1.0,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: _isHovered
+                    ? widget.data.accentColor.withValues(alpha: isDark ? 0.2 : 0.1)
+                    : Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
               blurRadius: _isHovered ? 14 : 8,
               offset: Offset(0, _isHovered ? 4 : 2),
             ),

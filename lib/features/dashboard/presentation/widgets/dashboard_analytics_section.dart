@@ -26,9 +26,11 @@ class _DashboardAnalyticsSectionState extends State<DashboardAnalyticsSection> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? AppColors.surfaceDarkRaised : Colors.white;
-    final primaryTextColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final secondaryTextColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final cardBg = AppColors.cardBgColor(isDark);
+    final primaryTextColor = AppColors.textPrimaryColor(isDark);
+    final secondaryTextColor = AppColors.textSecondaryColor(isDark);
+    final borderDark = AppColors.borderDarkColor(isDark);
+    final surfaceRaised = AppColors.surfaceRaisedColor(isDark);
     final currencyFmt = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
 
     return Container(
@@ -37,7 +39,7 @@ class _DashboardAnalyticsSectionState extends State<DashboardAnalyticsSection> {
         color: cardBg,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+          color: borderDark,
         ),
         boxShadow: [
           BoxShadow(
@@ -82,7 +84,7 @@ class _DashboardAnalyticsSectionState extends State<DashboardAnalyticsSection> {
               // Date Filter Segmented Buttons (This Week, This Month, This Year)
               Container(
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                  color: surfaceRaised,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 padding: const EdgeInsets.all(3),
@@ -97,7 +99,7 @@ class _DashboardAnalyticsSectionState extends State<DashboardAnalyticsSection> {
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? (isDark ? const Color(0xFF334155) : Colors.white)
+                              ? AppColors.cardBgColor(isDark)
                               : Colors.transparent,
                           borderRadius: BorderRadius.circular(8),
                           boxShadow: isSelected
@@ -176,7 +178,7 @@ class _DashboardAnalyticsSectionState extends State<DashboardAnalyticsSection> {
           border: Border.all(
             color: isSelected
                 ? AppColors.brandPrimary
-                : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                : AppColors.borderDarkColor(isDark),
           ),
         ),
         child: Row(
@@ -185,7 +187,7 @@ class _DashboardAnalyticsSectionState extends State<DashboardAnalyticsSection> {
             Icon(
               icon,
               size: 16,
-              color: isSelected ? AppColors.brandPrimary : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+              color: isSelected ? AppColors.brandPrimary : AppColors.textSecondaryColor(isDark),
             ),
             const SizedBox(width: 6),
             Text(
@@ -193,7 +195,7 @@ class _DashboardAnalyticsSectionState extends State<DashboardAnalyticsSection> {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                color: isSelected ? AppColors.brandPrimary : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+              color: isSelected ? AppColors.brandPrimary : AppColors.textSecondaryColor(isDark),
               ),
             ),
           ],
@@ -248,7 +250,7 @@ class _DashboardAnalyticsSectionState extends State<DashboardAnalyticsSection> {
               '${widget.selectedFilter.label} Performance',
               style: TextStyle(
                 fontSize: 12,
-                color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                color: AppColors.textSecondaryColor(isDark),
               ),
             ),
           ],
@@ -264,7 +266,7 @@ class _DashboardAnalyticsSectionState extends State<DashboardAnalyticsSection> {
                 drawVerticalLine: false,
                 horizontalInterval: maxY > 0 ? (maxY / 4) : 100,
                 getDrawingHorizontalLine: (value) => FlLine(
-                  color: isDark ? const Color(0xFF334155).withValues(alpha: 0.5) : const Color(0xFFE2E8F0),
+                  color: AppColors.borderSubtleColor(isDark).withValues(alpha: 0.5),
                   strokeWidth: 1,
                   dashArray: [4, 4],
                 ),
@@ -282,7 +284,7 @@ class _DashboardAnalyticsSectionState extends State<DashboardAnalyticsSection> {
                       return Text(
                         NumberFormat.compactCurrency(symbol: '\$', decimalDigits: 0).format(value),
                         style: TextStyle(
-                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                          color: AppColors.textSecondaryColor(isDark),
                           fontSize: 10,
                         ),
                       );
@@ -302,7 +304,7 @@ class _DashboardAnalyticsSectionState extends State<DashboardAnalyticsSection> {
                           child: Text(
                             points[idx].label,
                             style: TextStyle(
-                              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                              color: AppColors.textSecondaryColor(isDark),
                               fontSize: 10,
                               fontWeight: FontWeight.w500,
                             ),
@@ -390,7 +392,7 @@ class _DashboardAnalyticsSectionState extends State<DashboardAnalyticsSection> {
           children: [
             Row(
               children: [
-                _buildLegendItem(const Color(0xFF1E293B), 'Credit Billed'),
+                _buildLegendItem(AppColors.brandPrimary, 'Credit Billed'),
                 const SizedBox(width: 14),
                 _buildLegendItem(AppColors.brandPrimary, 'Collections'),
               ],
@@ -400,7 +402,7 @@ class _DashboardAnalyticsSectionState extends State<DashboardAnalyticsSection> {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white70 : const Color(0xFF334155),
+                color: AppColors.textPrimaryColor(isDark),
               ),
             ),
           ],
@@ -441,7 +443,7 @@ class _DashboardAnalyticsSectionState extends State<DashboardAnalyticsSection> {
                       return Text(
                         NumberFormat.compactCurrency(symbol: '\$', decimalDigits: 0).format(value),
                         style: TextStyle(
-                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                          color: AppColors.textSecondaryColor(isDark),
                           fontSize: 10,
                         ),
                       );
@@ -460,7 +462,7 @@ class _DashboardAnalyticsSectionState extends State<DashboardAnalyticsSection> {
                           child: Text(
                             points[idx].label,
                             style: TextStyle(
-                              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                              color: AppColors.textSecondaryColor(isDark),
                               fontSize: 10,
                               fontWeight: FontWeight.w500,
                             ),
@@ -478,7 +480,7 @@ class _DashboardAnalyticsSectionState extends State<DashboardAnalyticsSection> {
                 drawVerticalLine: false,
                 horizontalInterval: maxY > 0 ? (maxY / 4) : 100,
                 getDrawingHorizontalLine: (value) => FlLine(
-                  color: isDark ? const Color(0xFF334155).withValues(alpha: 0.5) : const Color(0xFFE2E8F0),
+                  color: AppColors.borderSubtleColor(isDark).withValues(alpha: 0.5),
                   strokeWidth: 1,
                   dashArray: [4, 4],
                 ),
@@ -491,7 +493,7 @@ class _DashboardAnalyticsSectionState extends State<DashboardAnalyticsSection> {
                   barRods: [
                     BarChartRodData(
                       toY: pt.creditAmount,
-                      color: isDark ? const Color(0xFF475569) : const Color(0xFF1E293B),
+                      color: AppColors.borderDarkColor(isDark),
                       width: 9,
                       borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
                     ),
@@ -529,7 +531,7 @@ class _DashboardAnalyticsSectionState extends State<DashboardAnalyticsSection> {
     if (current > 0) {
       sections.add(PieChartSectionData(
         value: current,
-        color: const Color(0xFF3B82F6), // Blue
+        color: AppColors.brandPrimary,
         radius: 36,
         showTitle: false,
       ));
@@ -537,7 +539,7 @@ class _DashboardAnalyticsSectionState extends State<DashboardAnalyticsSection> {
     if (overdue > 0) {
       sections.add(PieChartSectionData(
         value: overdue,
-        color: const Color(0xFFEF4444), // Red
+        color: AppColors.brandPrimary,
         radius: 36,
         showTitle: false,
       ));
@@ -545,7 +547,7 @@ class _DashboardAnalyticsSectionState extends State<DashboardAnalyticsSection> {
     if (settled > 0) {
       sections.add(PieChartSectionData(
         value: settled,
-        color: const Color(0xFF10B981), // Emerald
+        color: AppColors.brandPrimary,
         radius: 36,
         showTitle: false,
       ));
@@ -577,7 +579,7 @@ class _DashboardAnalyticsSectionState extends State<DashboardAnalyticsSection> {
                         'Total',
                         style: TextStyle(
                           fontSize: 10,
-                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                          color: AppColors.textSecondaryColor(isDark),
                         ),
                       ),
                       Text(
@@ -585,7 +587,7 @@ class _DashboardAnalyticsSectionState extends State<DashboardAnalyticsSection> {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : const Color(0xFF0F172A),
+                          color: AppColors.textPrimaryColor(isDark),
                         ),
                       ),
                     ],
@@ -600,11 +602,11 @@ class _DashboardAnalyticsSectionState extends State<DashboardAnalyticsSection> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildStatusRow('Current Balances', current, total, const Color(0xFF3B82F6), currencyFmt, isDark),
+                  _buildStatusRow('Current Balances', current, total, AppColors.brandPrimary, currencyFmt, isDark),
                   const SizedBox(height: 8),
-                  _buildStatusRow('Overdue Balances', overdue, total, const Color(0xFFEF4444), currencyFmt, isDark),
+                  _buildStatusRow('Overdue Balances', overdue, total, AppColors.brandPrimary, currencyFmt, isDark),
                   const SizedBox(height: 8),
-                  _buildStatusRow('Settled / Recovered', settled, total, const Color(0xFF10B981), currencyFmt, isDark),
+                  _buildStatusRow('Settled / Recovered', settled, total, AppColors.brandPrimary, currencyFmt, isDark),
                 ],
               ),
             ),
@@ -623,7 +625,7 @@ class _DashboardAnalyticsSectionState extends State<DashboardAnalyticsSection> {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : const Color(0xFF0F172A),
+              color: AppColors.textPrimaryColor(isDark),
             ),
           ),
         ),
@@ -631,15 +633,15 @@ class _DashboardAnalyticsSectionState extends State<DashboardAnalyticsSection> {
 
         Row(
           children: [
-            _buildAgingBadge('Current', aging['Current'] ?? 0.0, const Color(0xFF3B82F6), currencyFmt, isDark),
+            _buildAgingBadge('Current', aging['Current'] ?? 0.0, AppColors.brandPrimary, currencyFmt, isDark),
             const SizedBox(width: 6),
-            _buildAgingBadge('1-30 D', aging['1-30 DPD'] ?? 0.0, const Color(0xFFF59E0B), currencyFmt, isDark),
+            _buildAgingBadge('1-30 D', aging['1-30 DPD'] ?? 0.0, AppColors.brandPrimary, currencyFmt, isDark),
             const SizedBox(width: 6),
-            _buildAgingBadge('31-60 D', aging['31-60 DPD'] ?? 0.0, const Color(0xFFF97316), currencyFmt, isDark),
+            _buildAgingBadge('31-60 D', aging['31-60 DPD'] ?? 0.0, AppColors.brandPrimary, currencyFmt, isDark),
             const SizedBox(width: 6),
-            _buildAgingBadge('61-90 D', aging['61-90 DPD'] ?? 0.0, const Color(0xFFDC2626), currencyFmt, isDark),
+            _buildAgingBadge('61-90 D', aging['61-90 DPD'] ?? 0.0, AppColors.brandPrimary, currencyFmt, isDark),
             const SizedBox(width: 6),
-            _buildAgingBadge('90+ D', aging['90+ DPD'] ?? 0.0, const Color(0xFF991B1B), currencyFmt, isDark),
+            _buildAgingBadge('90+ D', aging['90+ DPD'] ?? 0.0, AppColors.brandPrimary, currencyFmt, isDark),
           ],
         ),
       ],
@@ -670,7 +672,7 @@ class _DashboardAnalyticsSectionState extends State<DashboardAnalyticsSection> {
               label,
               style: TextStyle(
                 fontSize: 11,
-                color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                color: AppColors.textSecondaryColor(isDark),
               ),
             ),
           ],
@@ -680,7 +682,7 @@ class _DashboardAnalyticsSectionState extends State<DashboardAnalyticsSection> {
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.bold,
-            color: isDark ? Colors.white : const Color(0xFF0F172A),
+            color: AppColors.textPrimaryColor(isDark),
           ),
         ),
       ],
@@ -720,7 +722,7 @@ class _DashboardAnalyticsSectionState extends State<DashboardAnalyticsSection> {
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  color: AppColors.textPrimaryColor(isDark),
                 ),
               ),
             ),

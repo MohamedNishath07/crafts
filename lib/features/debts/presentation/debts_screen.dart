@@ -24,15 +24,13 @@ class DebtsScreen extends ConsumerWidget {
     final totalCount = paginatedDebts.length;
     final maxPage = totalCount == 0 ? 0 : ((totalCount - 1) ~/ pageSize);
 
-    final cardColor = isDark
-        ? AppColors.surfaceDarkCard
-        : AppColors.surfaceCard;
-    final borderColor = isDark ? AppColors.borderDark : AppColors.borderSubtle;
-    final textPrimary = isDark ? AppColors.inkDark : AppColors.inkPrimary;
-    final textSecondary = isDark ? AppColors.inkMuted : AppColors.inkSecondary;
+    final cardColor = AppColors.surfaceDarkCardColor(isDark);
+    final borderColor = AppColors.borderSubtleColor(isDark);
+    final textPrimary = AppColors.inkPrimaryColor(isDark);
+    final textSecondary = AppColors.inkSecondaryColor(isDark);
 
     return Scaffold(
-      backgroundColor: isDark ? AppColors.surfaceDark : AppColors.surfaceBase,
+      backgroundColor: AppColors.surfaceBaseColor(isDark),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -246,13 +244,11 @@ class DebtsScreen extends ConsumerWidget {
 
   Widget _buildFilterBar(WidgetRef ref, bool isDark) {
     final currentFilter = ref.watch(debtAgingFilterProvider);
-    final cardColor = isDark
-        ? AppColors.surfaceDarkCard
-        : AppColors.surfaceCard;
-    final borderColor = isDark ? AppColors.borderDark : AppColors.borderSubtle;
-    final textSecondary = isDark ? AppColors.inkMuted : AppColors.inkSecondary;
+    final cardColor = AppColors.surfaceDarkCardColor(isDark);
+    final borderColor = AppColors.borderSubtleColor(isDark);
+    final textSecondary = AppColors.inkSecondaryColor(isDark);
 
-    final filters = const [
+    final filters = [
       _AgingFilterItem(key: 'all', label: 'All'),
       _AgingFilterItem(
         key: 'overdue',
@@ -287,7 +283,7 @@ class DebtsScreen extends ConsumerWidget {
       _AgingFilterItem(
         key: 'settled',
         label: 'Settled',
-        color: AppColors.inkMuted,
+        color: AppColors.inkMutedColor(isDark),
       ),
     ];
 

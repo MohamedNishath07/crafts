@@ -10,18 +10,19 @@ class ReminderSettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settingsAsync = ref.watch(reminderSettingsProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: AppColors.surfaceBase,
+      backgroundColor: AppColors.surfaceBaseColor(isDark),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Reminder Settings', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.inkPrimary)),
+            Text('Reminder Settings', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.inkPrimaryColor(isDark))),
             const SizedBox(height: 4),
             Text('Configure email and SMS payment reminders for overdue accounts',
-                style: TextStyle(fontSize: 13, color: AppColors.inkSecondary)),
+                style: TextStyle(fontSize: 13, color: AppColors.inkSecondaryColor(isDark))),
             const SizedBox(height: 24),
             Expanded(
               child: settingsAsync.when(
@@ -97,6 +98,7 @@ class _SettingsFormState extends State<_SettingsForm> {
 
   @override
   Widget build(BuildContext context) {
+    final inkPrimary = AppColors.inkPrimaryColor(Theme.of(context).brightness == Brightness.dark);
     return ListView(
       children: [
         SwitchListTile(
@@ -114,8 +116,8 @@ class _SettingsFormState extends State<_SettingsForm> {
         ),
         const Divider(height: 1),
         const SizedBox(height: 16),
-        const Text('Email cadence (days before due date)',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.inkPrimary)),
+        Text('Email cadence (days before due date)',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: inkPrimary)),
         const SizedBox(height: 8),
         TextField(
           controller: _emailOffsetController,
@@ -126,8 +128,8 @@ class _SettingsFormState extends State<_SettingsForm> {
           keyboardType: TextInputType.number,
         ),
         const SizedBox(height: 16),
-        const Text('SMS cadence (days before due date)',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.inkPrimary)),
+        Text('SMS cadence (days before due date)',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: inkPrimary)),
         const SizedBox(height: 8),
         TextField(
           controller: _smsOffsetController,
@@ -138,8 +140,8 @@ class _SettingsFormState extends State<_SettingsForm> {
           keyboardType: TextInputType.number,
         ),
         const SizedBox(height: 24),
-        const Text('Message template',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.inkPrimary)),
+        Text('Message template',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: inkPrimary)),
         const SizedBox(height: 8),
         TextField(
           controller: _messageTemplateController,

@@ -20,18 +20,14 @@ class DebitRecoveryApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(themeModeProvider);
     final router = ref.watch(appRouterProvider);
+    final themeMode = ref.watch(themeModeProvider);
     return MaterialApp.router(
       title: 'Debit Recovery System',
       debugShowCheckedModeBanner: false,
       routerConfig: router,
-      theme: GlassmorphismTheme.light.copyWith(
-        extensions: [GlassmorphismTheme.extension],
-      ),
-      darkTheme: GlassmorphismTheme.dark.copyWith(
-        extensions: [GlassmorphismTheme.extension],
-      ),
+      theme: GlassmorphismTheme.light,
+      darkTheme: GlassmorphismTheme.dark,
       themeMode: themeMode.toThemeMode(),
     );
   }

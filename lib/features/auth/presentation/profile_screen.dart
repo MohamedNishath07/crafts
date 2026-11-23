@@ -239,7 +239,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     shape: BoxShape.circle,
                     color: isDark
                         ? AppColors.surfaceDarkCard
-                        : AppColors.surfaceCard,
+                        : AppColors.cardBgColor(isDark),
                     border: Border.all(
                       color: AppColors.brandPrimary.withValues(alpha: 0.35),
                       width: 2,
@@ -304,7 +304,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               user.email,
               style: TextStyle(
                 fontSize: 14,
-                color: isDark ? Colors.white70 : AppColors.inkSecondary,
+                color: isDark ? Colors.white70 : AppColors.inkSecondaryColor(isDark),
               ),
             ),
             const SizedBox(height: 14),
@@ -366,7 +366,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         Icon(
           icon,
           size: 16,
-          color: isDark ? Colors.white60 : AppColors.inkMuted,
+          color: isDark ? Colors.white60 : AppColors.inkMutedColor(isDark),
         ),
         const SizedBox(width: 8),
         Flexible(
@@ -374,7 +374,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             text,
             style: TextStyle(
               fontSize: 13,
-              color: isDark ? Colors.white70 : AppColors.inkSecondary,
+              color: isDark ? Colors.white70 : AppColors.inkSecondaryColor(isDark),
             ),
             overflow: TextOverflow.ellipsis,
           ),
@@ -455,7 +455,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   filled: true,
                   fillColor: isDark
                       ? AppColors.surfaceDarkCard
-                      : AppColors.surfaceCard,
+                      : AppColors.cardBgColor(isDark),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
@@ -489,7 +489,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   filled: true,
                   fillColor: isDark
                       ? AppColors.surfaceDarkCard
-                      : AppColors.surfaceCard,
+                      : AppColors.cardBgColor(isDark),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
@@ -606,7 +606,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: isDark ? Colors.white70 : AppColors.inkSecondary,
+                  color: isDark ? Colors.white70 : AppColors.inkSecondaryColor(isDark),
                 ),
               ),
               const SizedBox(height: 2),
@@ -614,7 +614,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 value,
                 style: TextStyle(
                   fontSize: 14,
-                  color: isDark ? Colors.white : AppColors.inkPrimary,
+                  color: isDark ? Colors.white : AppColors.inkPrimaryColor(isDark),
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -664,7 +664,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 'Your current password is required to confirm your identity.',
                 style: TextStyle(
                   fontSize: 12.5,
-                  color: isDark ? Colors.white60 : AppColors.inkSecondary,
+                  color: isDark ? Colors.white60 : AppColors.inkSecondaryColor(isDark),
                 ),
               ),
               const SizedBox(height: 16),
@@ -693,7 +693,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   filled: true,
                   fillColor: isDark
                       ? AppColors.surfaceDarkCard
-                      : AppColors.surfaceCard,
+                      : AppColors.cardBgColor(isDark),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
@@ -732,7 +732,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   filled: true,
                   fillColor: isDark
                       ? AppColors.surfaceDarkCard
-                      : AppColors.surfaceCard,
+                      : AppColors.cardBgColor(isDark),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
@@ -772,7 +772,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   filled: true,
                   fillColor: isDark
                       ? AppColors.surfaceDarkCard
-                      : AppColors.surfaceCard,
+                      : AppColors.cardBgColor(isDark),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
@@ -847,7 +847,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               'Choose which notifications you would like to receive.',
               style: TextStyle(
                 fontSize: 12.5,
-                color: isDark ? Colors.white60 : AppColors.inkSecondary,
+                color: isDark ? Colors.white60 : AppColors.inkSecondaryColor(isDark),
               ),
             ),
             const SizedBox(height: 16),
@@ -892,7 +892,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Card(
-      color: isDark ? AppColors.surfaceDarkCard : AppColors.surfaceCard,
+      color: isDark ? AppColors.surfaceDarkCard : AppColors.cardBgColor(isDark),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
@@ -908,14 +908,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           style: TextStyle(
             fontSize: 14.5,
             fontWeight: FontWeight.w600,
-            color: isDark ? Colors.white : AppColors.inkPrimary,
+            color: isDark ? Colors.white : AppColors.inkPrimaryColor(isDark),
           ),
         ),
         subtitle: Text(
           subtitle,
           style: TextStyle(
             fontSize: 12.5,
-            color: isDark ? Colors.white60 : AppColors.inkSecondary,
+            color: isDark ? Colors.white60 : AppColors.inkSecondaryColor(isDark),
           ),
         ),
         secondary: Icon(icon, color: AppColors.brandPrimary, size: 22),
@@ -956,20 +956,26 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               'Choose how the app looks. Your choice is saved and applied across the app.',
               style: TextStyle(
                 fontSize: 12.5,
-                color: isDark ? Colors.white60 : AppColors.inkSecondary,
+                color: isDark ? Colors.white60 : AppColors.inkSecondaryColor(isDark),
               ),
             ),
             const SizedBox(height: 16),
-            ...AppThemeMode.values.map((mode) {
-              final selected = themeMode == mode;
-              return _themeTile(
-                icon: mode.icon,
-                title: mode.label,
-                selected: selected,
-                onTap: () =>
-                    ref.read(themeModeProvider.notifier).setThemeMode(mode),
-              );
-            }),
+            for (var i = 0; i < AppThemeMode.values.length; i++) ...[
+              if (i > 0) const SizedBox(height: 10),
+              Builder(
+                builder: (context) {
+                  final mode = AppThemeMode.values[i];
+                  final selected = themeMode == mode;
+                  return _themeTile(
+                    icon: mode.icon,
+                    title: mode.label,
+                    selected: selected,
+                    onTap: () =>
+                        ref.read(themeModeProvider.notifier).setThemeMode(mode),
+                  );
+                },
+              ),
+            ],
           ],
         ),
       ),
@@ -983,43 +989,70 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     required VoidCallback onTap,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: (selected
-              ? AppColors.brandPrimary
-              : (isDark ? AppColors.surfaceDarkCard : AppColors.surfaceCard)),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Icon(
-          icon,
-          color: selected ? Colors.white : AppColors.brandPrimary,
-          size: 20,
+
+    final Color tileFill = selected
+        ? AppColors.brandPrimary
+        : (isDark ? Colors.black : Colors.white);
+    final Color tileBorder = selected
+        ? AppColors.brandPrimary
+        : (isDark ? AppColors.borderDark : Colors.black);
+    final Color contentColor = selected
+        ? Colors.black
+        : (isDark ? Colors.white : AppColors.inkPrimaryColor(isDark));
+    final Color chipFill = selected
+        ? AppColors.brandPrimary
+        : (isDark ? AppColors.surfaceDarkCard : Colors.white);
+    final Color chipBorder = selected
+        ? AppColors.brandPrimary
+        : (isDark ? AppColors.borderDark : Colors.black);
+    final Color chipIconColor = selected ? Colors.black : AppColors.brandPrimary;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: tileFill,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: tileBorder, width: 1.5),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: chipFill,
+                  borderRadius: BorderRadius.circular(11),
+                  border: Border.all(color: chipBorder, width: 1),
+                ),
+                child: Icon(icon, size: 20, color: chipIconColor),
+              ),
+              const SizedBox(width: 13),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 14.5,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+                    color: contentColor,
+                  ),
+                ),
+              ),
+              if (selected)
+                const Icon(
+                  Icons.check_circle,
+                  color: Colors.black,
+                  size: 20,
+                ),
+            ],
+          ),
         ),
       ),
-      title: Text(
-        title,
-        style: TextStyle(
-          fontSize: 14.5,
-          fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-          color: selected
-              ? AppColors.brandPrimary
-              : (isDark ? Colors.white : AppColors.inkPrimary),
-        ),
-      ),
-      trailing: selected
-          ? const Icon(
-              Icons.check_circle,
-              color: AppColors.brandPrimary,
-              size: 20,
-            )
-          : null,
-      onTap: onTap,
-      selected: selected,
-      selectedTileColor: AppColors.brandPrimary.withValues(alpha: 0.10),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     );
   }
 
@@ -1127,20 +1160,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         style: TextStyle(
           fontSize: 14.5,
           fontWeight: FontWeight.w600,
-          color: isDark ? Colors.white : AppColors.inkPrimary,
+          color: isDark ? Colors.white : AppColors.inkPrimaryColor(isDark),
         ),
       ),
       subtitle: Text(
         subtitle,
         style: TextStyle(
           fontSize: 12.5,
-          color: isDark ? Colors.white60 : AppColors.inkSecondary,
+          color: isDark ? Colors.white60 : AppColors.inkSecondaryColor(isDark),
         ),
       ),
-      trailing: const Icon(
+      trailing: Icon(
         Icons.chevron_right,
         size: 20,
-        color: AppColors.inkMuted,
+        color: AppColors.inkMutedColor(isDark),
       ),
       onTap: onTap,
     );

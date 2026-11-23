@@ -19,9 +19,10 @@ class DashboardRecentActivities extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? AppColors.surfaceDarkRaised : Colors.white;
-    final primaryTextColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final secondaryTextColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final cardBg = AppColors.cardBgColor(isDark);
+    final primaryTextColor = AppColors.textPrimaryColor(isDark);
+    final secondaryTextColor = AppColors.textSecondaryColor(isDark);
+    final borderDark = AppColors.borderDarkColor(isDark);
     final currencyFmt = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
 
     return Container(
@@ -30,7 +31,7 @@ class DashboardRecentActivities extends StatelessWidget {
         color: cardBg,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+          color: borderDark,
         ),
         boxShadow: [
           BoxShadow(
@@ -158,7 +159,7 @@ class DashboardRecentActivities extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected
               ? AppColors.brandPrimary
-              : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9)),
+              : AppColors.cardBgColor(isDark),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
@@ -210,8 +211,8 @@ class _ActivityListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryTextColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final secondaryTextColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final primaryTextColor = AppColors.textPrimaryColor(isDark);
+    final secondaryTextColor = AppColors.textSecondaryColor(isDark);
 
     final config = _getTypeConfig(item.type);
     final timeStr = _formatTimestamp(item.timestamp);
@@ -339,22 +340,22 @@ class _ActivityListTile extends StatelessWidget {
       case ActivityType.payment:
         return const _TypeConfig(
           icon: Icons.payments_rounded,
-          color: Color(0xFF10B981), // Emerald
+          color: AppColors.brandPrimary,
         );
       case ActivityType.credit:
         return const _TypeConfig(
           icon: Icons.receipt_long_rounded,
-          color: Color(0xFF1E293B), // Navy
+          color: AppColors.brandPrimary,
         );
       case ActivityType.recovery:
         return const _TypeConfig(
           icon: Icons.phone_callback_rounded,
-          color: Color(0xFFF59E0B), // Amber
+          color: AppColors.brandPrimary,
         );
       case ActivityType.customer:
         return const _TypeConfig(
           icon: Icons.person_rounded,
-          color: Color(0xFF0D9488), // Teal
+          color: AppColors.brandPrimary,
         );
     }
   }

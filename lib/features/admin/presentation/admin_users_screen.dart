@@ -48,44 +48,47 @@ class AdminUsersScreen extends ConsumerWidget {
 
     showDialog(
       context: context,
-      builder: (dialogCtx) => AlertDialog(
-        backgroundColor: AppColors.surfaceRaised,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: AppColors.borderSubtle),
-        ),
-        title: Text('$actionLabel Staff Member'),
-        content: Text(
-          'Are you sure you want to $actionLabel ${member.fullName} (${member.email})?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogCtx).pop(),
-            child: const Text('Cancel', style: TextStyle(color: AppColors.inkSecondary)),
+      builder: (dialogCtx) {
+        final isDark = Theme.of(dialogCtx).brightness == Brightness.dark;
+        return AlertDialog(
+          backgroundColor: AppColors.surfaceRaisedColor(isDark),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: AppColors.borderSubtleColor(isDark)),
           ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(dialogCtx).pop();
-              ref.read(staffControllerProvider.notifier).toggleStaffStatus(
-                    userId: member.id,
-                    currentStatus: member.isActive,
-                  );
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Staff member ${member.fullName} was ${actionLabel.toLowerCase()}d'),
-                  backgroundColor: AppColors.brandPrimary,
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: member.isActive ? AppColors.accentDanger : AppColors.accentSuccess,
-              foregroundColor: AppColors.inkWhite,
+          title: Text('$actionLabel Staff Member'),
+          content: Text(
+            'Are you sure you want to $actionLabel ${member.fullName} (${member.email})?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogCtx).pop(),
+              child: Text('Cancel', style: TextStyle(color: AppColors.inkSecondaryColor(isDark))),
             ),
-            child: Text(actionLabel),
-          ),
-        ],
-      ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(dialogCtx).pop();
+                ref.read(staffControllerProvider.notifier).toggleStaffStatus(
+                      userId: member.id,
+                      currentStatus: member.isActive,
+                    );
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Staff member ${member.fullName} was ${actionLabel.toLowerCase()}d'),
+                    backgroundColor: AppColors.brandPrimary,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: member.isActive ? AppColors.accentDanger : AppColors.accentSuccess,
+                foregroundColor: AppColors.inkWhiteColor(isDark),
+              ),
+              child: Text(actionLabel),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -98,8 +101,16 @@ class AdminUsersScreen extends ConsumerWidget {
     final selectedRole = ref.watch(staffRoleFilterProvider);
     final selectedStatus = ref.watch(staffStatusFilterProvider);
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surfaceBase = AppColors.surfaceBaseColor(isDark);
+    final surfaceRaised = AppColors.surfaceRaisedColor(isDark);
+    final inkPrimary = AppColors.inkPrimaryColor(isDark);
+    final inkSecondary = AppColors.inkSecondaryColor(isDark);
+    final inkMuted = AppColors.inkMutedColor(isDark);
+    final borderSubtle = AppColors.borderSubtleColor(isDark);
+
     return Scaffold(
-      backgroundColor: AppColors.surfaceBase,
+      backgroundColor: surfaceBase,
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -109,7 +120,7 @@ class AdminUsersScreen extends ConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -118,15 +129,15 @@ class AdminUsersScreen extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.inkPrimary,
+                          color: inkPrimary,
                         ),
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text(
                         'Administrator control: manage staff accounts, roles, and status',
                         style: TextStyle(
                           fontSize: 13,
-                          color: AppColors.inkSecondary,
+                          color: inkSecondary,
                         ),
                       ),
                     ],
@@ -139,7 +150,7 @@ class AdminUsersScreen extends ConsumerWidget {
                   label: const Text('Add Staff Member'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.brandPrimary,
-                    foregroundColor: AppColors.inkWhite,
+                    foregroundColor: Colors.black,
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -152,11 +163,11 @@ class AdminUsersScreen extends ConsumerWidget {
 
             // Toolbar / Filters
             Card(
-              color: AppColors.surfaceRaised,
+              color: surfaceRaised,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
-                side: const BorderSide(color: AppColors.borderSubtle),
+                side: BorderSide(color: borderSubtle),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(12.0),
@@ -169,14 +180,16 @@ class AdminUsersScreen extends ConsumerWidget {
                     ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 260),
                       child: TextField(
+                        style: TextStyle(color: inkPrimary),
                         decoration: InputDecoration(
                           hintText: 'Search staff by name or email...',
-                          prefixIcon: const Icon(Icons.search, size: 18),
+                          hintStyle: TextStyle(color: inkMuted),
+                          prefixIcon: Icon(Icons.search, size: 18, color: inkMuted),
                           isDense: true,
                           contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: AppColors.borderSubtle),
+                            borderSide: BorderSide(color: borderSubtle),
                           ),
                         ),
                         onChanged: (val) {
@@ -188,17 +201,18 @@ class AdminUsersScreen extends ConsumerWidget {
                     // Role Filter Dropdown
                     DropdownButton<UserRole?>(
                       value: selectedRole,
-                      hint: const Text('All Roles', style: TextStyle(fontSize: 13)),
+                      hint: Text('All Roles', style: TextStyle(fontSize: 13, color: inkSecondary)),
+                      dropdownColor: surfaceRaised,
                       underline: const SizedBox.shrink(),
                       items: [
-                        const DropdownMenuItem<UserRole?>(
+                        DropdownMenuItem<UserRole?>(
                           value: null,
-                          child: Text('All Roles', style: TextStyle(fontSize: 13)),
+                          child: Text('All Roles', style: TextStyle(fontSize: 13, color: inkPrimary)),
                         ),
                         ...UserRole.values.map((role) {
                           return DropdownMenuItem<UserRole?>(
                             value: role,
-                            child: Text(role.displayName, style: const TextStyle(fontSize: 13)),
+                            child: Text(role.displayName, style: TextStyle(fontSize: 13, color: inkPrimary)),
                           );
                         }),
                       ],
@@ -210,20 +224,21 @@ class AdminUsersScreen extends ConsumerWidget {
                     // Status Filter Dropdown
                     DropdownButton<bool?>(
                       value: selectedStatus,
-                      hint: const Text('All Statuses', style: TextStyle(fontSize: 13)),
+                      hint: Text('All Statuses', style: TextStyle(fontSize: 13, color: inkSecondary)),
+                      dropdownColor: surfaceRaised,
                       underline: const SizedBox.shrink(),
-                      items: const [
+                      items: [
                         DropdownMenuItem<bool?>(
                           value: null,
-                          child: Text('All Statuses', style: TextStyle(fontSize: 13)),
+                          child: Text('All Statuses', style: TextStyle(fontSize: 13, color: inkPrimary)),
                         ),
                         DropdownMenuItem<bool?>(
                           value: true,
-                          child: Text('Active Only', style: TextStyle(fontSize: 13)),
+                          child: Text('Active Only', style: TextStyle(fontSize: 13, color: inkPrimary)),
                         ),
                         DropdownMenuItem<bool?>(
                           value: false,
-                          child: Text('Inactive Only', style: TextStyle(fontSize: 13)),
+                          child: Text('Inactive Only', style: TextStyle(fontSize: 13, color: inkPrimary)),
                         ),
                       ],
                       onChanged: (status) {
@@ -239,11 +254,11 @@ class AdminUsersScreen extends ConsumerWidget {
             // Staff Table
             Expanded(
               child: Card(
-                color: AppColors.surfaceRaised,
+                color: surfaceRaised,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
-                  side: const BorderSide(color: AppColors.borderSubtle),
+                  side: BorderSide(color: borderSubtle),
                 ),
                 child: staffAsync.when(
                   loading: () => const Center(child: CircularProgressIndicator()),
@@ -252,10 +267,10 @@ class AdminUsersScreen extends ConsumerWidget {
                   ),
                   data: (_) {
                     if (filteredStaff.isEmpty) {
-                      return const Center(
+                      return Center(
                         child: Text(
                           'No staff members match the selected filters',
-                          style: TextStyle(color: AppColors.inkSecondary),
+                          style: TextStyle(color: inkSecondary),
                         ),
                       );
                     }
@@ -269,11 +284,14 @@ class AdminUsersScreen extends ConsumerWidget {
                           headingRowHeight: 44,
                           dataRowMinHeight: 52,
                           dataRowMaxHeight: 56,
-                          columns: const [
-                            DataColumn(label: Text('Staff Member', style: TextStyle(fontWeight: FontWeight.bold))),
-                            DataColumn(label: Text('Role', style: TextStyle(fontWeight: FontWeight.bold))),
-                            DataColumn(label: Text('Status', style: TextStyle(fontWeight: FontWeight.bold))),
-                            DataColumn(label: Text('Actions', style: TextStyle(fontWeight: FontWeight.bold))),
+                          headingRowColor: WidgetStatePropertyAll(
+                            AppColors.brandPrimary.withValues(alpha: 0.08),
+                          ),
+                          columns: [
+                            DataColumn(label: Text('Staff Member', style: TextStyle(fontWeight: FontWeight.bold, color: inkPrimary))),
+                            DataColumn(label: Text('Role', style: TextStyle(fontWeight: FontWeight.bold, color: inkPrimary))),
+                            DataColumn(label: Text('Status', style: TextStyle(fontWeight: FontWeight.bold, color: inkPrimary))),
+                            DataColumn(label: Text('Actions', style: TextStyle(fontWeight: FontWeight.bold, color: inkPrimary))),
                           ],
                           rows: filteredStaff.map((member) {
                             final isSelf = currentAdmin != null && currentAdmin.id == member.id;
@@ -304,17 +322,17 @@ class AdminUsersScreen extends ConsumerWidget {
                                         children: [
                                           Text(
                                             member.fullName,
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                               fontWeight: FontWeight.w600,
                                               fontSize: 13,
-                                              color: AppColors.inkPrimary,
+                                              color: inkPrimary,
                                             ),
                                           ),
                                           Text(
                                             member.email,
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                               fontSize: 11,
-                                              color: AppColors.inkSecondary,
+                                              color: inkSecondary,
                                             ),
                                           ),
                                         ],
@@ -350,13 +368,13 @@ class AdminUsersScreen extends ConsumerWidget {
                                     decoration: BoxDecoration(
                                       color: member.isActive
                                           ? AppColors.accentSuccess.withValues(alpha: 0.12)
-                                          : AppColors.inkMuted.withValues(alpha: 0.2),
+                                          : inkMuted.withValues(alpha: 0.2),
                                       borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: Text(
                                       member.isActive ? 'Active' : 'Inactive',
                                       style: TextStyle(
-                                        color: member.isActive ? AppColors.accentSuccess : AppColors.inkSecondary,
+                                        color: member.isActive ? AppColors.accentSuccess : inkSecondary,
                                         fontSize: 11,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -378,7 +396,7 @@ class AdminUsersScreen extends ConsumerWidget {
                                           member.isActive ? Icons.block_outlined : Icons.check_circle_outline,
                                           size: 18,
                                           color: isSelf
-                                              ? AppColors.inkMuted
+                                              ? inkMuted
                                               : (member.isActive ? AppColors.accentDanger : AppColors.accentSuccess),
                                         ),
                                         onPressed: () => _confirmToggleStatus(context, ref, member, isSelf),
@@ -387,7 +405,7 @@ class AdminUsersScreen extends ConsumerWidget {
                                       // Role change menu
                                       PopupMenuButton<UserRole>(
                                         tooltip: 'Change Role',
-                                        icon: const Icon(Icons.more_vert, size: 18, color: AppColors.inkSecondary),
+                                        icon: Icon(Icons.more_vert, size: 18, color: inkSecondary),
                                         onSelected: (newRole) {
                                           ref.read(staffControllerProvider.notifier).changeStaffRole(
                                                 userId: member.id,

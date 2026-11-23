@@ -33,13 +33,11 @@ class CustomersScreen extends ConsumerWidget {
     final maxPage = totalCount == 0 ? 0 : ((totalCount - 1) ~/ pageSize);
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final surfaceColor = isDark ? AppColors.surfaceDark : AppColors.surfaceBase;
-    final cardColor = isDark
-        ? AppColors.surfaceDarkCard
-        : AppColors.surfaceCard;
-    final borderColor = isDark ? AppColors.borderDark : AppColors.borderSubtle;
-    final textPrimary = isDark ? AppColors.inkDark : AppColors.inkPrimary;
-    final textSecondary = isDark ? AppColors.inkMuted : AppColors.inkSecondary;
+    final surfaceColor = AppColors.surfaceBaseColor(isDark);
+    final cardColor = AppColors.surfaceDarkCardColor(isDark);
+    final borderColor = AppColors.borderSubtleColor(isDark);
+    final textPrimary = AppColors.inkPrimaryColor(isDark);
+    final textSecondary = AppColors.inkSecondaryColor(isDark);
 
     return Scaffold(
       backgroundColor: surfaceColor,
@@ -399,7 +397,7 @@ class CustomersScreen extends ConsumerWidget {
                 customer.fullName,
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
-                  color: isDark ? AppColors.inkDark : AppColors.inkPrimary,
+                  color: AppColors.inkPrimaryColor(isDark),
                 ),
               ),
             ],
@@ -413,7 +411,7 @@ class CustomersScreen extends ConsumerWidget {
               Text(
                 customer.phoneNumber,
                 style: TextStyle(
-                  color: isDark ? AppColors.inkDark : AppColors.inkPrimary,
+                  color: AppColors.inkPrimaryColor(isDark),
                 ),
               ),
               if (customer.secondaryPhone != null &&
@@ -422,7 +420,7 @@ class CustomersScreen extends ConsumerWidget {
                   customer.secondaryPhone!,
                   style: TextStyle(
                     fontSize: 11,
-                    color: isDark ? AppColors.inkMuted : AppColors.inkSecondary,
+                    color: AppColors.inkSecondaryColor(isDark),
                   ),
                 ),
             ],
@@ -432,7 +430,7 @@ class CustomersScreen extends ConsumerWidget {
           Text(
             customer.email ?? '—',
             style: TextStyle(
-              color: isDark ? AppColors.inkDark : AppColors.inkPrimary,
+              color: AppColors.inkPrimaryColor(isDark),
             ),
           ),
         ),
@@ -440,7 +438,7 @@ class CustomersScreen extends ConsumerWidget {
           Text(
             customer.nationalId ?? '—',
             style: TextStyle(
-              color: isDark ? AppColors.inkMuted : AppColors.inkSecondary,
+              color: AppColors.inkSecondaryColor(isDark),
             ),
           ),
         ),
@@ -451,7 +449,7 @@ class CustomersScreen extends ConsumerWidget {
               customer.address ?? '—',
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: isDark ? AppColors.inkMuted : AppColors.inkSecondary,
+                color: AppColors.inkSecondaryColor(isDark),
               ),
             ),
           ),
@@ -460,7 +458,7 @@ class CustomersScreen extends ConsumerWidget {
           Text(
             dateStr,
             style: TextStyle(
-              color: isDark ? AppColors.inkMuted : AppColors.inkSecondary,
+              color: AppColors.inkSecondaryColor(isDark),
             ),
           ),
         ),

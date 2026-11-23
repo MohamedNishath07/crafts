@@ -11,7 +11,7 @@ import '../domain/dashboard_models.dart';
 import 'dashboard_controller.dart';
 import 'widgets/dashboard_analytics_section.dart';
 import 'widgets/dashboard_header.dart';
-import 'widgets/dashboard_overview_cards.dart';
+import 'widgets/dashboard_overview_slideshow.dart';
 import 'widgets/dashboard_quick_actions.dart';
 import 'widgets/dashboard_recent_activities.dart';
 import 'widgets/role_specific_section.dart';
@@ -22,6 +22,8 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textPrimary = AppColors.textPrimaryColor(isDark);
+    final iconMuted = isDark ? Colors.white70 : const Color(0xFF475569);
 
     // Get current user (either from authController or phpAuthSession)
     final user =
@@ -30,14 +32,10 @@ class DashboardScreen extends ConsumerWidget {
     final dashboardState = ref.watch(dashboardControllerProvider);
     final controller = ref.read(dashboardControllerProvider.notifier);
 
-    final primaryNavy = isDark
-        ? const Color(0xFF0F172A)
-        : const Color(0xFF1E293B);
-
     return Scaffold(
-      backgroundColor: isDark ? AppColors.surfaceDark : const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.bg(isDark),
       appBar: AppBar(
-        backgroundColor: isDark ? AppColors.surfaceDarkSecondary : Colors.white,
+        backgroundColor: AppColors.surfaceDarkSecondaryColor(isDark),
         elevation: 0.5,
         centerTitle: false,
         title: Row(
@@ -58,7 +56,7 @@ class DashboardScreen extends ConsumerWidget {
             Text(
               'Operations Dashboard',
               style: TextStyle(
-                color: isDark ? Colors.white : primaryNavy,
+                color: textPrimary,
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
                 letterSpacing: -0.3,
@@ -70,7 +68,7 @@ class DashboardScreen extends ConsumerWidget {
           IconButton(
             icon: Icon(
               Icons.notifications_none_rounded,
-              color: isDark ? Colors.white70 : const Color(0xFF475569),
+              color: iconMuted,
             ),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -85,7 +83,7 @@ class DashboardScreen extends ConsumerWidget {
           IconButton(
             icon: Icon(
               Icons.manage_accounts_outlined,
-              color: isDark ? Colors.white70 : const Color(0xFF475569),
+              color: iconMuted,
             ),
             onPressed: () => context.go('/profile'),
             tooltip: 'Profile & Settings',
@@ -123,8 +121,8 @@ class DashboardScreen extends ConsumerWidget {
 
                     const SizedBox(height: 20),
 
-                    // 2. Financial Overview Cards (6 core metrics from SQLite)
-                    DashboardOverviewCards(
+                    // 2. Financial Overview Slideshow (6 core metrics from SQLite)
+                    DashboardOverviewSlideshow(
                       metrics: dashboardState.metrics,
                       isLoading: dashboardState.isLoading,
                     ),
@@ -206,9 +204,7 @@ class DashboardScreen extends ConsumerWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 13,
-                color: isDark
-                    ? const Color(0xFF94A3B8)
-                    : const Color(0xFF64748B),
+                color: AppColors.textSecondaryColor(isDark),
               ),
             ),
             const SizedBox(height: 20),

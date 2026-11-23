@@ -52,11 +52,15 @@ class _LogActionDialogState extends ConsumerState<LogActionDialog> {
   }
 @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surfaceRaised = AppColors.surfaceRaisedColor(isDark);
+    final borderSubtle = AppColors.borderSubtleColor(isDark);
+    final inkPrimary = AppColors.inkPrimaryColor(isDark);
     return AlertDialog(
-      backgroundColor: AppColors.surfaceRaised,
+      backgroundColor: surfaceRaised,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: AppColors.borderSubtle),
+        side: BorderSide(color: borderSubtle),
       ),
       title: Row(
         children: [
@@ -66,7 +70,7 @@ class _LogActionDialogState extends ConsumerState<LogActionDialog> {
             child: Text(
               widget.customerName != null ? 'Log Action – ${widget.customerName}' : 'Log Action',
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.inkPrimary),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: inkPrimary),
             ),
           ),
         ],
@@ -80,7 +84,7 @@ class _LogActionDialogState extends ConsumerState<LogActionDialog> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text('Contact Channel', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.inkPrimary)),
+                Text('Contact Channel', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: inkPrimary)),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
@@ -112,14 +116,15 @@ List<String> _channelKeys() => ['call', 'field_visit', 'email', 'sms'];
 
   Widget _buildChannelChip(String value, String label) {
     final isSelected = _selectedChannel == value;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return FilterChip(
       label: Text(label),
       selected: isSelected,
       onSelected: (selected) => setState(() => _selectedChannel = value),
-      selectedColor: isSelected ? AppColors.brandPrimary : AppColors.surfaceRaised,
-      checkmarkColor: AppColors.inkWhite,
+      selectedColor: isSelected ? AppColors.brandPrimary : AppColors.surfaceRaisedColor(isDark),
+      checkmarkColor: Colors.black,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      side: BorderSide(color: isSelected ? AppColors.brandPrimary : AppColors.borderSubtle),
+      side: BorderSide(color: isSelected ? AppColors.brandPrimary : AppColors.borderSubtleColor(isDark)),
     );
   }
 
@@ -167,7 +172,9 @@ List<String> _channelKeys() => ['call', 'field_visit', 'email', 'sms'];
                   ? 'Select Date'
                   : '${_followUpDate!.day}/${_followUpDate!.month}/${_followUpDate!.year}',
                 style: TextStyle(
-                  color: _followUpDate == null ? AppColors.inkSecondary : AppColors.inkPrimary,
+                  color: _followUpDate == null
+                      ? AppColors.inkSecondaryColor(Theme.of(context).brightness == Brightness.dark)
+                      : AppColors.inkPrimaryColor(Theme.of(context).brightness == Brightness.dark),
                   fontSize: 14,
                 ),
               ),

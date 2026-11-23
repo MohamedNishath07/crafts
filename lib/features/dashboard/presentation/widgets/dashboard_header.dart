@@ -24,8 +24,10 @@ class DashboardHeader extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final now = DateTime.now();
     final dateString = DateFormat('EEEE, MMM d, yyyy').format(now);
-    final primaryNavy = isDark ? const Color(0xFF0F172A) : const Color(0xFF1E293B);
-    final cardBg = isDark ? AppColors.surfaceDarkRaised : Colors.white;
+    final textPrimary = AppColors.textPrimaryColor(isDark);
+    final textSecondary = AppColors.textSecondaryColor(isDark);
+    final cardBg = AppColors.cardBgColor(isDark);
+    final borderDark = AppColors.borderDarkColor(isDark);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
@@ -33,7 +35,7 @@ class DashboardHeader extends StatelessWidget {
         color: cardBg,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+          color: borderDark,
         ),
         boxShadow: [
           BoxShadow(
@@ -55,7 +57,7 @@ class DashboardHeader extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: LinearGradient(
-                    colors: [primaryNavy, AppColors.brandPrimary],
+                    colors: [textPrimary, AppColors.brandPrimary],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -92,7 +94,7 @@ class DashboardHeader extends StatelessWidget {
                           child: Text(
                             'Operations Dashboard',
                             style: TextStyle(
-                              color: isDark ? Colors.white : primaryNavy,
+                              color: textPrimary,
                               fontWeight: FontWeight.bold,
                               fontSize: 18,
                               letterSpacing: -0.3,
@@ -106,7 +108,7 @@ class DashboardHeader extends StatelessWidget {
                       'Real-time overview of outstanding debt and recovery performance',
                       style: TextStyle(
                         fontSize: 13,
-                        color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                        color: textSecondary,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -129,7 +131,7 @@ class DashboardHeader extends StatelessWidget {
                   Icon(
                     Icons.calendar_today_outlined,
                     size: 14,
-                    color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                    color: textSecondary,
                   ),
                   const SizedBox(width: 6),
                   Text(
@@ -137,7 +139,7 @@ class DashboardHeader extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                      color: textSecondary,
                     ),
                   ),
                 ],
@@ -158,7 +160,7 @@ class DashboardHeader extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
-                      color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                      color: textSecondary,
                     ),
                   ),
                 ],

@@ -28,7 +28,7 @@ class AppShell extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? AppColors.surfaceDark : AppColors.surfaceBase,
+      backgroundColor: AppColors.surfaceBaseColor(isDark),
       body: child,
       bottomNavigationBar: ExpandableTabBar(
         items: tabItems,

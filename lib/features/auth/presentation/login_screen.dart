@@ -33,39 +33,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoggingIn = true);
     try {
-      await ref
-          .read(authControllerProvider.notifier)
-          .signIn(
+      await ref.read(authControllerProvider.notifier).signIn(
             email: _emailController.text.trim(),
             password: _passwordController.text,
           );
-
       final authState = ref.read(authControllerProvider);
       if (authState.hasError) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Login failed: ${authState.error}'),
-              backgroundColor: AppColors.accentDanger,
-            ),
+            SnackBar(content: Text('Login failed: ${authState.error}'), backgroundColor: AppColors.accentDanger),
           );
         }
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Login successful'),
-            backgroundColor: AppColors.accentSuccess,
-          ),
+          const SnackBar(content: Text('Login successful'), backgroundColor: AppColors.accentSuccess),
         );
         context.go('/dashboard');
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Network error. Please try again.'),
-            backgroundColor: AppColors.accentDanger,
-          ),
+          const SnackBar(content: Text('Network error. Please try again.'), backgroundColor: AppColors.accentDanger),
         );
       }
     } finally {
@@ -73,16 +61,36 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  InputDecoration _fieldDeco(String hint, IconData icon, {Widget? suffix}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textSecondary = AppColors.textSecondaryColor(isDark);
+    final fieldFill = isDark
+        ? AppColors.surfaceDarkSecondary
+        : AppColors.surfaceSecondary;
+    final fieldBorder = AppColors.borderColor(isDark);
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: TextStyle(color: textSecondary),
+      prefixIcon: Icon(icon, color: textSecondary),
+      suffixIcon: suffix,
+      filled: true,
+      fillColor: fieldFill,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: fieldBorder)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: fieldBorder)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.accent, width: 1.5)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isLoading = authState.isLoading;
-    final base = isDark ? AppColors.surfaceDark : AppColors.surfaceBase;
-    final card = isDark ? AppColors.surfaceDarkCard : AppColors.surfaceCard;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textPrimary = AppColors.textPrimaryColor(isDark);
+    final textSecondary = AppColors.textSecondaryColor(isDark);
 
     return Scaffold(
-      backgroundColor: base,
+      backgroundColor: AppColors.bg(isDark),
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
@@ -98,208 +106,83 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: _neumorphicDecoration(
-                        isDark,
-                        card,
-                        radius: 20,
-                      ),
+                      width: 72,
+                      height: 72,
+                      decoration: BoxDecoration(color: AppColors.accent, borderRadius: BorderRadius.circular(20)),
+                      child: const Center(child: Text('DR', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w800, fontSize: 26))),
+                    ),
+                    const SizedBox(height: 16),
+                    Text('Debit Recovery', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: textPrimary)),
+                    const SizedBox(height: 4),
+                    Text('Premium debt collection', style: TextStyle(fontSize: 13, color: textSecondary)),
+                    const SizedBox(height: 32),
+                    Form(
+                      key: _formKey,
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(14),
-                            decoration: _neumorphicDecoration(
-                              isDark,
-                              card,
-                              radius: 16,
-                              inset: true,
-                            ),
-                            child: Icon(
-                              Icons.account_balance_wallet,
-                              color: AppColors.brandPrimary,
-                              size: 36,
+                          TextFormField(
+                            key: const Key('login_email_field'),
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            style: TextStyle(color: textPrimary),
+                            decoration: _fieldDeco('Email address', Icons.email_outlined),
+                            validator: (v) {
+                              if (v == null || v.trim().isEmpty) return 'Email is required';
+                              if (!v.contains('@')) return 'Enter a valid email';
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            key: const Key('login_password_field'),
+                            controller: _passwordController,
+                            obscureText: _obscurePassword,
+                            style: TextStyle(color: textPrimary),
+                            decoration: _fieldDeco('Password', Icons.lock_outline, suffix: IconButton(
+                              icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: textSecondary),
+                              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                            )),
+                            validator: (v) {
+                              if (v == null || v.isEmpty) return 'Password is required';
+                              if (v.length < 6) return 'Minimum 6 characters';
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 24),
+                          SizedBox(
+                            height: 52,
+                            child: ElevatedButton(
+                              onPressed: _isLoggingIn ? null : _submit,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.accent,
+                                foregroundColor: Colors.black,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+                                elevation: 0,
+                              ),
+                              child: _isLoggingIn
+                                  ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
+                                  : const Text('Sign In', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                             ),
                           ),
                           const SizedBox(height: 12),
-                          const Text(
-                            'Debit Recovery',
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.inkPrimary,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Operations & Collections',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: AppColors.inkSecondary,
-                            ),
+                          TextButton(
+                            onPressed: isLoading ? null : () => context.push('/create-account'),
+                            child: const Text('Create Account', style: TextStyle(color: AppColors.accent)),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 24),
-
-                    Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: _neumorphicDecoration(
-                        isDark,
-                        card,
-                        radius: 24,
-                      ),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            _neumorphicField(
-                              isDark: isDark,
-                              card: card,
-                              child: TextFormField(
-                                key: const Key('login_email_field'),
-                                controller: _emailController,
-                                keyboardType: TextInputType.emailAddress,
-                                decoration: const InputDecoration(
-                                  border: InputBorder.none,
-                                  hintText: 'Email address',
-                                  prefixIcon: Icon(Icons.email_outlined),
-                                ),
-                                  validator: (v) {
-                                    if (v == null || v.trim().isEmpty) {
-                                      return 'Email is required';
-                                    }
-                                    if (!v.contains('@')) {
-                                      return 'Enter a valid email';
-                                    }
-                                    return null;
-                                  },
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            _neumorphicField(
-                              isDark: isDark,
-                              card: card,
-                              child: TextFormField(
-                                key: const Key('login_password_field'),
-                                controller: _passwordController,
-                                obscureText: _obscurePassword,
-                                decoration: InputDecoration(
-                                  border: InputBorder.none,
-                                  hintText: 'Password',
-                                  prefixIcon: const Icon(Icons.lock_outline),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      _obscurePassword
-                                          ? Icons.visibility_off
-                                          : Icons.visibility,
-                                    ),
-                                    onPressed: () => setState(
-                                      () =>
-                                          _obscurePassword = !_obscurePassword,
-                                    ),
-                                  ),
-                                ),
-                                  validator: (v) {
-                                    if (v == null || v.isEmpty) {
-                                      return 'Password is required';
-                                    }
-                                    if (v.length < 6) {
-                                      return 'Minimum 6 characters';
-                                    }
-                                    return null;
-                                  },
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            SizedBox(
-                              height: 52,
-                              child: ElevatedButton(
-                                onPressed: _isLoggingIn ? null : _submit,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.brandPrimary,
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                  elevation: 0,
-                                ),
-                                child: _isLoggingIn
-                                    ? const SizedBox(
-                                        width: 22,
-                                        height: 22,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: Colors.white,
-                                        ),
-                                      )
-                                    : const Text(
-                                        'Sign In',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            TextButton(
-                              onPressed: isLoading
-                                  ? null
-                                  : () => context.push('/create-account'),
-                              child: const Text('Create Account'),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
                     if (kDebugMode) ...[
                       const SizedBox(height: 24),
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: _neumorphicDecoration(
-                          isDark,
-                          card,
-                          radius: 16,
-                        ),
-                        child: Column(
-                          children: [
-                            const Text(
-                              'Demo Persona Access (dev only)',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.inkSecondary,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Wrap(
-                              alignment: WrapAlignment.center,
-                              spacing: 8,
-                              children: [
-                                _demoChip(
-                                  context,
-                                  ref,
-                                  'Admin',
-                                  UserRole.admin,
-                                ),
-                                _demoChip(
-                                  context,
-                                  ref,
-                                  'Recovery',
-                                  UserRole.recoveryOfficer,
-                                ),
-                                _demoChip(
-                                  context,
-                                  ref,
-                                  'Finance',
-                                  UserRole.financeOfficer,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 8,
+                        children: [
+                          _demoChip(context, ref, 'Admin', UserRole.admin),
+                          _demoChip(context, ref, 'Recovery', UserRole.recoveryOfficer),
+                          _demoChip(context, ref, 'Finance', UserRole.financeOfficer),
+                        ],
                       ),
                     ],
                   ],
@@ -312,88 +195,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  Widget _demoChip(
-    BuildContext context,
-    WidgetRef ref,
-    String label,
-    UserRole role,
-  ) {
+  Widget _demoChip(BuildContext context, WidgetRef ref, String label, UserRole role) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return ActionChip(
-      label: Text(label, style: const TextStyle(fontSize: 12)),
-      avatar: const Icon(Icons.person, size: 16),
+      label: Text(label, style: TextStyle(fontSize: 12, color: AppColors.textPrimaryColor(isDark))),
+      backgroundColor: AppColors.cardBgColor(isDark),
       onPressed: () {
         ref.read(authControllerProvider.notifier).switchDemoRole(role);
         context.go('/dashboard');
       },
-    );
-  }
-
-  BoxDecoration _neumorphicDecoration(
-    bool isDark,
-    Color card, {
-    double radius = 16,
-    bool inset = false,
-  }) {
-    if (isDark) {
-      return BoxDecoration(
-        color: card,
-        borderRadius: BorderRadius.circular(radius),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.4),
-            offset: const Offset(4, 4),
-            blurRadius: 8,
-          ),
-          BoxShadow(
-            color: Colors.white.withValues(alpha: 0.05),
-            offset: const Offset(-4, -4),
-            blurRadius: 8,
-          ),
-        ],
-      );
-    }
-    return BoxDecoration(
-      color: card,
-      borderRadius: BorderRadius.circular(radius),
-      boxShadow: inset
-          ? [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
-                offset: const Offset(2, 2),
-                blurRadius: 4,
-                spreadRadius: -2,
-              ),
-              BoxShadow(
-                color: Colors.white.withValues(alpha: 0.9),
-                offset: const Offset(-2, -2),
-                blurRadius: 4,
-                spreadRadius: -2,
-              ),
-            ]
-          : [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.12),
-                offset: const Offset(6, 6),
-                blurRadius: 12,
-              ),
-              BoxShadow(
-                color: Colors.white.withValues(alpha: 0.9),
-                offset: const Offset(-6, -6),
-                blurRadius: 12,
-              ),
-            ],
-    );
-  }
-
-  Widget _neumorphicField({
-    required bool isDark,
-    required Color card,
-    required Widget child,
-  }) {
-    return Container(
-      decoration: _neumorphicDecoration(isDark, card, radius: 14, inset: true),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: child,
     );
   }
 }

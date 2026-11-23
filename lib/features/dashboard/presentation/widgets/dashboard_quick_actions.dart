@@ -19,9 +19,10 @@ class DashboardQuickActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? AppColors.surfaceDarkRaised : Colors.white;
-    final primaryTextColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final secondaryTextColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final cardBg = AppColors.cardBgColor(isDark);
+    final primaryTextColor = AppColors.textPrimaryColor(isDark);
+    final secondaryTextColor = AppColors.textSecondaryColor(isDark);
+    final borderDark = AppColors.borderDarkColor(isDark);
 
     final actions = _getActionsForRole(context, role);
 
@@ -31,7 +32,7 @@ class DashboardQuickActions extends StatelessWidget {
         color: cardBg,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+          color: borderDark,
         ),
         boxShadow: [
           BoxShadow(
@@ -103,7 +104,7 @@ class DashboardQuickActions extends StatelessWidget {
         title: 'Add Customer',
         subtitle: 'New profile',
         icon: Icons.person_add_alt_1_rounded,
-        color: const Color(0xFF0D9488), // Teal
+        color: AppColors.brandPrimary,
         onTap: () async {
           final res = await showDialog<bool>(
             context: context,
@@ -121,7 +122,7 @@ class DashboardQuickActions extends StatelessWidget {
           title: 'Create Credit Bill',
           subtitle: 'Issue debt',
           icon: Icons.post_add_rounded,
-          color: const Color(0xFF1E293B), // Navy
+          color: AppColors.brandPrimary,
           onTap: () async {
             final res = await showDialog<bool>(
               context: context,
@@ -140,7 +141,7 @@ class DashboardQuickActions extends StatelessWidget {
           title: 'Record Payment',
           subtitle: 'Collect funds',
           icon: Icons.payments_rounded,
-          color: const Color(0xFF10B981), // Emerald
+          color: AppColors.brandPrimary,
           onTap: () async {
             final res = await showDialog<bool>(
               context: context,
@@ -158,7 +159,7 @@ class DashboardQuickActions extends StatelessWidget {
         title: 'View Customers',
         subtitle: 'Directory',
         icon: Icons.groups_rounded,
-        color: const Color(0xFF3B82F6), // Blue
+        color: AppColors.brandPrimary,
         onTap: () => context.go('/customers'),
       ),
     );
@@ -170,7 +171,7 @@ class DashboardQuickActions extends StatelessWidget {
           title: 'Recovery Management',
           subtitle: 'Logs & calls',
           icon: Icons.phone_callback_rounded,
-          color: const Color(0xFFF59E0B), // Amber
+          color: AppColors.brandPrimary,
           onTap: () => context.go('/recovery'),
         ),
       );
@@ -183,7 +184,7 @@ class DashboardQuickActions extends StatelessWidget {
           title: 'Financial Reports',
           subtitle: 'Statements',
           icon: Icons.analytics_rounded,
-          color: const Color(0xFF8B5CF6), // Purple
+          color: AppColors.brandPrimary,
           onTap: () => context.go('/reports'),
         ),
       );
@@ -196,7 +197,7 @@ class DashboardQuickActions extends StatelessWidget {
           title: 'Debt Ledger',
           subtitle: 'Assigned bills',
           icon: Icons.receipt_long_rounded,
-          color: const Color(0xFF0F8D65),
+          color: AppColors.brandPrimary,
           onTap: () => context.go('/debts'),
         ),
       );
@@ -240,10 +241,13 @@ class _QuickActionCardState extends State<_QuickActionCard> {
 
   @override
   Widget build(BuildContext context) {
-    final cardBg = widget.isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC);
+    final isDark = widget.isDark;
+    final cardBg = AppColors.cardBgColor(isDark);
+    final borderSubtle = AppColors.borderSubtleColor(isDark);
+    final borderDark = AppColors.borderDarkColor(isDark);
     final borderColor = _isHovered
         ? widget.item.color.withValues(alpha: 0.5)
-        : (widget.isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0));
+        : (isDark ? borderDark : borderSubtle);
 
     return InkWell(
       onTap: widget.item.onTap,
@@ -290,7 +294,7 @@ class _QuickActionCardState extends State<_QuickActionCard> {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
-                color: widget.isDark ? Colors.white : const Color(0xFF0F172A),
+                color: AppColors.textPrimaryColor(isDark),
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -301,7 +305,7 @@ class _QuickActionCardState extends State<_QuickActionCard> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 10,
-                color: widget.isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                color: AppColors.textSecondaryColor(isDark),
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

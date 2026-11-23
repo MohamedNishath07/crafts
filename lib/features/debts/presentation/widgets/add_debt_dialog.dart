@@ -135,12 +135,10 @@ class _AddDebtDialogState extends ConsumerState<AddDebtDialog> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final surfaceColor = isDark
-        ? AppColors.surfaceDarkCard
-        : AppColors.surfaceCard;
-    final borderColor = isDark ? AppColors.borderDark : AppColors.borderSubtle;
-    final textPrimary = isDark ? AppColors.inkDark : AppColors.inkPrimary;
-    final textSecondary = isDark ? AppColors.inkMuted : AppColors.inkSecondary;
+    final surfaceColor = AppColors.surfaceDarkCardColor(isDark);
+    final borderColor = AppColors.borderSubtleColor(isDark);
+    final textPrimary = AppColors.inkPrimaryColor(isDark);
+    final textSecondary = AppColors.inkSecondaryColor(isDark);
 
     return AlertDialog(
       backgroundColor: surfaceColor,

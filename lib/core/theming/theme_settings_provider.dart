@@ -21,9 +21,8 @@ extension AppThemeModeExtension on AppThemeMode {
       case ThemeMode.light:
         return AppThemeMode.light;
       case ThemeMode.dark:
-        return AppThemeMode.dark;
       case ThemeMode.system:
-        return AppThemeMode.light;
+        return AppThemeMode.dark;
     }
   }
 

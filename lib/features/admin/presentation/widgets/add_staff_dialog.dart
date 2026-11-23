@@ -63,22 +63,28 @@ class _AddStaffDialogState extends ConsumerState<AddStaffDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surfaceRaised = AppColors.surfaceRaisedColor(isDark);
+    final borderSubtle = AppColors.borderSubtleColor(isDark);
+    final inkPrimary = AppColors.inkPrimaryColor(isDark);
+    final inkSecondary = AppColors.inkSecondaryColor(isDark);
+
     return AlertDialog(
-      backgroundColor: AppColors.surfaceRaised,
+      backgroundColor: surfaceRaised,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: AppColors.borderSubtle),
+        side: BorderSide(color: borderSubtle),
       ),
-      title: const Row(
+      title: Row(
         children: [
-          Icon(Icons.person_add_outlined, color: AppColors.brandPrimary),
-          SizedBox(width: 10),
+          const Icon(Icons.person_add_outlined, color: AppColors.brandPrimary),
+          const SizedBox(width: 10),
           Text(
             'Add Staff Member',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: AppColors.inkPrimary,
+              color: inkPrimary,
             ),
           ),
         ],
@@ -93,13 +99,14 @@ class _AddStaffDialogState extends ConsumerState<AddStaffDialog> {
             children: [
               TextFormField(
                 controller: _nameController,
+                style: TextStyle(color: inkPrimary),
                 decoration: InputDecoration(
                   labelText: 'Full Name',
                   hintText: 'e.g. Jane Smith',
                   prefixIcon: const Icon(Icons.badge_outlined, size: 20),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.borderSubtle),
+                    borderSide: BorderSide(color: borderSubtle),
                   ),
                 ),
                 validator: (val) {
@@ -113,13 +120,14 @@ class _AddStaffDialogState extends ConsumerState<AddStaffDialog> {
               TextFormField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
+                style: TextStyle(color: inkPrimary),
                 decoration: InputDecoration(
                   labelText: 'Email Address',
                   hintText: 'e.g. jane@company.com',
                   prefixIcon: const Icon(Icons.email_outlined, size: 20),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.borderSubtle),
+                    borderSide: BorderSide(color: borderSubtle),
                   ),
                 ),
                 validator: (val) {
@@ -135,18 +143,20 @@ class _AddStaffDialogState extends ConsumerState<AddStaffDialog> {
               const SizedBox(height: 16),
               DropdownButtonFormField<UserRole>(
                 initialValue: _selectedRole,
+                dropdownColor: surfaceRaised,
+                style: TextStyle(color: inkPrimary),
                 decoration: InputDecoration(
                   labelText: 'Assigned Role',
                   prefixIcon: const Icon(Icons.security_outlined, size: 20),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.borderSubtle),
+                    borderSide: BorderSide(color: borderSubtle),
                   ),
                 ),
                 items: UserRole.values.map((role) {
                   return DropdownMenuItem(
                     value: role,
-                    child: Text(role.displayName),
+                    child: Text(role.displayName, style: TextStyle(color: inkPrimary)),
                   );
                 }).toList(),
                 onChanged: (role) {
@@ -162,13 +172,13 @@ class _AddStaffDialogState extends ConsumerState<AddStaffDialog> {
       actions: [
         TextButton(
           onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
-          child: const Text('Cancel', style: TextStyle(color: AppColors.inkSecondary)),
+          child: Text('Cancel', style: TextStyle(color: inkSecondary)),
         ),
         ElevatedButton(
           onPressed: _isSubmitting ? null : _submit,
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.brandPrimary,
-            foregroundColor: AppColors.inkWhite,
+            foregroundColor: Colors.black,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
@@ -177,7 +187,7 @@ class _AddStaffDialogState extends ConsumerState<AddStaffDialog> {
               ? const SizedBox(
                   width: 16,
                   height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.inkWhite),
+                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
                 )
               : const Text('Add Member'),
         ),

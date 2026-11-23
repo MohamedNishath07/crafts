@@ -19,8 +19,9 @@ class RecoveryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final inkPrimary = AppColors.inkPrimaryColor(isDark);
     return Scaffold(
-      backgroundColor: isDark ? AppColors.surfaceDark : AppColors.surfaceBase,
+      backgroundColor: AppColors.surfaceBaseColor(isDark),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.fromLTRB(
@@ -37,7 +38,7 @@ class RecoveryScreen extends ConsumerWidget {
                 children: [
                   GlassmorphismContainer(
                     isDark: isDark,
-                    child: const Column(
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
@@ -45,15 +46,7 @@ class RecoveryScreen extends ConsumerWidget {
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.inkPrimary,
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'Track customer calls, field visits, and promised payment dates',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: AppColors.inkSecondary,
+                            color: inkPrimary,
                           ),
                         ),
                       ],

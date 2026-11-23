@@ -37,7 +37,9 @@ class _AdminSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? AppColors.surfaceDarkRaised : Colors.white;
+    final cardBg = AppColors.cardBgColor(isDark);
+    final borderDark = AppColors.borderDarkColor(isDark);
+    final surfaceRaised = AppColors.surfaceRaisedColor(isDark);
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -45,7 +47,7 @@ class _AdminSection extends StatelessWidget {
         color: cardBg,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+          color: borderDark,
         ),
       ),
       child: Column(
@@ -81,14 +83,14 @@ class _AdminSection extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : const Color(0xFF0F172A),
+                          color: AppColors.textPrimaryColor(isDark),
                         ),
                       ),
                       Text(
                         'System oversight & governance',
                         style: TextStyle(
                           fontSize: 11,
-                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                          color: AppColors.textSecondaryColor(isDark),
                         ),
                       ),
                     ],
@@ -115,8 +117,8 @@ class _AdminSection extends StatelessWidget {
                     icon: const Icon(Icons.security_rounded, size: 14),
                     label: const Text('Audit Logs', style: TextStyle(fontSize: 11)),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: isDark ? Colors.white70 : const Color(0xFF334155),
-                      side: BorderSide(color: isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1)),
+                      foregroundColor: AppColors.textPrimaryColor(isDark),
+                      side: BorderSide(color: borderDark),
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
@@ -130,7 +132,7 @@ class _AdminSection extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+              color: surfaceRaised,
               borderRadius: BorderRadius.circular(10),
             ),
             child: SingleChildScrollView(
@@ -138,13 +140,13 @@ class _AdminSection extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildMiniStat('Recovery Rate', '${metrics.recoveryRate.toStringAsFixed(1)}%', AppColors.accentSuccess, isDark),
+                  _buildMiniStat('Recovery Rate', '${metrics.recoveryRate.toStringAsFixed(1)}%', AppColors.brandPrimary, isDark),
                   const SizedBox(width: 24),
-                  _buildMiniStat('Active Staff', '${metrics.staffCount}', AppColors.accentInfo, isDark),
+                  _buildMiniStat('Active Staff', '${metrics.staffCount}', AppColors.brandPrimary, isDark),
                   const SizedBox(width: 24),
-                  _buildMiniStat('Overdue Ratio', '${metrics.totalCreditAmount > 0 ? ((metrics.overdueBalance / metrics.totalCreditAmount) * 100).toStringAsFixed(1) : 0}%', AppColors.accentDanger, isDark),
+                  _buildMiniStat('Overdue Ratio', '${metrics.totalCreditAmount > 0 ? ((metrics.overdueBalance / metrics.totalCreditAmount) * 100).toStringAsFixed(1) : 0}%', AppColors.brandPrimary, isDark),
                   const SizedBox(width: 24),
-                  _buildMiniStat('Audit Events', '${metrics.auditLogCount}', AppColors.brandSecondary, isDark),
+                  _buildMiniStat('Audit Events', '${metrics.auditLogCount}', AppColors.brandPrimary, isDark),
                 ],
               ),
             ),
@@ -164,7 +166,8 @@ class _RecoverySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? AppColors.surfaceDarkRaised : Colors.white;
+    final cardBg = AppColors.cardBgColor(isDark);
+    final borderDark = AppColors.borderDarkColor(isDark);
     final currencyFmt = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
 
     return Container(
@@ -173,7 +176,7 @@ class _RecoverySection extends StatelessWidget {
         color: cardBg,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+          color: borderDark,
         ),
       ),
       child: Column(
@@ -191,12 +194,12 @@ class _RecoverySection extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF59E0B).withValues(alpha: 0.12),
+                      color: AppColors.brandPrimary.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(
                       Icons.contact_phone_rounded,
-                      color: Color(0xFFF59E0B),
+                      color: AppColors.brandPrimary,
                       size: 20,
                     ),
                   ),
@@ -209,14 +212,14 @@ class _RecoverySection extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : const Color(0xFF0F172A),
+                          color: AppColors.textPrimaryColor(isDark),
                         ),
                       ),
                       Text(
                         'Assigned accounts & daily follow-up queue',
                         style: TextStyle(
                           fontSize: 11,
-                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                          color: AppColors.textSecondaryColor(isDark),
                         ),
                       ),
                     ],
@@ -228,7 +231,7 @@ class _RecoverySection extends StatelessWidget {
                 icon: const Icon(Icons.arrow_forward_rounded, size: 14),
                 label: const Text('Open Recovery Log', style: TextStyle(fontSize: 11)),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF59E0B),
+                  backgroundColor: AppColors.brandPrimary,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -248,7 +251,7 @@ class _RecoverySection extends StatelessWidget {
                       'Assigned Portfolio',
                       currencyFmt.format(metrics.assignedOutstandingBalance),
                       'Across ${metrics.assignedCustomersCount} clients',
-                      const Color(0xFF3B82F6),
+                      AppColors.brandPrimary,
                       isDark,
                     ),
                     const SizedBox(height: 8),
@@ -256,7 +259,7 @@ class _RecoverySection extends StatelessWidget {
                       'Follow-ups Due Today',
                       '${metrics.todayFollowUpsCount} accounts',
                       'Promised: ${currencyFmt.format(metrics.todayPromisedAmount)}',
-                      const Color(0xFFF59E0B),
+                      AppColors.brandPrimary,
                       isDark,
                     ),
                     const SizedBox(height: 8),
@@ -277,7 +280,7 @@ class _RecoverySection extends StatelessWidget {
                       'Assigned Portfolio',
                       currencyFmt.format(metrics.assignedOutstandingBalance),
                       'Across ${metrics.assignedCustomersCount} clients',
-                      const Color(0xFF3B82F6),
+                      AppColors.brandPrimary,
                       isDark,
                     ),
                   ),
@@ -287,7 +290,7 @@ class _RecoverySection extends StatelessWidget {
                       'Follow-ups Due Today',
                       '${metrics.todayFollowUpsCount} accounts',
                       'Promised: ${currencyFmt.format(metrics.todayPromisedAmount)}',
-                      const Color(0xFFF59E0B),
+                      AppColors.brandPrimary,
                       isDark,
                     ),
                   ),
@@ -309,60 +312,60 @@ class _RecoverySection extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildRecoveryHighlightCard(
-    String title,
-    String value,
-    String subtitle,
-    Color color,
-    bool isDark,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: isDark ? 0.12 : 0.06),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withValues(alpha: 0.25)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
+Widget _buildRecoveryHighlightCard(
+  String title,
+  String value,
+  String subtitle,
+  Color color,
+  bool isDark,
+) {
+  return Container(
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: color.withValues(alpha: isDark ? 0.12 : 0.06),
+      borderRadius: BorderRadius.circular(10),
+      border: Border.all(color: color.withValues(alpha: 0.25)),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textSecondaryColor(isDark),
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 4),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            value,
             style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 4),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              value,
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: color,
             ),
           ),
-          const SizedBox(height: 2),
-          Text(
-            subtitle,
-            style: TextStyle(
-              fontSize: 9,
-              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 2),
+        Text(
+          subtitle,
+          style: TextStyle(
+            fontSize: 9,
+            color: AppColors.textSecondaryColor(isDark),
           ),
-        ],
-      ),
-    );
-  }
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
+    ),
+  );
 }
 
 /// 3. Finance Officer Specialized Section
@@ -374,7 +377,9 @@ class _FinanceSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? AppColors.surfaceDarkRaised : Colors.white;
+    final cardBg = AppColors.cardBgColor(isDark);
+    final borderDark = AppColors.borderDarkColor(isDark);
+    final surfaceRaised = AppColors.surfaceRaisedColor(isDark);
     final currencyFmt = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
 
     return Container(
@@ -383,7 +388,7 @@ class _FinanceSection extends StatelessWidget {
         color: cardBg,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+          color: borderDark,
         ),
       ),
       child: Column(
@@ -401,12 +406,12 @@ class _FinanceSection extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                      color: AppColors.brandPrimary.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(
                       Icons.account_balance_rounded,
-                      color: Color(0xFF10B981),
+                      color: AppColors.brandPrimary,
                       size: 20,
                     ),
                   ),
@@ -419,14 +424,14 @@ class _FinanceSection extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : const Color(0xFF0F172A),
+                          color: AppColors.textPrimaryColor(isDark),
                         ),
                       ),
                       Text(
                         'Cash collections, reconciliation & summaries',
                         style: TextStyle(
                           fontSize: 11,
-                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                          color: AppColors.textSecondaryColor(isDark),
                         ),
                       ),
                     ],
@@ -451,7 +456,7 @@ class _FinanceSection extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+              color: surfaceRaised,
               borderRadius: BorderRadius.circular(10),
             ),
             child: SingleChildScrollView(
@@ -459,11 +464,11 @@ class _FinanceSection extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildMiniStat('Month-to-Date', currencyFmt.format(metrics.monthToDateCollections), const Color(0xFF10B981), isDark),
+                  _buildMiniStat('Month-to-Date', currencyFmt.format(metrics.monthToDateCollections), AppColors.brandPrimary, isDark),
                   const SizedBox(width: 24),
-                  _buildMiniStat('Total Receipts', '${metrics.totalPaymentsCount}', const Color(0xFF3B82F6), isDark),
+                  _buildMiniStat('Total Receipts', '${metrics.totalPaymentsCount}', AppColors.brandPrimary, isDark),
                   const SizedBox(width: 24),
-                  _buildMiniStat('Active Bills', '${metrics.activeBillsCount}', const Color(0xFFF59E0B), isDark),
+                  _buildMiniStat('Active Bills', '${metrics.activeBillsCount}', AppColors.brandPrimary, isDark),
                   const SizedBox(width: 24),
                   _buildMiniStat('Fully Settled', '${metrics.settledBillsCount}', AppColors.brandPrimary, isDark),
                 ],
@@ -484,7 +489,7 @@ Widget _buildMiniStat(String label, String value, Color color, bool isDark) {
         style: TextStyle(
           fontSize: 10,
           fontWeight: FontWeight.w500,
-          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+          color: AppColors.textSecondaryColor(isDark),
         ),
       ),
       const SizedBox(height: 3),

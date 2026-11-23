@@ -189,9 +189,9 @@ class ReportsScreen extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        _buildReportRow('Total Billed', '\$${report.amount.toStringAsFixed(2)}'),
-                        _buildReportRow('Total Collected', '\$${report.amount.toStringAsFixed(2)}'),
-                        _buildReportRow('Total Outstanding', '\$${report.amount.toStringAsFixed(2)}'),
+                        _buildReportRow(context, 'Total Billed', '\$${report.amount.toStringAsFixed(2)}'),
+                        _buildReportRow(context, 'Total Collected', '\$${report.amount.toStringAsFixed(2)}'),
+                        _buildReportRow(context, 'Total Outstanding', '\$${report.amount.toStringAsFixed(2)}'),
                         const Divider(),
                       ],
                     ),
@@ -202,7 +202,8 @@ class ReportsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildReportRow(String label, String value) {
+  Widget _buildReportRow(BuildContext context, String label, String value) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
@@ -210,14 +211,14 @@ class ReportsScreen extends ConsumerWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(fontSize: 14, color: AppColors.inkSecondary),
+            style: TextStyle(fontSize: 14, color: AppColors.inkSecondaryColor(isDark)),
           ),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: AppColors.inkPrimary,
+              color: AppColors.inkPrimaryColor(isDark),
             ),
           ),
         ],
