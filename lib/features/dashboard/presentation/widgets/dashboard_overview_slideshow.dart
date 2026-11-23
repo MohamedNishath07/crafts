@@ -6,11 +6,11 @@ import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/dashboard_models.dart';
 
-/// A full-width, auto-advancing slideshow of the six overview metric cards.
+/// A full-width, auto-advancing carousel of the six overview metric cards.
 ///
-/// Each slide fills the section width (matching the Recent Activities card)
-/// at a tall height and advances every [_slideInterval] with a smooth
-/// fade + slide + scale transition. Hovering (desktop) pauses the rotation.
+/// Built on a [PageController] + [PageView] so it supports native swipe /
+/// drag gestures, programmatic navigation (arrows, dots) and auto-play.
+/// Auto-play advances every [_autoPlayInterval] and pauses while hovered.
 class DashboardOverviewSlideshow extends StatefulWidget {
   final DashboardOverviewMetrics metrics;
   final bool isLoading;
@@ -28,13 +28,64 @@ class DashboardOverviewSlideshow extends StatefulWidget {
 
 class _DashboardOverviewSlideshowState
     extends State<DashboardOverviewSlideshow> {
-  static const Duration _slideInterval = Duration(seconds: 4);
+  static const Duration _autoPlayInterval = Duration(seconds: 4);
+  static const Duration _transition = Duration(milliseconds: 500);
   static const double _cardHeight = 340;
 
-  Timer? _timer;
-  int _index = 0;
-  int _direction = 1; // 1 = forward, -1 = backward
-  bool _hovering = false;
+  late final PageController _pageController;
+  Timer? _autoPlayTimer;
+  int _currentPage = 0;
+  bool _isHovered = false;
+
+  List<_SlideMetric> get _slides => _buildSlides();
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+    _pageController.addListener(_syncCurrentPage);
+    _startAutoPlay();
+  }
+
+  @override
+  void dispose() {
+    _autoPlayTimer?.cancel();
+    _pageController.removeListener(_syncCurrentPage);
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _syncCurrentPage() {
+    final page = _pageController.hasClients ? _pageController.page?.round() : null;
+    if (page != null && page != _currentPage && mounted) {
+      setState(() => _currentPage = page);
+    }
+  }
+
+  void _startAutoPlay() {
+    _autoPlayTimer?.cancel();
+    _autoPlayTimer = Timer.periodic(_autoPlayInterval, (_) {
+      if (_isHovered || !_pageController.hasClients || _slides.length < 2) {
+        return;
+      }
+      _animateTo((_currentPage + 1) % _slides.length);
+    });
+  }
+
+  void _animateTo(int index) {
+    if (!_pageController.hasClients) return;
+    _pageController.animateToPage(
+      index,
+      duration: _transition,
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  void _step(int delta) {
+    final total = _slides.length;
+    if (total < 2) return;
+    _animateTo((_currentPage + delta + total) % total);
+  }
 
   List<_SlideMetric> _buildSlides() {
     final m = widget.metrics;
@@ -87,42 +138,14 @@ class _DashboardOverviewSlideshowState
   }
 
   @override
-  void initState() {
-    super.initState();
-    _restartTimer();
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  void _restartTimer() {
-    _timer?.cancel();
-    _timer = Timer.periodic(_slideInterval, (_) {
-      if (_hovering || !mounted) return;
-      _goTo((_index + 1) % _buildSlides().length, 1);
-    });
-  }
-
-  void _goTo(int next, int direction) {
-    if (!mounted || next == _index) return;
-    setState(() {
-      _direction = direction;
-      _index = next;
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final slides = _buildSlides();
-    final active = slides[_index];
+    final slides = _slides;
+    final showArrows = slides.length > 1;
 
     return MouseRegion(
-      onEnter: (_) => setState(() => _hovering = true),
-      onExit: (_) => setState(() => _hovering = false),
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
       child: SizedBox(
         width: double.infinity,
         child: Column(
@@ -133,82 +156,57 @@ class _DashboardOverviewSlideshowState
               height: _cardHeight,
               child: Stack(
                 children: [
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 600),
-                    switchInCurve: Curves.easeOutCubic,
-                    switchOutCurve: Curves.easeInCubic,
-                    transitionBuilder: (child, animation) {
-                      final curved = CurvedAnimation(
-                        parent: animation,
-                        curve: Curves.easeOutCubic,
-                      );
-                      final offset = Tween<Offset>(
-                        begin: Offset(0.12 * _direction, 0),
-                        end: Offset.zero,
-                      ).animate(curved);
-                      return ClipRect(
-                        child: FadeTransition(
-                          opacity: curved,
-                          child: SlideTransition(
-                            position: offset,
-                            child: ScaleTransition(
-                              scale: Tween<double>(begin: 0.96, end: 1.0)
-                                  .animate(curved),
-                              child: child,
-                            ),
-                          ),
+                  PageView(
+                    controller: _pageController,
+                    physics: const PageScrollPhysics(),
+                    children: [
+                      for (final slide in slides)
+                        _MetricSlideCard(
+                          key: ValueKey(slide.title),
+                          data: slide,
+                          isDark: isDark,
+                          isLoading: widget.isLoading,
                         ),
-                      );
-                    },
-                    child: SizedBox(
-                      key: ValueKey<int>(_index),
-                      width: double.infinity,
-                      height: double.infinity,
-                      child: _MetricSlideCard(
-                        data: active,
-                        isDark: isDark,
-                        isLoading: widget.isLoading,
-                      ),
-                    ),
+                    ],
                   ),
-                  Positioned(
-                    left: 12,
-                    top: 0,
-                    bottom: 0,
-                    child: Center(
-                      child: _NavArrow(
-                        icon: Icons.chevron_left_rounded,
-                        isDark: isDark,
-                        onTap: () => _goTo(
-                          (_index - 1 + slides.length) % slides.length,
-                          -1,
+                  if (showArrows) ...[
+                    Positioned(
+                      left: 12,
+                      top: 0,
+                      bottom: 0,
+                      child: Center(
+                        child: _NavArrow(
+                          icon: Icons.chevron_left_rounded,
+                          isDark: isDark,
+                          onTap: () => _step(-1),
                         ),
                       ),
                     ),
-                  ),
-                  Positioned(
-                    right: 12,
-                    top: 0,
-                    bottom: 0,
-                    child: Center(
-                      child: _NavArrow(
-                        icon: Icons.chevron_right_rounded,
-                        isDark: isDark,
-                        onTap: () =>
-                            _goTo((_index + 1) % slides.length, 1),
+                    Positioned(
+                      right: 12,
+                      top: 0,
+                      bottom: 0,
+                      child: Center(
+                        child: _NavArrow(
+                          icon: Icons.chevron_right_rounded,
+                          isDark: isDark,
+                          onTap: () => _step(1),
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
-            const SizedBox(height: 14),
-            _DotsIndicator(
-              count: slides.length,
-              activeIndex: _index,
-              isDark: isDark,
-              onTap: (i) => _goTo(i, i >= _index ? 1 : -1),
-            ),
+            if (showArrows) ...[
+              const SizedBox(height: 14),
+              _DotsIndicator(
+                count: slides.length,
+                activeIndex: _currentPage,
+                isDark: isDark,
+                onTap: _animateTo,
+              ),
+            ],
           ],
         ),
       ),
@@ -216,12 +214,31 @@ class _DashboardOverviewSlideshowState
   }
 }
 
+/// Immutable view-model for a single metric slide.
+class _SlideMetric {
+  final String title;
+  final String value;
+  final String subtitle;
+  final IconData icon;
+  final String badge;
+
+  const _SlideMetric({
+    required this.title,
+    required this.value,
+    required this.subtitle,
+    required this.icon,
+    required this.badge,
+  });
+}
+
+/// Reusable metric card rendered inside each [PageView] page.
 class _MetricSlideCard extends StatelessWidget {
   final _SlideMetric data;
   final bool isDark;
   final bool isLoading;
 
   const _MetricSlideCard({
+    super.key,
     required this.data,
     required this.isDark,
     required this.isLoading,
@@ -235,94 +252,99 @@ class _MetricSlideCard extends StatelessWidget {
     final border = AppColors.borderDarkColor(isDark);
     final accent = AppColors.brandPrimary;
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: accent.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
+    return Semantics(
+      label: '${data.title}: ${data.value}. ${data.subtitle}',
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: cardBg,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: border),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
-            child: Icon(data.icon, color: accent, size: 30),
-          ),
-          const SizedBox(height: 18),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Opacity(
-              opacity: isLoading ? 0.6 : 1.0,
-              child: Text(
-                data.value,
-                maxLines: 1,
-                style: TextStyle(
-                  fontSize: 40,
-                  fontWeight: FontWeight.w800,
-                  color: primaryTextColor,
-                  letterSpacing: -1.0,
-                  fontFeatures: const [FontFeature.tabularFigures()],
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: accent.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(data.icon, color: accent, size: 30),
+            ),
+            const SizedBox(height: 18),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Opacity(
+                opacity: isLoading ? 0.6 : 1.0,
+                child: Text(
+                  data.value,
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontSize: 40,
+                    fontWeight: FontWeight.w800,
+                    color: primaryTextColor,
+                    letterSpacing: -1.0,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            data.title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: secondaryTextColor,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            data.subtitle,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 13,
-              color: secondaryTextColor,
-            ),
-          ),
-          const SizedBox(height: 14),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: accent.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              data.badge,
+            const SizedBox(height: 4),
+            Text(
+              data.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: isDark ? accent : AppColors.brandPrimaryDark,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: secondaryTextColor,
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Text(
+              data.subtitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13,
+                color: secondaryTextColor,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: accent.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                data.badge,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? accent : AppColors.brandPrimaryDark,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
+/// Circular previous/next control with hover feedback.
 class _NavArrow extends StatefulWidget {
   final IconData icon;
   final bool isDark;
@@ -380,6 +402,7 @@ class _NavArrowState extends State<_NavArrow> {
   }
 }
 
+/// Page position indicator; tap a dot to jump to that slide.
 class _DotsIndicator extends StatelessWidget {
   final int count;
   final int activeIndex;
@@ -417,20 +440,4 @@ class _DotsIndicator extends StatelessWidget {
       }),
     );
   }
-}
-
-class _SlideMetric {
-  final String title;
-  final String value;
-  final String subtitle;
-  final IconData icon;
-  final String badge;
-
-  const _SlideMetric({
-    required this.title,
-    required this.value,
-    required this.subtitle,
-    required this.icon,
-    required this.badge,
-  });
 }
