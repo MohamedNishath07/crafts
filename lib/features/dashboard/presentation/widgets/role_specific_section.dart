@@ -168,143 +168,88 @@ class _RecoverySection extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardBg = AppColors.cardBgColor(isDark);
     final borderDark = AppColors.borderDarkColor(isDark);
-    final currencyFmt = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
+    final stats = _recoveryStats();
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: cardBg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: borderDark,
-        ),
+        border: Border.all(color: borderDark),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 12,
-            runSpacing: 10,
+          Row(
             children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppColors.brandPrimary.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(
-                      Icons.contact_phone_rounded,
-                      color: AppColors.brandPrimary,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Recovery Officer Workspace',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimaryColor(isDark),
-                        ),
-                      ),
-                      Text(
-                        'Assigned accounts & daily follow-up queue',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: AppColors.textSecondaryColor(isDark),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.brandPrimary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.contact_phone_rounded,
+                  color: AppColors.brandPrimary,
+                  size: 20,
+                ),
               ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Recovery Officer Workspace',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimaryColor(isDark),
+                      ),
+                    ),
+                    Text(
+                      'Assigned accounts & daily follow-up queue',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textSecondaryColor(isDark),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
               ElevatedButton.icon(
                 onPressed: () => context.go('/recovery'),
                 icon: const Icon(Icons.arrow_forward_rounded, size: 14),
-                label: const Text('Open Recovery Log', style: TextStyle(fontSize: 11)),
+                label: const Text('Open Recovery Log',
+                    style: TextStyle(fontSize: 11)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.brandPrimary,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 14),
-          // Recovery Target Tracker Grid (responsive)
+          const SizedBox(height: 16),
           LayoutBuilder(
             builder: (context, constraints) {
-              final isSmall = constraints.maxWidth < 450;
-              if (isSmall) {
-                return Column(
-                  children: [
-                    _buildRecoveryHighlightCard(
-                      'Assigned Portfolio',
-                      currencyFmt.format(metrics.assignedOutstandingBalance),
-                      'Across ${metrics.assignedCustomersCount} clients',
-                      AppColors.brandPrimary,
-                      isDark,
-                    ),
-                    const SizedBox(height: 8),
-                    _buildRecoveryHighlightCard(
-                      'Follow-ups Due Today',
-                      '${metrics.todayFollowUpsCount} accounts',
-                      'Promised: ${currencyFmt.format(metrics.todayPromisedAmount)}',
-                      AppColors.brandPrimary,
-                      isDark,
-                    ),
-                    const SizedBox(height: 8),
-                    _buildRecoveryHighlightCard(
-                      "Today's Contacts",
-                      '${metrics.todayInteractionsCount} logged',
-                      'Calls & visits made',
-                      AppColors.brandPrimary,
-                      isDark,
-                    ),
-                  ],
-                );
-              }
-              return Row(
+              final columns = constraints.maxWidth >= 760
+                  ? 3
+                  : (constraints.maxWidth >= 480 ? 2 : 1);
+              return GridView.count(
+                crossAxisCount: columns,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: columns == 1 ? 3.6 : 2.6,
                 children: [
-                  Expanded(
-                    child: _buildRecoveryHighlightCard(
-                      'Assigned Portfolio',
-                      currencyFmt.format(metrics.assignedOutstandingBalance),
-                      'Across ${metrics.assignedCustomersCount} clients',
-                      AppColors.brandPrimary,
-                      isDark,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _buildRecoveryHighlightCard(
-                      'Follow-ups Due Today',
-                      '${metrics.todayFollowUpsCount} accounts',
-                      'Promised: ${currencyFmt.format(metrics.todayPromisedAmount)}',
-                      AppColors.brandPrimary,
-                      isDark,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _buildRecoveryHighlightCard(
-                      "Today's Contacts",
-                      '${metrics.todayInteractionsCount} logged',
-                      'Calls & visits made',
-                      AppColors.brandPrimary,
-                      isDark,
-                    ),
-                  ),
+                  for (final stat in stats) _RecoveryStatCard(stat: stat),
                 ],
               );
             },
@@ -313,60 +258,125 @@ class _RecoverySection extends StatelessWidget {
       ),
     );
   }
+
+  List<_RecoveryStat> _recoveryStats() {
+    final currency = NumberFormat.currency(symbol: r'$', decimalDigits: 2);
+    return [
+      _RecoveryStat(
+        label: 'Assigned Portfolio',
+        value: currency.format(metrics.assignedOutstandingBalance),
+        subtitle: 'Across ${metrics.assignedCustomersCount} clients',
+        icon: Icons.account_balance_wallet_rounded,
+      ),
+      _RecoveryStat(
+        label: 'Follow-ups Due Today',
+        value: '${metrics.todayFollowUpsCount} accounts',
+        subtitle: 'Promised: ${currency.format(metrics.todayPromisedAmount)}',
+        icon: Icons.event_available_rounded,
+      ),
+      _RecoveryStat(
+        label: "Today's Contacts",
+        value: '${metrics.todayInteractionsCount} logged',
+        subtitle: 'Calls & visits made',
+        icon: Icons.phone_in_talk_rounded,
+      ),
+    ];
+  }
 }
 
-Widget _buildRecoveryHighlightCard(
-  String title,
-  String value,
-  String subtitle,
-  Color color,
-  bool isDark,
-) {
-  return Container(
-    padding: const EdgeInsets.all(12),
-    decoration: BoxDecoration(
-      color: color.withValues(alpha: isDark ? 0.12 : 0.06),
-      borderRadius: BorderRadius.circular(10),
-      border: Border.all(color: color.withValues(alpha: 0.25)),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textSecondaryColor(isDark),
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+/// Immutable view-model for a single recovery highlight card.
+class _RecoveryStat {
+  final String label;
+  final String value;
+  final String subtitle;
+  final IconData icon;
+
+  const _RecoveryStat({
+    required this.label,
+    required this.value,
+    required this.subtitle,
+    required this.icon,
+  });
+}
+
+/// Reusable, theme-aware stat card with an icon and accessible semantics.
+class _RecoveryStatCard extends StatelessWidget {
+  final _RecoveryStat stat;
+
+  const _RecoveryStatCard({required this.stat});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final accent = AppColors.brandPrimary;
+
+    return Semantics(
+      label: '${stat.label}: ${stat.value}. ${stat.subtitle}',
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: accent.withValues(alpha: isDark ? 0.12 : 0.06),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: accent.withValues(alpha: 0.25)),
         ),
-        const SizedBox(height: 4),
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(
-            value,
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-              color: color,
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: accent.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(stat.icon, color: accent, size: 18),
             ),
-          ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    stat.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondaryColor(isDark),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      stat.value,
+                      maxLines: 1,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: accent,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    stat.subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 9,
+                      color: AppColors.textSecondaryColor(isDark),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 2),
-        Text(
-          subtitle,
-          style: TextStyle(
-            fontSize: 9,
-            color: AppColors.textSecondaryColor(isDark),
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ],
-    ),
-  );
+      ),
+    );
+  }
 }
 
 /// 3. Finance Officer Specialized Section
