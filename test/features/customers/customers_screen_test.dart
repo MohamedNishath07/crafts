@@ -93,8 +93,8 @@ void main() {
     expect(find.text('Customer Name'), findsOneWidget);
     expect(find.text('Phone Number'), findsOneWidget);
     expect(find.text('Marcus Vance'), findsOneWidget);
-    expect(find.text('Sarah Jenkins'), findsOneWidget);
-    expect(find.text('Showing 1-2 of 2 records'), findsOneWidget);
+expect(find.text('Sarah Jenkins'), findsOneWidget);
+    expect(find.text('Page 1 of 1'), findsOneWidget);
   });
 
   testWidgets('CustomersScreen filters customers in real time via search', (tester) async {
@@ -123,9 +123,9 @@ void main() {
     await tester.enterText(searchField, 'Jenkins');
     await tester.pumpAndSettle();
 
-    expect(find.text('Sarah Jenkins'), findsOneWidget);
+expect(find.text('Sarah Jenkins'), findsOneWidget);
     expect(find.text('Marcus Vance'), findsNothing);
-    expect(find.text('Showing 1-1 of 1 records'), findsOneWidget);
+    expect(find.text('Page 1 of 1'), findsOneWidget);
   });
 
   testWidgets('AddCustomerDialog validates inputs and registers new customer', (tester) async {

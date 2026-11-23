@@ -8,9 +8,13 @@ final interactionControllerProvider = AsyncNotifierProvider<InteractionControlle
   return InteractionController();
 });
 
-final interactionFilterProvider = NotifierProvider<InteractionFilterNotifier, String>(InteractionFilterNotifier.new);
+/// Filter categories for the recovery log. Values: 'all', 'follow_ups',
+/// 'promises', 'escalated'.
+final interactionFilterProvider =
+    NotifierProvider<InteractionFilterNotifier, String>(
+        InteractionFilterNotifier.new);
 
-/// Provider returning interactions filtered by the current filter selection
+/// Provider returning interactions filtered by the current filter selection.
 final filteredInteractionsProvider = Provider<List<Interaction>>((ref) {
   final interactionsAsync = ref.watch(interactionControllerProvider);
   final filter = ref.watch(interactionFilterProvider);
@@ -19,8 +23,16 @@ final filteredInteractionsProvider = Provider<List<Interaction>>((ref) {
   if (filter == 'all') return interactions;
 
   return interactions.where((i) {
-    if (filter == 'follow_up_today') return i.isFollowUpScheduled;
-    return true;
+    switch (filter) {
+      case 'follow_ups':
+        return i.isFollowUpScheduled;
+      case 'promises':
+        return (i.promisedAmountCents ?? 0) > 0;
+      case 'escalated':
+        return i.outcome == InteractionOutcome.escalated;
+      default:
+        return true;
+    }
   }).toList();
 });
 
