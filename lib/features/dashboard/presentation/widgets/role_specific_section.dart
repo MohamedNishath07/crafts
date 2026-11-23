@@ -171,6 +171,7 @@ class _RecoverySection extends StatelessWidget {
     final currencyFmt = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
 
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: cardBg,
