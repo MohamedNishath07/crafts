@@ -38,80 +38,90 @@ class AppShell extends ConsumerWidget {
   }
 
   List<_NavItem> _buildNavItems(UserRole role) {
-    final list = <_NavItem>[
-      const _NavItem(
-        route: '/dashboard',
-        label: 'Dashboard',
-        icon: Icons.dashboard_outlined,
-      ),
-      const _NavItem(
-        route: '/customers',
-        label: 'Customers',
-        icon: Icons.people_outline,
-      ),
-      const _NavItem(
-        route: '/debts',
-        label: 'Debt Ledger',
-        icon: Icons.receipt_long_outlined,
-      ),
-    ];
-
-    if (role == UserRole.financeOfficer || role == UserRole.admin) {
-      list.add(
-        const _NavItem(
-          route: '/payments',
-          label: 'Payments',
-          icon: Icons.payments_outlined,
-        ),
-      );
-    }
-
-    if (role == UserRole.recoveryOfficer || role == UserRole.admin) {
-      list.add(
-        const _NavItem(
-          route: '/recovery',
-          label: 'Recovery Log',
-          icon: Icons.phone_callback_outlined,
-        ),
-      );
-    }
-
-    if (role == UserRole.financeOfficer || role == UserRole.admin) {
-      list.add(
-        const _NavItem(
-          route: '/reports',
-          label: 'Reports',
-          icon: Icons.analytics_outlined,
-        ),
-      );
-    }
-
-    if (role == UserRole.admin) {
-      list.add(
-        const _NavItem(
-          route: '/admin/users',
-          label: 'User Staff',
-          icon: Icons.manage_accounts_outlined,
-        ),
-      );
-      list.add(
-        const _NavItem(
-          route: '/admin/audit-logs',
-          label: 'Audit Logs',
-          icon: Icons.security_outlined,
-        ),
-      );
-    }
-
-    list.add(
-      const _NavItem(
-        route: '/profile',
-        label: 'Settings',
-        icon: Icons.settings_outlined,
-      ),
+    // Ordered by workflow, not by feature name:
+    // Home -> daily driver -> entities (who / what they owe) -> money in ->
+    // actions -> insights -> administration -> settings (always last).
+    const dashboard = _NavItem(
+      route: '/dashboard',
+      label: 'Dashboard',
+      icon: Icons.dashboard_outlined,
+    );
+    const recovery = _NavItem(
+      route: '/recovery',
+      label: 'Recovery Log',
+      icon: Icons.phone_callback_outlined,
+    );
+    const customers = _NavItem(
+      route: '/customers',
+      label: 'Customers',
+      icon: Icons.people_outline,
+    );
+    const debts = _NavItem(
+      route: '/debts',
+      label: 'Debt Ledger',
+      icon: Icons.receipt_long_outlined,
+    );
+    const payments = _NavItem(
+      route: '/payments',
+      label: 'Payments',
+      icon: Icons.payments_outlined,
+    );
+    const reports = _NavItem(
+      route: '/reports',
+      label: 'Reports',
+      icon: Icons.analytics_outlined,
+    );
+    const users = _NavItem(
+      route: '/admin/users',
+      label: 'User Staff',
+      icon: Icons.manage_accounts_outlined,
+    );
+    const auditLogs = _NavItem(
+      route: '/admin/audit-logs',
+      label: 'Audit Logs',
+      icon: Icons.security_outlined,
+    );
+    const settings = _NavItem(
+      route: '/profile',
+      label: 'Settings',
+      icon: Icons.settings_outlined,
     );
 
-    return list;
+    final canSeePayments =
+        role == UserRole.financeOfficer || role == UserRole.admin;
+    final canSeeRecovery =
+        role == UserRole.recoveryOfficer || role == UserRole.admin;
+    final canSeeReports =
+        role == UserRole.financeOfficer || role == UserRole.admin;
+    final isAdmin = role == UserRole.admin;
+
+    final items = <_NavItem>[dashboard];
+
+    // A recovery officer lives in the recovery log day-to-day, so it sits
+    // directly after Home rather than behind the reference data.
+    if (role == UserRole.recoveryOfficer) {
+      items.add(recovery);
+    }
+
+    items.add(customers);
+    items.add(debts);
+
+    if (canSeePayments) items.add(payments);
+    // Admins see Recovery Log after the money screens; officers already have it
+    // at position 2 above.
+    if (canSeeRecovery && role != UserRole.recoveryOfficer) {
+      items.add(recovery);
+    }
+    if (canSeeReports) items.add(reports);
+
+    if (isAdmin) {
+      items.add(users);
+      items.add(auditLogs);
+    }
+
+    items.add(settings);
+
+    return items;
   }
 }
 
