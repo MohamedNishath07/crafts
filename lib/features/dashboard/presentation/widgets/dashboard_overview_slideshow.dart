@@ -131,43 +131,75 @@ class _DashboardOverviewSlideshowState
           children: [
             SizedBox(
               height: _cardHeight,
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 600),
-                switchInCurve: Curves.easeOutCubic,
-                switchOutCurve: Curves.easeInCubic,
-                transitionBuilder: (child, animation) {
-                  final curved = CurvedAnimation(
-                    parent: animation,
-                    curve: Curves.easeOutCubic,
-                  );
-                  final offset = Tween<Offset>(
-                    begin: Offset(0.12 * _direction, 0),
-                    end: Offset.zero,
-                  ).animate(curved);
-                  return ClipRect(
-                    child: FadeTransition(
-                      opacity: curved,
-                      child: SlideTransition(
-                        position: offset,
-                        child: ScaleTransition(
-                          scale: Tween<double>(begin: 0.96, end: 1.0)
-                              .animate(curved),
-                          child: child,
+              child: Stack(
+                children: [
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 600),
+                    switchInCurve: Curves.easeOutCubic,
+                    switchOutCurve: Curves.easeInCubic,
+                    transitionBuilder: (child, animation) {
+                      final curved = CurvedAnimation(
+                        parent: animation,
+                        curve: Curves.easeOutCubic,
+                      );
+                      final offset = Tween<Offset>(
+                        begin: Offset(0.12 * _direction, 0),
+                        end: Offset.zero,
+                      ).animate(curved);
+                      return ClipRect(
+                        child: FadeTransition(
+                          opacity: curved,
+                          child: SlideTransition(
+                            position: offset,
+                            child: ScaleTransition(
+                              scale: Tween<double>(begin: 0.96, end: 1.0)
+                                  .animate(curved),
+                              child: child,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                    child: SizedBox(
+                      key: ValueKey<int>(_index),
+                      width: double.infinity,
+                      height: double.infinity,
+                      child: _MetricSlideCard(
+                        data: active,
+                        isDark: isDark,
+                        isLoading: widget.isLoading,
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 12,
+                    top: 0,
+                    bottom: 0,
+                    child: Center(
+                      child: _NavArrow(
+                        icon: Icons.chevron_left_rounded,
+                        isDark: isDark,
+                        onTap: () => _goTo(
+                          (_index - 1 + slides.length) % slides.length,
+                          -1,
                         ),
                       ),
                     ),
-                  );
-                },
-                child: SizedBox(
-                  key: ValueKey<int>(_index),
-                  width: double.infinity,
-                  height: double.infinity,
-                  child: _MetricSlideCard(
-                    data: active,
-                    isDark: isDark,
-                    isLoading: widget.isLoading,
                   ),
-                ),
+                  Positioned(
+                    right: 12,
+                    top: 0,
+                    bottom: 0,
+                    child: Center(
+                      child: _NavArrow(
+                        icon: Icons.chevron_right_rounded,
+                        isDark: isDark,
+                        onTap: () =>
+                            _goTo((_index + 1) % slides.length, 1),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 14),
@@ -286,6 +318,63 @@ class _MetricSlideCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _NavArrow extends StatefulWidget {
+  final IconData icon;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const _NavArrow({
+    required this.icon,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  @override
+  State<_NavArrow> createState() => _NavArrowState();
+}
+
+class _NavArrowState extends State<_NavArrow> {
+  bool _hovering = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = AppColors.brandPrimary;
+    final bg = _hovering
+        ? accent.withValues(alpha: widget.isDark ? 0.28 : 0.16)
+        : (widget.isDark ? Colors.black45 : Colors.white);
+    final iconColor = _hovering
+        ? (widget.isDark ? Colors.white : Colors.black)
+        : (widget.isDark ? Colors.white70 : Colors.black54);
+    final borderColor = widget.isDark ? Colors.white24 : Colors.black12;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovering = true),
+      onExit: (_) => setState(() => _hovering = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: bg,
+            shape: BoxShape.circle,
+            border: Border.all(color: _hovering ? accent : borderColor),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.15),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Icon(widget.icon, color: iconColor, size: 24),
+        ),
       ),
     );
   }
