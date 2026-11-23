@@ -26,11 +26,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isLoading = authState.isLoading;
       final isAuthenticated = authState.value?.isActive == true;
       final isLoggingIn = state.matchedLocation == '/login';
-
-      if (isLoading) return null;
-
       final isCreatingAccount = state.matchedLocation == '/create-account';
       final isOnSplash = state.matchedLocation == '/';
+
+      if (isLoading) {
+        if (isLoggingIn || isCreatingAccount || isOnSplash) return null;
+        return '/';
+      }
 
       // Unauthenticated users are redirected to login
       if (!isAuthenticated &&

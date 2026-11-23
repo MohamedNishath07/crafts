@@ -11,7 +11,10 @@ final authControllerProvider =
     });
 
 class AuthController extends AsyncNotifier<UserProfile?> {
-  final AuthRepository _repository = AuthRepository();
+  AuthController({AuthRepository? repository})
+    : _repository = repository ?? AuthRepository();
+
+  final AuthRepository _repository;
 
   @override
   FutureOr<UserProfile?> build() async {
@@ -30,7 +33,7 @@ class AuthController extends AsyncNotifier<UserProfile?> {
         tenantId: 'default_tenant',
       );
       final user = await _repository.getCurrentProfile();
-      if (!user.isActive) return null;
+      if (!user.isActive) throw Exception('This account is inactive');
       return UserProfile(
         id: user.id,
         email: user.email,
@@ -46,19 +49,6 @@ class AuthController extends AsyncNotifier<UserProfile?> {
     state = const AsyncValue.loading();
     await _repository.signOut();
     state = const AsyncValue.data(null);
-  }
-
-  /// Demo helper to quickly switch active persona during development
-  void switchDemoRole(UserRole role) {
-    state = AsyncValue.data(
-      UserProfile(
-        id: 'demo-user-${role.name}',
-        tenantId: 'a0000000-0000-0000-0000-000000000001',
-        email: '${role.name}@acme.com',
-        fullName: 'Demo ${role.displayName}',
-        role: role,
-      ),
-    );
   }
 
   /// Update the current authenticated user's profile display name

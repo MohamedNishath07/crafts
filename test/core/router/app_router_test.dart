@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:credit_recovery_system/core/router/app_router.dart';
+import 'package:credit_recovery_system/core/auth/user_model.dart';
 import 'package:credit_recovery_system/features/admin/data/staff_repository.dart';
 import 'package:credit_recovery_system/features/auth/domain/user_profile.dart';
 import 'package:credit_recovery_system/features/auth/presentation/auth_controller.dart';
+import 'package:credit_recovery_system/features/auth/data/auth_repository_backup.dart';
 
 import '../../test_helpers/mock_staff_repository.dart';
 
@@ -27,7 +29,49 @@ class _LoadingAuthController extends AuthController {
   FutureOr<UserProfile?> build() => completer.future;
 }
 
+class _ReturningSessionRepository extends AuthRepository {
+  bool hasActiveSession = true;
+
+  @override
+  Future<void> signOut() async {
+    hasActiveSession = false;
+  }
+
+  @override
+  Future<User> getCurrentProfile() async => User(
+    id: 'returning-user',
+    email: 'staff@acme.com',
+    isActive: hasActiveSession,
+  );
+}
+
 void main() {
+  testWidgets('Pending authentication redirects protected deep links to logo', (
+    tester,
+  ) async {
+    final authController = _LoadingAuthController();
+    final container = ProviderContainer(
+      overrides: [
+        authControllerProvider.overrideWith(() => authController),
+        staffRepositoryProvider.overrideWithValue(MockStaffRepository()),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final router = container.read(appRouterProvider);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp.router(routerConfig: router),
+      ),
+    );
+
+    router.go('/dashboard');
+    await tester.pump();
+    await tester.pump();
+    expect(router.state.matchedLocation, '/');
+  });
+
   testWidgets(
     'Launch starts on logo and continues to login after initialization',
     (tester) async {
@@ -56,30 +100,29 @@ void main() {
     },
   );
 
-  testWidgets(
-    'Returning launch state resolves to login without dashboard access',
-    (tester) async {
-      final container = ProviderContainer(
-        overrides: [
-          authControllerProvider.overrideWith(() => _MockAuthController(null)),
-          staffRepositoryProvider.overrideWithValue(MockStaffRepository()),
-        ],
-      );
-      addTearDown(container.dispose);
+  testWidgets('Returning launch requires a fresh sign-in', (tester) async {
+    final repository = _ReturningSessionRepository();
+    final authController = AuthController(repository: repository);
+    final container = ProviderContainer(
+      overrides: [
+        authControllerProvider.overrideWith(() => authController),
+        staffRepositoryProvider.overrideWithValue(MockStaffRepository()),
+      ],
+    );
+    addTearDown(container.dispose);
 
-      final router = container.read(appRouterProvider);
-      await tester.pumpWidget(
-        UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp.router(routerConfig: router),
-        ),
-      );
+    final router = container.read(appRouterProvider);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp.router(routerConfig: router),
+      ),
+    );
 
-      await tester.pump();
-      await tester.pumpAndSettle();
-      expect(router.state.matchedLocation, '/login');
-    },
-  );
+    await tester.pumpAndSettle();
+    expect(repository.hasActiveSession, isFalse);
+    expect(router.state.matchedLocation, '/login');
+  });
 
   testWidgets('Unauthenticated user is redirected to /login', (tester) async {
     final container = ProviderContainer(
@@ -91,16 +134,15 @@ void main() {
     addTearDown(container.dispose);
 
     final router = container.read(appRouterProvider);
-
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
         child: MaterialApp.router(routerConfig: router),
       ),
     );
-    await tester.pumpAndSettle();
 
-    // Since initialLocation is /dashboard, unauthenticated should redirect to /login
+    await tester.pump();
+    await tester.pumpAndSettle();
     expect(router.state.matchedLocation, '/login');
   });
 

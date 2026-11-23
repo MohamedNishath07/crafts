@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
 
 import '../../../core/constants/app_colors.dart';
-import '../domain/user_profile.dart';
 import 'auth_controller.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -173,10 +171,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               Icons.email_outlined,
                             ),
                             validator: (v) {
-                              if (v == null || v.trim().isEmpty)
+                              if (v == null || v.trim().isEmpty) {
                                 return 'Email is required';
-                              if (!v.contains('@'))
+                              }
+                              if (!v.contains('@')) {
                                 return 'Enter a valid email';
+                              }
                               return null;
                             },
                           ),
@@ -202,8 +202,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                             ),
                             validator: (v) {
-                              if (v == null || v.isEmpty)
+                              if (v == null || v.isEmpty) {
                                 return 'Password is required';
+                              }
                               if (v.length < 6) return 'Minimum 6 characters';
                               return null;
                             },
@@ -252,28 +253,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ],
                       ),
                     ),
-                    if (kDebugMode) ...[
-                      const SizedBox(height: 24),
-                      Wrap(
-                        alignment: WrapAlignment.center,
-                        spacing: 8,
-                        children: [
-                          _demoChip(context, ref, 'Admin', UserRole.admin),
-                          _demoChip(
-                            context,
-                            ref,
-                            'Recovery',
-                            UserRole.recoveryOfficer,
-                          ),
-                          _demoChip(
-                            context,
-                            ref,
-                            'Finance',
-                            UserRole.financeOfficer,
-                          ),
-                        ],
-                      ),
-                    ],
                   ],
                 ),
               ),
@@ -281,29 +260,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _demoChip(
-    BuildContext context,
-    WidgetRef ref,
-    String label,
-    UserRole role,
-  ) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return ActionChip(
-      label: Text(
-        label,
-        style: TextStyle(
-          fontSize: 12,
-          color: AppColors.textPrimaryColor(isDark),
-        ),
-      ),
-      backgroundColor: AppColors.cardBgColor(isDark),
-      onPressed: () {
-        ref.read(authControllerProvider.notifier).switchDemoRole(role);
-        context.go('/dashboard');
-      },
     );
   }
 }
