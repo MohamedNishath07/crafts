@@ -21,7 +21,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authControllerProvider);
 
   return GoRouter(
-    initialLocation: '/splash',
+    initialLocation: '/',
     redirect: (context, state) {
       final isLoading = authState.isLoading;
       final isAuthenticated = authState.value?.isActive == true;
@@ -67,7 +67,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      GoRoute(path: '/splash', builder: (context, state) => const LogoScreen()),
+      GoRoute(path: '/', builder: (context, state) => const LogoScreen()),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
         path: '/create-account',

@@ -15,40 +15,31 @@ class AuthController extends AsyncNotifier<UserProfile?> {
 
   @override
   FutureOr<UserProfile?> build() async {
-    final user = await _repository.getCurrentProfile();
-    if (!user.isActive) return null;
-    return UserProfile(
-      id: user.id,
-      email: user.email,
-      fullName: user.name ?? 'Staff Member',
-      role: UserRole.recoveryOfficer,
-      isActive: user.isActive,
-      tenantId: user.tenantId ?? 'default_tenant',
-    );
+    // Every app launch requires fresh credential submission, even if this
+    // repository still contains a user from the previous running process.
+    await _repository.signOut();
+    return null;
   }
 
   Future<void> signIn({required String email, required String password}) async {
     state = const AsyncValue.loading();
-    await _repository.signIn(
-      email: email,
-      password: password,
-      tenantId: 'default_tenant',
-    );
-    final user = await _repository.getCurrentProfile();
-    if (!user.isActive) {
-      state = const AsyncValue.data(null);
-      return;
-    }
-    state = AsyncValue.data(
-      UserProfile(
+    state = await AsyncValue.guard(() async {
+      await _repository.signIn(
+        email: email,
+        password: password,
+        tenantId: 'default_tenant',
+      );
+      final user = await _repository.getCurrentProfile();
+      if (!user.isActive) return null;
+      return UserProfile(
         id: user.id,
         email: user.email,
         fullName: user.name ?? 'Staff Member',
         role: UserRole.recoveryOfficer,
         isActive: user.isActive,
-        tenantId: 'default_tenant',
-      ),
-    );
+        tenantId: user.tenantId ?? 'default_tenant',
+      );
+    });
   }
 
   Future<void> signOut() async {

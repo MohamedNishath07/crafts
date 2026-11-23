@@ -33,7 +33,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoggingIn = true);
     try {
-      await ref.read(authControllerProvider.notifier).signIn(
+      await ref
+          .read(authControllerProvider.notifier)
+          .signIn(
             email: _emailController.text.trim(),
             password: _passwordController.text,
           );
@@ -41,19 +43,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (authState.hasError) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Login failed: ${authState.error}'), backgroundColor: AppColors.accentDanger),
+            SnackBar(
+              content: Text('Login failed: ${authState.error}'),
+              backgroundColor: AppColors.accentDanger,
+            ),
           );
         }
-      } else if (mounted) {
+      } else if (mounted && authState.value?.isActive == true) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login successful'), backgroundColor: AppColors.accentSuccess),
+          const SnackBar(
+            content: Text('Login successful'),
+            backgroundColor: AppColors.accentSuccess,
+          ),
         );
         context.go('/dashboard');
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Network error. Please try again.'), backgroundColor: AppColors.accentDanger),
+          const SnackBar(
+            content: Text('Network error. Please try again.'),
+            backgroundColor: AppColors.accentDanger,
+          ),
         );
       }
     } finally {
@@ -75,9 +86,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       suffixIcon: suffix,
       filled: true,
       fillColor: fieldFill,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: fieldBorder)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: fieldBorder)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.accent, width: 1.5)),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(color: fieldBorder),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(color: fieldBorder),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
+      ),
     );
   }
 
@@ -108,13 +128,35 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     Container(
                       width: 72,
                       height: 72,
-                      decoration: BoxDecoration(color: AppColors.accent, borderRadius: BorderRadius.circular(20)),
-                      child: const Center(child: Text('DR', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w800, fontSize: 26))),
+                      decoration: BoxDecoration(
+                        color: AppColors.accent,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'DR',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 26,
+                          ),
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 16),
-                    Text('Debit Recovery', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: textPrimary)),
+                    Text(
+                      'Debit Recovery',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        color: textPrimary,
+                      ),
+                    ),
                     const SizedBox(height: 4),
-                    Text('Premium debt collection', style: TextStyle(fontSize: 13, color: textSecondary)),
+                    Text(
+                      'Premium debt collection',
+                      style: TextStyle(fontSize: 13, color: textSecondary),
+                    ),
                     const SizedBox(height: 32),
                     Form(
                       key: _formKey,
@@ -126,10 +168,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
                             style: TextStyle(color: textPrimary),
-                            decoration: _fieldDeco('Email address', Icons.email_outlined),
+                            decoration: _fieldDeco(
+                              'Email address',
+                              Icons.email_outlined,
+                            ),
                             validator: (v) {
-                              if (v == null || v.trim().isEmpty) return 'Email is required';
-                              if (!v.contains('@')) return 'Enter a valid email';
+                              if (v == null || v.trim().isEmpty)
+                                return 'Email is required';
+                              if (!v.contains('@'))
+                                return 'Enter a valid email';
                               return null;
                             },
                           ),
@@ -139,12 +186,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             controller: _passwordController,
                             obscureText: _obscurePassword,
                             style: TextStyle(color: textPrimary),
-                            decoration: _fieldDeco('Password', Icons.lock_outline, suffix: IconButton(
-                              icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: textSecondary),
-                              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                            )),
+                            decoration: _fieldDeco(
+                              'Password',
+                              Icons.lock_outline,
+                              suffix: IconButton(
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                  color: textSecondary,
+                                ),
+                                onPressed: () => setState(
+                                  () => _obscurePassword = !_obscurePassword,
+                                ),
+                              ),
+                            ),
                             validator: (v) {
-                              if (v == null || v.isEmpty) return 'Password is required';
+                              if (v == null || v.isEmpty)
+                                return 'Password is required';
                               if (v.length < 6) return 'Minimum 6 characters';
                               return null;
                             },
@@ -157,18 +216,38 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.accent,
                                 foregroundColor: Colors.black,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
                                 elevation: 0,
                               ),
                               child: _isLoggingIn
-                                  ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
-                                  : const Text('Sign In', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                                  ? const SizedBox(
+                                      width: 22,
+                                      height: 22,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.black,
+                                      ),
+                                    )
+                                  : const Text(
+                                      'Sign In',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
                             ),
                           ),
                           const SizedBox(height: 12),
                           TextButton(
-                            onPressed: isLoading ? null : () => context.push('/create-account'),
-                            child: const Text('Create Account', style: TextStyle(color: AppColors.accent)),
+                            onPressed: isLoading
+                                ? null
+                                : () => context.push('/create-account'),
+                            child: const Text(
+                              'Create Account',
+                              style: TextStyle(color: AppColors.accent),
+                            ),
                           ),
                         ],
                       ),
@@ -180,8 +259,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         spacing: 8,
                         children: [
                           _demoChip(context, ref, 'Admin', UserRole.admin),
-                          _demoChip(context, ref, 'Recovery', UserRole.recoveryOfficer),
-                          _demoChip(context, ref, 'Finance', UserRole.financeOfficer),
+                          _demoChip(
+                            context,
+                            ref,
+                            'Recovery',
+                            UserRole.recoveryOfficer,
+                          ),
+                          _demoChip(
+                            context,
+                            ref,
+                            'Finance',
+                            UserRole.financeOfficer,
+                          ),
                         ],
                       ),
                     ],
@@ -195,10 +284,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  Widget _demoChip(BuildContext context, WidgetRef ref, String label, UserRole role) {
+  Widget _demoChip(
+    BuildContext context,
+    WidgetRef ref,
+    String label,
+    UserRole role,
+  ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return ActionChip(
-      label: Text(label, style: TextStyle(fontSize: 12, color: AppColors.textPrimaryColor(isDark))),
+      label: Text(
+        label,
+        style: TextStyle(
+          fontSize: 12,
+          color: AppColors.textPrimaryColor(isDark),
+        ),
+      ),
       backgroundColor: AppColors.cardBgColor(isDark),
       onPressed: () {
         ref.read(authControllerProvider.notifier).switchDemoRole(role);

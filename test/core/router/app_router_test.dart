@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +7,7 @@ import 'package:credit_recovery_system/core/router/app_router.dart';
 import 'package:credit_recovery_system/features/admin/data/staff_repository.dart';
 import 'package:credit_recovery_system/features/auth/domain/user_profile.dart';
 import 'package:credit_recovery_system/features/auth/presentation/auth_controller.dart';
+
 import '../../test_helpers/mock_staff_repository.dart';
 
 class _MockAuthController extends AuthController {
@@ -18,7 +20,67 @@ class _MockAuthController extends AuthController {
   }
 }
 
+class _LoadingAuthController extends AuthController {
+  final Completer<UserProfile?> completer = Completer<UserProfile?>();
+
+  @override
+  FutureOr<UserProfile?> build() => completer.future;
+}
+
 void main() {
+  testWidgets(
+    'Launch starts on logo and continues to login after initialization',
+    (tester) async {
+      final authController = _LoadingAuthController();
+      final container = ProviderContainer(
+        overrides: [
+          authControllerProvider.overrideWith(() => authController),
+          staffRepositoryProvider.overrideWithValue(MockStaffRepository()),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final router = container.read(appRouterProvider);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp.router(routerConfig: router),
+        ),
+      );
+
+      expect(router.state.matchedLocation, '/');
+      authController.completer.complete(null);
+      await tester.pump();
+      await tester.pump();
+      expect(router.state.matchedLocation, '/login');
+    },
+  );
+
+  testWidgets(
+    'Returning launch state resolves to login without dashboard access',
+    (tester) async {
+      final container = ProviderContainer(
+        overrides: [
+          authControllerProvider.overrideWith(() => _MockAuthController(null)),
+          staffRepositoryProvider.overrideWithValue(MockStaffRepository()),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final router = container.read(appRouterProvider);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp.router(routerConfig: router),
+        ),
+      );
+
+      await tester.pump();
+      await tester.pumpAndSettle();
+      expect(router.state.matchedLocation, '/login');
+    },
+  );
+
   testWidgets('Unauthenticated user is redirected to /login', (tester) async {
     final container = ProviderContainer(
       overrides: [
@@ -33,9 +95,7 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: MaterialApp.router(
-          routerConfig: router,
-        ),
+        child: MaterialApp.router(routerConfig: router),
       ),
     );
     await tester.pumpAndSettle();
@@ -44,44 +104,55 @@ void main() {
     expect(router.state.matchedLocation, '/login');
   });
 
-  testWidgets('Recovery officer navigating to /admin/users is redirected to /dashboard', (tester) async {
-    const recoveryUser = UserProfile(
-      id: 'rec-1',
-      tenantId: 't-1',
-      email: 'rec@acme.com',
-      fullName: 'Recovery Officer',
-      role: UserRole.recoveryOfficer,
-    );
+  testWidgets(
+    'Recovery officer navigating to /admin/users is redirected to /dashboard',
+    (tester) async {
+      const recoveryUser = UserProfile(
+        id: 'rec-1',
+        tenantId: 't-1',
+        email: 'rec@acme.com',
+        fullName: 'Recovery Officer',
+        role: UserRole.recoveryOfficer,
+      );
 
-    final container = ProviderContainer(
-      overrides: [
-        authControllerProvider.overrideWith(() => _MockAuthController(recoveryUser)),
-        staffRepositoryProvider.overrideWithValue(MockStaffRepository()),
-      ],
-    );
-    addTearDown(container.dispose);
+      final container = ProviderContainer(
+        overrides: [
+          authControllerProvider.overrideWith(
+            () => _MockAuthController(recoveryUser),
+          ),
+          staffRepositoryProvider.overrideWithValue(MockStaffRepository()),
+        ],
+      );
+      addTearDown(container.dispose);
 
-    final router = container.read(appRouterProvider);
+      final router = container.read(appRouterProvider);
 
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp.router(
-          routerConfig: router,
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp.router(routerConfig: router),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
+      );
+      await tester.pumpAndSettle();
 
-    // Now try to navigate to /admin/users
-    router.go('/admin/users');
-    await tester.pumpAndSettle();
+      // Now try to navigate to /admin/users
+      router.go('/admin/users');
+      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 2));
+      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 2));
+      await tester.pumpAndSettle();
 
-    // Should be redirected back to /dashboard
-    expect(router.state.matchedLocation, '/dashboard');
-  });
+      // Should be redirected back to /dashboard
+      expect(router.state.matchedLocation, '/dashboard');
+    },
+  );
 
-  testWidgets('Administrator is allowed to access /admin/users', (tester) async {
+  testWidgets('Administrator is allowed to access /admin/users', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(1280, 800);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() {
@@ -99,7 +170,9 @@ void main() {
 
     final container = ProviderContainer(
       overrides: [
-        authControllerProvider.overrideWith(() => _MockAuthController(adminUser)),
+        authControllerProvider.overrideWith(
+          () => _MockAuthController(adminUser),
+        ),
         staffRepositoryProvider.overrideWithValue(MockStaffRepository()),
       ],
     );
@@ -110,9 +183,7 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: MaterialApp.router(
-          routerConfig: router,
-        ),
+        child: MaterialApp.router(routerConfig: router),
       ),
     );
     await tester.pumpAndSettle();
@@ -120,9 +191,9 @@ void main() {
     // Navigate to /admin/users
     router.go('/admin/users');
     await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 5));
 
     // Should stay at /admin/users
     expect(router.state.matchedLocation, '/admin/users');
   });
 }
-

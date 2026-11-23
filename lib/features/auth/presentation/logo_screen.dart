@@ -1,11 +1,10 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart' show SystemChrome, SystemUiOverlayStyle;
 
 import '../../../core/constants/app_colors.dart';
+import 'auth_controller.dart';
 
 class LogoScreen extends ConsumerStatefulWidget {
   const LogoScreen({super.key});
@@ -15,6 +14,8 @@ class LogoScreen extends ConsumerStatefulWidget {
 }
 
 class _LogoScreenState extends ConsumerState<LogoScreen> {
+  bool _navigationScheduled = false;
+
   @override
   void initState() {
     super.initState();
@@ -29,19 +30,19 @@ class _LogoScreenState extends ConsumerState<LogoScreen> {
         statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
       ),
     );
-    // Simulate a 3 second delay for splash screen
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Timer(const Duration(seconds: 3), () {
-        // Navigate to login after splash completes
-        if (mounted) {
-          context.go('/login');
-        }
-      });
-    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authControllerProvider);
+    if (!authState.isLoading && !_navigationScheduled) {
+      _navigationScheduled = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        context.go('/login');
+      });
+    }
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final base = isDark ? AppColors.surfaceDark : AppColors.surfaceBase;
 
