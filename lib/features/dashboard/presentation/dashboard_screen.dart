@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_colors.dart';
-import '../../auth/data/php_auth_session.dart';
 import '../../auth/domain/user_profile.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../dashboard_provider.dart';
@@ -25,10 +24,8 @@ class DashboardScreen extends ConsumerWidget {
     final textPrimary = AppColors.textPrimaryColor(isDark);
     final iconMuted = isDark ? Colors.white70 : const Color(0xFF475569);
 
-    // Get current user (either from authController or phpAuthSession)
-    final user =
-        ref.watch(authControllerProvider).value ??
-        ref.watch(phpAuthSessionProvider);
+    // Get current user from SQLite-based auth controller
+    final user = ref.watch(authControllerProvider).value;
     final dashboardState = ref.watch(dashboardControllerProvider);
     final controller = ref.read(dashboardControllerProvider.notifier);
 

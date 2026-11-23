@@ -86,7 +86,7 @@ class _CreateAccountScreenState extends ConsumerState<CreateAccountScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Account created successfully'), backgroundColor: AppColors.accentSuccess),
         );
-        context.go('/dashboard');
+        context.go('/login');
       }
     } catch (e) {
       if (mounted) {

@@ -39,10 +39,16 @@ class AuthRepository extends StateNotifier<User> {
     }
 
     final user = users.first;
+    final storedHash = user['password_hash'] as String?;
+    if (!PasswordHasher.verifyPassword(password, storedHash)) {
+      throw Exception('Authentication failed: invalid password');
+    }
+
     _currentUser = User(
       id: user['id'] as String,
       email: user['email'] as String,
       name: user['full_name'] as String?,
+      tenantId: tenantId,
       isActive: user['is_active'] as bool? ?? true,
     );
   }
@@ -60,7 +66,7 @@ class AuthRepository extends StateNotifier<User> {
     final users = await db.query(
       'users',
       where: 'id = ? AND tenant_id = ?',
-      whereArgs: [_currentUser.id, _currentUser.email],
+      whereArgs: [_currentUser.id, _currentUser.tenantId],
     );
 
     if (users.isEmpty) return _currentUser;
@@ -70,6 +76,7 @@ class AuthRepository extends StateNotifier<User> {
       id: user['id'] as String,
       email: user['email'] as String,
       name: user['full_name'] as String?,
+      tenantId: user['tenant_id'] as String?,
       isActive: user['is_active'] as bool? ?? true,
     );
 
@@ -148,6 +155,7 @@ class AuthRepository extends StateNotifier<User> {
       id: userId,
       email: email,
       name: fullName,
+      tenantId: tenantId,
       isActive: true,
     );
 
@@ -175,6 +183,7 @@ class AuthRepository extends StateNotifier<User> {
       id: _currentUser.id,
       email: _currentUser.email,
       name: fullName.trim(),
+      tenantId: _currentUser.tenantId,
       isActive: _currentUser.isActive,
     );
   }

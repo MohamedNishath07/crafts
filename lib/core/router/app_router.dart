@@ -1,14 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../features/admin/presentation/admin_audit_logs_screen.dart';
 import '../../features/admin/presentation/admin_users_screen.dart';
-import '../../features/auth/data/php_auth_session.dart';
 import '../../features/auth/domain/user_profile.dart';
 import '../../features/auth/presentation/auth_controller.dart';
 import '../../features/auth/presentation/create_account_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/profile_screen.dart';
-import '../../features/auth/presentation/splash_screen.dart';
+import '../../features/auth/presentation/logo_screen.dart';
 import '../../features/customers/presentation/customers_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
 import '../../features/debts/presentation/debts_screen.dart';
@@ -19,23 +19,24 @@ import '../../features/shell/presentation/app_shell.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authControllerProvider);
-  final phpUser = ref.watch(phpAuthSessionProvider);
 
   return GoRouter(
     initialLocation: '/splash',
     redirect: (context, state) {
       final isLoading = authState.isLoading;
-      final supabaseAuthenticated = authState.value != null;
-      final phpAuthenticated = phpUser != null;
-      final isAuthenticated = supabaseAuthenticated || phpAuthenticated;
+      final isAuthenticated = authState.value?.isActive == true;
       final isLoggingIn = state.matchedLocation == '/login';
 
       if (isLoading) return null;
 
       final isCreatingAccount = state.matchedLocation == '/create-account';
+      final isOnSplash = state.matchedLocation == '/';
 
       // Unauthenticated users are redirected to login
-      if (!isAuthenticated && !isLoggingIn && !isCreatingAccount) {
+      if (!isAuthenticated &&
+          !isLoggingIn &&
+          !isCreatingAccount &&
+          !isOnSplash) {
         return '/login';
       }
 
@@ -44,9 +45,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return '/dashboard';
       }
 
-      // Role permission guards (use Supabase user when available, otherwise PHP user)
+      // Role permission guards (SQLite-based auth user)
       if (isAuthenticated) {
-        final user = supabaseAuthenticated ? authState.value! : phpUser!;
+        final user = authState.value!;
         final role = user.role;
         final path = state.matchedLocation;
 
@@ -66,14 +67,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      GoRoute(
-        path: '/splash',
-        builder: (context, state) => const SplashScreen(),
-      ),
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginScreen(),
-      ),
+      GoRoute(path: '/splash', builder: (context, state) => const LogoScreen()),
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
         path: '/create-account',
         builder: (context, state) => const CreateAccountScreen(),

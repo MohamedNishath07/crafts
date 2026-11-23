@@ -16,13 +16,14 @@ class AuthController extends AsyncNotifier<UserProfile?> {
   @override
   FutureOr<UserProfile?> build() async {
     final user = await _repository.getCurrentProfile();
+    if (!user.isActive) return null;
     return UserProfile(
       id: user.id,
       email: user.email,
       fullName: user.name ?? 'Staff Member',
       role: UserRole.recoveryOfficer,
       isActive: user.isActive,
-      tenantId: 'default_tenant',
+      tenantId: user.tenantId ?? 'default_tenant',
     );
   }
 
@@ -34,6 +35,10 @@ class AuthController extends AsyncNotifier<UserProfile?> {
       tenantId: 'default_tenant',
     );
     final user = await _repository.getCurrentProfile();
+    if (!user.isActive) {
+      state = const AsyncValue.data(null);
+      return;
+    }
     state = AsyncValue.data(
       UserProfile(
         id: user.id,

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_colors.dart';
-import '../../auth/data/php_auth_session.dart';
 import '../../auth/domain/user_profile.dart';
 import '../../auth/presentation/auth_controller.dart';
 import 'expandable_tab_bar.dart';
@@ -15,9 +14,7 @@ class AppShell extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user =
-        ref.watch(authControllerProvider).value ??
-        ref.watch(phpAuthSessionProvider);
+    final user = ref.watch(authControllerProvider).value;
     final currentPath = GoRouterState.of(context).uri.toString();
 
     final navItems = _buildNavItems(user?.role ?? UserRole.recoveryOfficer);

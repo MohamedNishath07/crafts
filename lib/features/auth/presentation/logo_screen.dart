@@ -7,14 +7,14 @@ import 'package:flutter/services.dart' show SystemChrome, SystemUiOverlayStyle;
 
 import '../../../core/constants/app_colors.dart';
 
-class SplashScreen extends ConsumerStatefulWidget {
-  const SplashScreen({super.key});
+class LogoScreen extends ConsumerStatefulWidget {
+  const LogoScreen({super.key});
 
   @override
-  ConsumerState<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<LogoScreen> createState() => _LogoScreenState();
 }
 
-class _SplashScreenState extends ConsumerState<SplashScreen> {
+class _LogoScreenState extends ConsumerState<LogoScreen> {
   @override
   void initState() {
     super.initState();

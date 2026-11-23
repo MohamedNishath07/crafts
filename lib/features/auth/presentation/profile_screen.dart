@@ -7,7 +7,6 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/theming/theme_settings_provider.dart';
-import '../data/php_auth_session.dart';
 import '../domain/user_profile.dart';
 import 'auth_controller.dart';
 
@@ -201,7 +200,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Future<void> _signOut() async {
     await ref.read(authControllerProvider.notifier).signOut();
-    ref.read(phpAuthSessionProvider.notifier).clear();
     if (!mounted) {
       return;
     }

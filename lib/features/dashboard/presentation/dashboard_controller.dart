@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../auth/data/php_auth_session.dart';
 import '../../auth/domain/user_profile.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../data/dashboard_repository.dart';
@@ -19,11 +18,7 @@ class DashboardController extends Notifier<DashboardState> {
     return DashboardState.initial();
   }
 
-  UserProfile? get _currentUser {
-    final authProfile = ref.read(authControllerProvider).value;
-    if (authProfile != null) return authProfile;
-    return ref.read(phpAuthSessionProvider);
-  }
+  UserProfile? get _currentUser => ref.read(authControllerProvider).value;
 
   String get _currentTenantId {
     return _currentUser?.tenantId ?? 'a0000000-0000-0000-0000-000000000001';
