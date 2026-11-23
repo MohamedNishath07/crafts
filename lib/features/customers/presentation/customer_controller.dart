@@ -12,6 +12,16 @@ class CustomerSearchQueryNotifier extends Notifier<String> {
   @override
   String build() => '';
   void setQuery(String query) => state = query;
+
+  /// Updates the search query and resets pagination to the first page so the
+  /// user always sees results for the new query.
+  void onSearchChanged(String query) {
+    state = query;
+    ref.read(customerPageIndexProvider.notifier).setPage(0);
+  }
+
+  /// Clears the search query and resets pagination to the first page.
+  void clear() => onSearchChanged('');
 }
 final customerSearchQueryProvider = NotifierProvider<CustomerSearchQueryNotifier, String>(CustomerSearchQueryNotifier.new);
 
