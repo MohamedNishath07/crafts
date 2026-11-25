@@ -120,6 +120,7 @@ class AuthRepository extends StateNotifier<User> {
     required String firstName,
     required String lastName,
     required String tenantId,
+    String? phone,
   }) async {
     // Check if user already exists
     final db = await database.database;
@@ -145,7 +146,7 @@ class AuthRepository extends StateNotifier<User> {
       'role': 'recovery_officer',
       'is_active': 1,
       'password_hash': PasswordHasher.hashPassword(password),
-      'phone': '',
+      'phone': phone?.trim() ?? '',
       'profile_photo': null,
       'created_at': now,
       'updated_at': now,

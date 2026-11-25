@@ -111,6 +111,7 @@ class AuthController extends AsyncNotifier<UserProfile?> {
     required String password,
     required String firstName,
     required String lastName,
+    String? phone,
   }) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
@@ -120,6 +121,7 @@ class AuthController extends AsyncNotifier<UserProfile?> {
         firstName: firstName,
         lastName: lastName,
         tenantId: 'default_tenant',
+        phone: phone,
       );
       return UserProfile(
         id: user.id,

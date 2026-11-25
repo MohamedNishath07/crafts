@@ -197,7 +197,7 @@ class RecoveryLogHeader extends StatelessWidget {
         ),
         _HeaderAction(
           icon: Icons.add_circle_outline,
-          label: 'Create Debt',
+          label: 'Create Credit',
           onPressed: onCreateDebt,
         ),
       ],
